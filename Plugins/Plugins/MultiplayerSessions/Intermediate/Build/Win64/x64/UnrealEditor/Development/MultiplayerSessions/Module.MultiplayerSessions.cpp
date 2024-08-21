@@ -2,3 +2,6 @@
 #include "F:/MultiplayerCourse/BlasterGame/Plugins/Plugins/MultiplayerSessions/Intermediate/Build/Win64/UnrealEditor/Inc/MultiplayerSessions/UHT/Menu.gen.cpp"
 #include "F:/MultiplayerCourse/BlasterGame/Plugins/Plugins/MultiplayerSessions/Intermediate/Build/Win64/UnrealEditor/Inc/MultiplayerSessions/UHT/MultiplayerSessions.init.gen.cpp"
 #include "F:/MultiplayerCourse/BlasterGame/Plugins/Plugins/MultiplayerSessions/Intermediate/Build/Win64/UnrealEditor/Inc/MultiplayerSessions/UHT/MultiplayerSessionsSubsystem.gen.cpp"
+#include "F:/MultiplayerCourse/BlasterGame/Plugins/Plugins/MultiplayerSessions/Source/MultiplayerSessions/Private/Menu.cpp"
+#include "F:/MultiplayerCourse/BlasterGame/Plugins/Plugins/MultiplayerSessions/Source/MultiplayerSessions/Private/MultiplayerSessions.cpp"
+#include "F:/MultiplayerCourse/BlasterGame/Plugins/Plugins/MultiplayerSessions/Source/MultiplayerSessions/Private/MultiplayerSessionsSubsystem.cpp"

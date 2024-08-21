@@ -25,6 +25,11 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	void MoveForward(float Value);
+	void MoveRight(float Value);
+	void Turn(float value);
+	void LookUp(float value);
+
 private:
 	// Setting up our Camera System
 	UPROPERTY(VisibleAnywhere, Category = Camera) 
