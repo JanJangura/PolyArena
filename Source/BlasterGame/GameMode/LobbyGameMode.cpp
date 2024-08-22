@@ -16,7 +16,7 @@ void ALobbyGameMode::PostLogin(APlayerController* NewPlayer)
 	// it has a Num() function that returns the number of elements within the array as an int32.
 	int32 NumberOfPlayers = GameState.Get()->PlayerArray.Num();
 
-	if (NumberOfPlayers == 1) {	// We'll check to see if the amount of players have been met, so we can travel to the actual game when it's met.
+	if (NumberOfPlayers == 2) {	// We'll check to see if the amount of players have been met, so we can travel to the actual game when it's met.
 		// We'll call ServerTravel() so all connecting players from the lobby, can travel to the Actual Game. Remember, ServerTravel() is a function that belongs to UWorld.
 		UWorld* World = GetWorld();
 
@@ -28,12 +28,6 @@ void ALobbyGameMode::PostLogin(APlayerController* NewPlayer)
 			// Then all connected clients will travel to that level. In parameters, ServerTravel() takes an FString, then we can use the syntax "?" to add additional options to 
 			// the address. In this case, the option we need is "listen" because we want to dedicate this BlasterMap to be opened as a listen server for clients to connect to. 
 			World->ServerTravel(FString("/Game/Scenes/BlasterMap?listen")); 			
-			GEngine->AddOnScreenDebugMessage(
-				-1,
-				15.f,
-				FColor::Yellow,
-				FString(TEXT("/Game/Scenes/BlasterMap?listen"))
-			);
 		}
 	}
 }
