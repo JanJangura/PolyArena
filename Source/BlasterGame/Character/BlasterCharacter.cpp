@@ -5,6 +5,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Camera/CameraComponent.h"
+#include "Components/WidgetComponent.h"
 
 // Sets default values
 ABlasterCharacter::ABlasterCharacter()
@@ -26,6 +27,10 @@ ABlasterCharacter::ABlasterCharacter()
 	// Variables
 	bUseControllerRotationYaw = false; // Setting our bUseControllerRotationYaw to false so our character doesn't turn in the direction of where our camera is facing.
 	GetCharacterMovement()->bOrientRotationToMovement = true; 
+
+	// This is to Display our Network Role
+	OverheadWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("OverheadWidget"));
+	OverheadWidget->SetupAttachment(RootComponent);
 }
 
 // Called when the game starts or when spawned

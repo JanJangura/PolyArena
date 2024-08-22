@@ -38,6 +38,10 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = Camera)
 	class UCameraComponent* FollowCamera;		// Setting this up so camera can follow character.
 
+	// We can't read a variable that is private in blueprints, unless we proved this specifier meta = (AllowPrivateAccess = "true").
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	class UWidgetComponent* OverheadWidget;
+
 public:	
 	// Simple Getters and Setters
 
