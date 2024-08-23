@@ -3,6 +3,8 @@
 
 #include "OverheadWidget.h"
 #include "Components/TextBlock.h"
+#include "GameFramework/PlayerState.h"
+#include "GameFramework/Character.h"
 
 void UOverheadWidget::SetDisplayText(FString TextToDisplay)
 {
@@ -38,6 +40,26 @@ void UOverheadWidget::ShowPlayerNetRole(APawn* InPawn)
 	// This is how we'll format our local variable and pass it into SetDisplayText.
 	FString LocalRoleString = FString::Printf(TEXT("Local Role: %s"), *Role);
 	SetDisplayText(LocalRoleString);
+}
+
+void UOverheadWidget::GetPlayerName(ACharacter* Character)
+{
+	APlayerController* PlayerController;
+
+	if (Character) {
+		PlayerController = Cast<APlayerController>(Character->GetController());
+
+		APlayerState* PlayerState;
+
+		if (PlayerController) {
+			PlayerState = PlayerController->GetPlayerState<APlayerState>();
+
+			if (PlayerState) {
+				FString PlayerName = PlayerState->GetPlayerName();
+				SetDisplayText(PlayerName);
+			}
+		}
+	}
 }
 
 void UOverheadWidget::NativeDestruct()

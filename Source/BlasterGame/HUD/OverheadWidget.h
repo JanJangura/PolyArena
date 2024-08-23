@@ -27,6 +27,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void ShowPlayerNetRole(APawn* InPawn);
 
+	UFUNCTION(BlueprintCallable)
+	void GetPlayerName(ACharacter* Character);
+
 protected:
 	// This NativeDestruct()() will be called when transition to a different level or leave the current level. This allows us to remove this widget from the viewport.
 	virtual void NativeDestruct() override;
