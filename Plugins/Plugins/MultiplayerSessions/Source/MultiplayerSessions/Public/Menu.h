@@ -28,7 +28,7 @@ protected:
 																			// to another level, the current level will be destroyed and removed. Then all user widgets 
 																			// will call this function. We'll be calling MenuTearDown() here.
 
-	///////////* CUSTOM DELEGATES CALLBACKS */////////
+	///////////* CUSTOM DELEGATE CALLBACKS */////////
 	// Callbacks for the Custom Delegates on the MultiplayerSessionsSubsystem.
 	UFUNCTION()
 	void OnCreateSession(bool bWasSuccessful);

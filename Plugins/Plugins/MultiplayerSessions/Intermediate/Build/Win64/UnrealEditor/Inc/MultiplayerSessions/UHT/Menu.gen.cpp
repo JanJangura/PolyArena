@@ -140,11 +140,11 @@ struct Z_Construct_UFunction_UMenu_OnCreateSession_Statics
 #if WITH_METADATA
 	static constexpr UECodeGen_Private::FMetaDataPairParam Function_MetaDataParams[] = {
 #if !UE_BUILD_SHIPPING
-		{ "Comment", "///////////* CUSTOM DELEGATES CALLBACKS */////////\n// Callbacks for the Custom Delegates on the MultiplayerSessionsSubsystem.\n" },
+		{ "Comment", "///////////* CUSTOM DELEGATE CALLBACKS */////////\n// Callbacks for the Custom Delegates on the MultiplayerSessionsSubsystem.\n" },
 #endif
 		{ "ModuleRelativePath", "Public/Menu.h" },
 #if !UE_BUILD_SHIPPING
-		{ "ToolTip", "/ CUSTOM DELEGATES CALLBACKS\n Callbacks for the Custom Delegates on the MultiplayerSessionsSubsystem." },
+		{ "ToolTip", "/ CUSTOM DELEGATE CALLBACKS\n Callbacks for the Custom Delegates on the MultiplayerSessionsSubsystem." },
 #endif
 	};
 #endif // WITH_METADATA
@@ -331,7 +331,7 @@ struct Z_Construct_UClass_UMenu_Statics
 		{ &Z_Construct_UFunction_UMenu_HostButtonClicked, "HostButtonClicked" }, // 128811646
 		{ &Z_Construct_UFunction_UMenu_JoinButtonClicked, "JoinButtonClicked" }, // 3398739101
 		{ &Z_Construct_UFunction_UMenu_MenuSetup, "MenuSetup" }, // 1364303894
-		{ &Z_Construct_UFunction_UMenu_OnCreateSession, "OnCreateSession" }, // 2335900303
+		{ &Z_Construct_UFunction_UMenu_OnCreateSession, "OnCreateSession" }, // 3813687764
 		{ &Z_Construct_UFunction_UMenu_OnDestroySession, "OnDestroySession" }, // 122917252
 		{ &Z_Construct_UFunction_UMenu_OnStartSession, "OnStartSession" }, // 3290975137
 	};
@@ -389,11 +389,16 @@ UMenu::~UMenu() {}
 struct Z_CompiledInDeferFile_FID_BlasterGame_Plugins_Plugins_MultiplayerSessions_Source_MultiplayerSessions_Public_Menu_h_Statics
 {
 	static constexpr FClassRegisterCompiledInInfo ClassInfo[] = {
-		{ Z_Construct_UClass_UMenu, UMenu::StaticClass, TEXT("UMenu"), &Z_Registration_Info_UClass_UMenu, CONSTRUCT_RELOAD_VERSION_INFO(FClassReloadVersionInfo, sizeof(UMenu), 2843379261U) },
+		{ Z_Construct_UClass_UMenu, UMenu::StaticClass, TEXT("UMenu"), &Z_Registration_Info_UClass_UMenu, CONSTRUCT_RELOAD_VERSION_INFO(FClassReloadVersionInfo, sizeof(UMenu), 3801491589U) },
 	};
 };
+<<<<<<< Updated upstream
 static FRegisterCompiledInInfo Z_CompiledInDeferFile_FID_BlasterGame_Plugins_Plugins_MultiplayerSessions_Source_MultiplayerSessions_Public_Menu_h_678188028(TEXT("/Script/MultiplayerSessions"),
 	Z_CompiledInDeferFile_FID_BlasterGame_Plugins_Plugins_MultiplayerSessions_Source_MultiplayerSessions_Public_Menu_h_Statics::ClassInfo, UE_ARRAY_COUNT(Z_CompiledInDeferFile_FID_BlasterGame_Plugins_Plugins_MultiplayerSessions_Source_MultiplayerSessions_Public_Menu_h_Statics::ClassInfo),
+=======
+static FRegisterCompiledInInfo Z_CompiledInDeferFile_FID_MultiplayerCourse_BlasterGame_Plugins_Plugins_MultiplayerSessions_Source_MultiplayerSessions_Public_Menu_h_2866073877(TEXT("/Script/MultiplayerSessions"),
+	Z_CompiledInDeferFile_FID_MultiplayerCourse_BlasterGame_Plugins_Plugins_MultiplayerSessions_Source_MultiplayerSessions_Public_Menu_h_Statics::ClassInfo, UE_ARRAY_COUNT(Z_CompiledInDeferFile_FID_MultiplayerCourse_BlasterGame_Plugins_Plugins_MultiplayerSessions_Source_MultiplayerSessions_Public_Menu_h_Statics::ClassInfo),
+>>>>>>> Stashed changes
 	nullptr, 0,
 	nullptr, 0);
 // End Registration

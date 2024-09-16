@@ -3,6 +3,9 @@
 
 #include "Weapon.h"
 #include "Components/SphereComponent.h"
+#include "Components/WidgetComponent.h"
+#include "BlasterGame/Character/BlasterCharacter.h"
+#include "Net/UnrealNetwork.h"
 
 // Sets default values
 AWeapon::AWeapon()
@@ -11,13 +14,12 @@ AWeapon::AWeapon()
 	PrimaryActorTick.bCanEverTick = false;
 
 	// This is where we set our Weapon Replicate to true. The actor class has a default bReplicates boolean to let the Engine know that it's a replicate.
-	bReplicates = true;
+	bReplicates = true;	// So now we can have replicating variables. 
 
 	// Constructing our Weapon Mesh.
-	// This is essentially 
+	// This is the Default Scene Root Component within Blueprints.
 	WeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WeaponMesh"));
-	WeaponMesh->SetupAttachment(RootComponent);
-	SetRootComponent(WeaponMesh); // This is our root
+	SetRootComponent(WeaponMesh); // We set this WeaponMesh to become our Root
 
 	//////// *WEAPON COLLISION* ////////
 	// We can also set the CollisionResponse of the weapon mesh, such as dropping it and it bouncing off of the walls or ground.
@@ -40,6 +42,9 @@ AWeapon::AWeapon()
 	// if we're on the server. 
 	AreaSphere->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);	// This Sphere overlap is set to Ignore all channels.
 	AreaSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);				// The Sphere Collision is also set to NoCollision. 
+
+	PickupWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("PickupWidget"));
+	PickupWidget->SetupAttachment(RootComponent);
 }
 
 // Called when the game starts or when spawned
@@ -47,18 +52,30 @@ void AWeapon::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	if (PickupWidget) {
+		PickupWidget->SetVisibility(false);
+	}
+
 	// If we're on the server, then we'll enable our AreaSphere Collision.
 	// We can check to see if we have authority here and then later we can add overlap functions, we can bind those here and begin play if we're on the server.
 	// Essentially, this checks to see if we are on the server by checking if we have authority. 
 	if (HasAuthority()) {	// Alternate way of writing HasAuthority() function: GetLocalRole() == ENetRole::ROLE_Authority
-		// HasAuthority() Checks the LocalRole of this Weapon Actor and if it has the role "Authority", then HasAuthority() will return true.
+		// HasAuthority() Checks the LocalRole of this Weapon Actor and if it has the role "Authority", then HasAuthority() will return true. This allows us the server
+		// to know that this object is on the server, and if it is then the server has control over it. 
 
 		// We'll enable our collision here. 
 		AreaSphere->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 		// Then we can set our Collision Reponse Channel to Pawn, and overlap it with Response.
 		AreaSphere->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
 
-		// *Last Note Here* - This if-statement can only happen if our weapon is a replicating actor. This means that the server will be in charge of all weapon objects.
+		// Calling the DELEGATES for our AreaSphere Overlaps
+		// This is a Delegate that we call when the overlap happens.
+		AreaSphere->OnComponentBeginOverlap.AddDynamic(this, &AWeapon::OnSphereOverlap);
+		// This is a Delegate that we call when the overlap ends.
+		AreaSphere->OnComponentEndOverlap.AddDynamic(this, &AWeapon::OnSphereEndOverlap);
+
+
+		// *Note Here* - This if-statement can only happen if our weapon is a replicating actor. This means that the server will be in charge of all weapon objects.
 		// So for our weapon to have authority only on the server, we need to set our Weapon Actor to Replicate.
 	}
 }
@@ -67,6 +84,66 @@ void AWeapon::BeginPlay()
 void AWeapon::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
 
+void AWeapon::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	// We can register our variables that we want to replicate ("WeaponState").
+
+	// In DOREPLIFETIME, we want to pass in the class and the variable.
+	DOREPLIFETIME(AWeapon, WeaponState);	// Now we've registered WeaponState in GetLifeTimeReplicatedProps, but we also need to make sure to add replicated to the UProperty.
+}
+
+// Remember, this function only gets called on the server because it has the role Authority.
+void AWeapon::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	// This casts to our ABlasterCharacter class targeting the OtherActor.
+	ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(OtherActor);
+	if (BlasterCharacter) {
+		// Replication STEP 5. When this actor finally overlaps with our character, we'll set the replicated variable "OverlappingWeapon" from BlasterCharacter, 
+		// using our SetOverlappingWeapon() function, to this class. This function only happens on the Server.
+		BlasterCharacter->SetOverlappingWeapon(this);
+	}
+}
+
+void AWeapon::OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(OtherActor);
+	if (BlasterCharacter) {
+		BlasterCharacter->SetOverlappingWeapon(nullptr); // Instead of setting it to this class, we just set it to a nullptr.
+	}
+}
+
+void AWeapon::SetWeaponState(EWeaponState State)
+{
+	WeaponState = State;
+
+	// This is on the server.
+	switch (WeaponState) {
+	case EWeaponState::EWS_Equipped:
+		ShowPickupWidget(false); // Now that we picked up this weapon, we don't need to prompt the "Press E" widget anymore. We'll turn it off here.
+		//AreaSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision); // Removing the Collision off of the weapon now on the server.
+		break;
+	case EWeaponState::EWS_Dropped:
+		AreaSphere->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics); 
+		break;
+	}
+}
+
+// Our Rep_Notifier, this is for the Clients.
+void AWeapon::OnRep_WeaponState()
+{
+	switch (WeaponState) {
+	case EWeaponState::EWS_Equipped:
+		ShowPickupWidget(false); // Now that we picked up this weapon, we don't need to prompt the "Press E" widget anymore. We'll turn it off here.
+		break;
+	}
+}
+
+void AWeapon::ShowPickupWidget(bool bShowWidget)
+{
+	if (PickupWidget) {
+		PickupWidget->SetVisibility(bShowWidget);
+	}
+}
