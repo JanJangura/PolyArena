@@ -123,7 +123,7 @@ void AWeapon::SetWeaponState(EWeaponState State)
 	switch (WeaponState) {
 	case EWeaponState::EWS_Equipped:
 		ShowPickupWidget(false); // Now that we picked up this weapon, we don't need to prompt the "Press E" widget anymore. We'll turn it off here.
-		//AreaSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision); // Removing the Collision off of the weapon now on the server.
+		AreaSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision); // Removing the Collision off of the weapon now on the server.
 		break;
 	case EWeaponState::EWS_Dropped:
 		AreaSphere->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics); 

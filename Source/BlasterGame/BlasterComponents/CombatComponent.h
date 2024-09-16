@@ -15,10 +15,14 @@ class BLASTERGAME_API UCombatComponent : public UActorComponent
 public:	
 	UCombatComponent();
 
+	// "friend" This is going to give our UBlasterCharacter Class full access to this class (including protected and private members). 
+	friend class ABlasterCharacter;
+
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	// "friend" This is going to give our UBlasterCharacter Class full access to this class (including protected and private members). 
-	friend class ABlasterCharacter; 
+	// This is a Server function. This function is executed on the server. The server uses it to determine how to replicate the properties to the clients.
+	// You can also define conditions under which specific properties should be replicated using replication conditions like COND_None, COND_OwnerOnly, COND_SkipOwner, etc.
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	// Within this EquipWeapon, we need a Weapon to equip, we can forward a class instance of AWeapon class.
 	void EquipWeapon(class AWeapon* WeaponToEquip);	
@@ -31,6 +35,7 @@ private:
 	class ABlasterCharacter* Character;	
 
 	// This is the variable for the weapon in which the Blaster Character currently has equipped.
+	UPROPERTY(Replicated)	// We need to add this "Replicated" key term to indicate that this is Replicated across all clients. Otherwise we're only setting it on the Server.
 	AWeapon* EquippedWeapon;
 
 public:	

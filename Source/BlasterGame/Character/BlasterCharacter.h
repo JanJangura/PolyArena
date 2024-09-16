@@ -106,4 +106,7 @@ public:
 
 	// This is the more indepth build of our SetOverlappingWeapon function.
 	void SetOverlappingWeapon(AWeapon* Weapon);
+
+	// This is for our AnimInstance, we need to return a bool to transition State Machines.
+	bool IsWeaponEquipped();
 };

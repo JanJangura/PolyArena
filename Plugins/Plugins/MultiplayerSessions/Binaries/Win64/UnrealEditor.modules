@@ -2,10 +2,6 @@
 	"BuildId": "33043543",
 	"Modules": 
 	{
-<<<<<<< Updated upstream
-		"MultiplayerSessions": "UnrealEditor-MultiplayerSessions.dll"
-=======
-		"MultiplayerSessions": "UnrealEditor-MultiplayerSessions-0383.dll"
->>>>>>> Stashed changes
+		"MultiplayerSessions": "UnrealEditor-MultiplayerSessions-0022.dll"
 	}
 }

@@ -21,6 +21,7 @@ public:
 
 private:
 	// We need a variable that stores our character. This character will be using this Anim Instance.
+	// UPROPERTY(BlueprintReadOnly, Category = Character, meta = (AllowPrivateAccess = "true")) --> This allows us to see it in Blueprints
 	UPROPERTY(BlueprintReadOnly, Category = Character, meta = (AllowPrivateAccess = "true"))
 	class ABlasterCharacter* BlasterCharacter;
 
@@ -32,4 +33,7 @@ private:
 
 	UPROPERTY(BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
 	bool bIsAccelerating;
+
+	UPROPERTY(BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
+	bool bWeaponEquipped;
 };

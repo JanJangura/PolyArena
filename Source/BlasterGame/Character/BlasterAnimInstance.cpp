@@ -35,4 +35,7 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaTime)
 	// This just lets us know if we're adding input, like if we're pressing keys to move. We'll get this from our character movement. 
 	// If our current acceleration size() is greater then zero, return true, else return false.
 	bIsAccelerating = BlasterCharacter->GetCharacterMovement()->GetCurrentAcceleration().Size() > 0.f ? true:false;
+
+	// This checks if our EquippedWeapon from our BlasterCharacter is true.
+	bWeaponEquipped = BlasterCharacter->IsWeaponEquipped();
 }
