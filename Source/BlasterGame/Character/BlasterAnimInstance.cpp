@@ -43,4 +43,7 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaTime)
 	// This checks if BlasterCharacter has Combat Component and if the player CombatComponent "bAiming" variable is true, if it is, then we set this
 	// local variable "bAiming" to true, and then whenever this is true, the AnimInstance will switch to the aiming animation that we set up.
 	bAiming = BlasterCharacter->IsAiming();
+
+	// In order to get an offset, we need to know which direction we're moving and which direction we're aiming (or where the controller is pointing in).
+
 }
