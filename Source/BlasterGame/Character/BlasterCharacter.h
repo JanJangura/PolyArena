@@ -40,6 +40,8 @@ protected:
 	void Turn(float value);
 	void LookUp(float value);
 	void EquipButtonPressed();	// This is an action mapping callback, so we don't have an input parameter.
+	void AimButtonPressed();
+	void AimButtonReleased();
 
 private:
 	// Setting up our Camera System
@@ -109,4 +111,7 @@ public:
 
 	// This is for our AnimInstance, we need to return a bool to transition State Machines.
 	bool IsWeaponEquipped();
+
+	// This is for our Character's Aiming 
+	bool IsAiming();
 };

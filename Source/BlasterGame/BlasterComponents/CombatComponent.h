@@ -30,6 +30,13 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
+	// This will handle everything, server and client side for aiming.
+	void SetAiming(bool bIsAiming);	
+
+	// This is our Server RPC. We can pass data in parameters across the network with RPCs. To make this a Server RPC, we need to add the Macro "UFUNCTION(Server, Reliable)".
+	UFUNCTION(Server, Reliable)
+	void ServerSetAiming(bool bIsAiming);
+
 private:
 	// We need this instance because we'll be referring back and forth. This also stops us from continously casting to our Character.
 	class ABlasterCharacter* Character;	
@@ -37,6 +44,9 @@ private:
 	// This is the variable for the weapon in which the Blaster Character currently has equipped.
 	UPROPERTY(Replicated)	// We need to add this "Replicated" key term to indicate that this is Replicated across all clients. Otherwise we're only setting it on the Server.
 	AWeapon* EquippedWeapon;
+
+	UPROPERTY(Replicated)	// This is so all clients can see whomever is aiming.
+	bool bAiming;
 
 public:	
 	

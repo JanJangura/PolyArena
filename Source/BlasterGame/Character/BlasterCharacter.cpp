@@ -1,5 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-
+// IMPORTANT NOTE, Replication only works one way. From Server to Client, you have to find a way for the Client to replicate to the Server. We can do this with Rep Notify
+// and sending server RPC.
 
 #include "BlasterCharacter.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -90,8 +91,10 @@ void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	PlayerInputComponent->BindAxis("Turn", this, &ABlasterCharacter::Turn);
 	PlayerInputComponent->BindAxis("LookUp", this, &ABlasterCharacter::LookUp);
 	
-	// This is our Equipped Action Mapping and we'll bind it to our EquipButtonPressed() function.
+	// This is our Equipped Action Mapping and we'll bind it to our functions that we want to call for each action.
 	PlayerInputComponent->BindAction("Equip", IE_Pressed, this, &ABlasterCharacter::EquipButtonPressed);	
+	PlayerInputComponent->BindAction("Aim", IE_Pressed, this, &ABlasterCharacter::AimButtonPressed);
+	PlayerInputComponent->BindAction("Aim", IE_Released, this, &ABlasterCharacter::AimButtonReleased);
 }
 
 void ABlasterCharacter::PostInitializeComponents()
@@ -163,6 +166,20 @@ void ABlasterCharacter::EquipButtonPressed()
 	}
 }
 
+void ABlasterCharacter::AimButtonPressed()
+{
+	if (Combat) {
+		Combat->SetAiming(true);
+	}
+}
+
+void ABlasterCharacter::AimButtonReleased()
+{
+	if (Combat) {
+		Combat->SetAiming(false);
+	}
+}
+
 // If we don't have authority when pressing E, we want to send this RPC so that the server can call the EquipWeapon() function for us (client).
 // Everything must be ran through the server, therefore we need the server to do all the work for us. Therefore we need this RPC to allow us to equip weapons.
 // This "_Implementation" is needed because Unreal Engine will create the actual function definition for this function and all we have to do is create the implementation
@@ -216,5 +233,12 @@ void ABlasterCharacter::SetOverlappingWeapon(AWeapon* Weapon)
 
 bool ABlasterCharacter::IsWeaponEquipped()
 {
-	return (Combat && Combat->EquippedWeapon);	// We'll check if we have a weapon equipped and return true or false.
+	// We'll check if we have a weapon equipped and return true or false.
+	return (Combat && Combat->EquippedWeapon);	
+}
+
+bool ABlasterCharacter::IsAiming()
+{
+	// We'll check if combat is valid and if Combat->bAiming is true.
+	return (Combat && Combat->bAiming);
 }

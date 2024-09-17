@@ -20,20 +20,41 @@ void UCombatComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	
 }
 
+void UCombatComponent::SetAiming(bool bIsAiming)
+{
+	// On the client, this aiming animation will work first on that client before it's sent through an RPC reaching the server. Therefore, the aiming
+	// mechanics on the client will execute first before reaching the server and this is fine.
+	bAiming = bIsAiming;
+
+	// We don't need to check if the character is on the server, because no matter what, it will be executed on the server even if were on the client.
+	// So calling this function on the server means we're replicating it to all other clients. 
+	ServerSetAiming(bIsAiming);	
+}
+
+// For RPC, we have to add the "_Implementation" so Unreal can create the real definition for it.
+void UCombatComponent::ServerSetAiming_Implementation(bool bIsAiming)	
+{
+	// This is the RPC that we sent to the server, so the server knows to replicate the aiming animation for all players holding (RMB). 
+	bAiming = bIsAiming;
+}
 
 void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 }
 
+// We will always need this for Replication. We have to define on the list what we want to Replicate here.
 void UCombatComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME(UCombatComponent, EquippedWeapon)	// Now when this value changes, it will replicate in all clients.
+	// Now when this value changes, it will replicate in all clients.
+	DOREPLIFETIME(UCombatComponent, EquippedWeapon);	
+
+	// Now when this value changes, it will replicate in all clients.
+	DOREPLIFETIME(UCombatComponent, bAiming);	
 }
 
 // We're gonna replicate this

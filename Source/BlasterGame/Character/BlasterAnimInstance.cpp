@@ -38,4 +38,9 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaTime)
 
 	// This checks if our EquippedWeapon from our BlasterCharacter is true.
 	bWeaponEquipped = BlasterCharacter->IsWeaponEquipped();
+
+	// We're setting the bAiming variable depending if our BlasterCharacter returns true when the player is aiming.
+	// This checks if BlasterCharacter has Combat Component and if the player CombatComponent "bAiming" variable is true, if it is, then we set this
+	// local variable "bAiming" to true, and then whenever this is true, the AnimInstance will switch to the aiming animation that we set up.
+	bAiming = BlasterCharacter->IsAiming();
 }
