@@ -37,12 +37,15 @@ protected:
 	UFUNCTION(Server, Reliable)
 	void ServerSetAiming(bool bIsAiming);
 
+	UFUNCTION()
+	void OnRep_EquippedWeapon();
+
 private:
 	// We need this instance because we'll be referring back and forth. This also stops us from continously casting to our Character.
 	class ABlasterCharacter* Character;	
 
 	// This is the variable for the weapon in which the Blaster Character currently has equipped.
-	UPROPERTY(Replicated)	// We need to add this "Replicated" key term to indicate that this is Replicated across all clients. Otherwise we're only setting it on the Server.
+	UPROPERTY(ReplicatedUsing = OnRep_EquippedWeapon)	// We need to add this "Replicated" key term to indicate that this is Replicated across all clients. Otherwise we're only setting it on the Server.
 	AWeapon* EquippedWeapon;
 
 	UPROPERTY(Replicated)	// This is so all clients can see whomever is aiming.

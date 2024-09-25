@@ -71,7 +71,7 @@
 "synchronization.lib"
 "dwmapi.lib"
 "imm32.lib"
-/OUT:"F:\MultiplayerCourse\BlasterGame\Plugins\Plugins\MultiplayerSessions\Binaries\Win64\UnrealEditor-MultiplayerSessions-0021.dll"
-/IMPLIB:"F:\MultiplayerCourse\BlasterGame\Plugins\Plugins\MultiplayerSessions\Intermediate\Build\Win64\x64\UnrealEditor\Development\MultiplayerSessions\UnrealEditor-MultiplayerSessions-0021.sup.lib"
-/PDB:"F:\MultiplayerCourse\BlasterGame\Plugins\Plugins\MultiplayerSessions\Binaries\Win64\UnrealEditor-MultiplayerSessions-0021.pdb"
+/OUT:"F:\MultiplayerCourse\BlasterGame\Plugins\Plugins\MultiplayerSessions\Binaries\Win64\UnrealEditor-MultiplayerSessions-0035.dll"
+/IMPLIB:"F:\MultiplayerCourse\BlasterGame\Plugins\Plugins\MultiplayerSessions\Intermediate\Build\Win64\x64\UnrealEditor\Development\MultiplayerSessions\UnrealEditor-MultiplayerSessions-0035.sup.lib"
+/PDB:"F:\MultiplayerCourse\BlasterGame\Plugins\Plugins\MultiplayerSessions\Binaries\Win64\UnrealEditor-MultiplayerSessions-0035.pdb"
 /ignore:4078

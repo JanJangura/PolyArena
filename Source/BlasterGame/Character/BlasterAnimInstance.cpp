@@ -4,6 +4,7 @@
 #include "BlasterAnimInstance.h"
 #include "BlasterCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 
 void UBlasterAnimInstance::NativeInitializeAnimation()
 {
@@ -44,6 +45,36 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaTime)
 	// local variable "bAiming" to true, and then whenever this is true, the AnimInstance will switch to the aiming animation that we set up.
 	bAiming = BlasterCharacter->IsAiming();
 
-	// In order to get an offset, we need to know which direction we're moving and which direction we're aiming (or where the controller is pointing in).
 
+	// ******************************** Leaning and Strafing ********************************
+	// ******** Logic for STRAFING ********
+	
+	// In order to get an offset, we need to know which direction we're moving and which direction we're aiming (or where the controller is pointing in).
+	FRotator AimRotation = BlasterCharacter->GetBaseAimRotation();	// This GetBaseAimRotation is a GLOBAL Rotation of the world, it's not local.
+
+	// MakeRotFromX returns an F-Rotator and takes a vector which is a direction. We'll get the Velocity for this direction.
+	FRotator MovementRotation = UKismetMathLibrary::MakeRotFromX(BlasterCharacter->GetVelocity());	// Rotation that corresponds to our movement. Returns our Direction Vector. 
+	
+	// This is how we get the Delta between the two Yaw Movements
+	// We want smooth transition from strafing left to strafing right and vice versa, so we'll just interpolate the lean value itself and gets around the interpolation time in the blend space. 
+	FRotator DeltaRot = UKismetMathLibrary::NormalizedDeltaRotator(MovementRotation, AimRotation);
+	DeltaRotation = FMath::RInterpTo(DeltaRotation, DeltaRot, DeltaTime, 6.f);
+	YawOffset = DeltaRotation.Yaw;
+
+	// UE_LOG(LogTemp, Warning, TEXT("AimRotaion Yaw %f: "), AimRotation.Yaw);
+
+	// ******** Logic for LEANING ********
+	// Lean has to do with our Delta Yaw Rotation between the Character itself and its own rotation from the previous frame.
+
+	// This is simply the rotation of the Root Component or the Capsule Component.
+	CharacterRotationLastFrame = CharacterRotation;	// The last frame of our Character's Rotation
+	CharacterRotation = BlasterCharacter->GetActorRotation();
+	const FRotator Delta = UKismetMathLibrary::NormalizedDeltaRotator(CharacterRotation, CharacterRotationLastFrame);	// Get the Delta between the two.
+	const float Target = Delta.Yaw / DeltaTime;	// We'll scale this up and also be proportionate to DeltaTime.
+
+	// Interp this so there's no Jerking in our lean. Interp our current value of our lean variable to our target and we need to pass in DeltaTime and also a speed. 
+	const float Interp = FMath::FInterpTo(Lean, Target, DeltaTime, 6.f);	
+	Lean = FMath::Clamp(Interp, -90.f, 90.f);	// Setting our Lean Value, we'll clamp this in between 90 and -90 degrees.
+
+	// We didn't need to Replicate this because the function "GetBaseAimRotation()" is set on our clients and on the server, and we're using values that are already replicated.
 }

@@ -7,6 +7,7 @@
 #include "Engine/SkeletalMeshSocket.h"
 #include "Components/SphereComponent.h"
 #include "Net/UnrealNetwork.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 UCombatComponent::UCombatComponent()
 {
@@ -31,6 +32,15 @@ void UCombatComponent::SetAiming(bool bIsAiming)
 	// We don't need to check if the character is on the server, because no matter what, it will be executed on the server even if were on the client.
 	// So calling this function on the server means we're replicating it to all other clients. 
 	ServerSetAiming(bIsAiming);	
+}
+
+// RepNotifier for our Equipped Weapon Animation.
+void UCombatComponent::OnRep_EquippedWeapon()
+{
+	if (EquippedWeapon && Character) {
+		Character->GetCharacterMovement()->bOrientRotationToMovement = false;
+		Character->bUseControllerRotationYaw = true;
+	}
 }
 
 // For RPC, we have to add the "_Implementation" so Unreal can create the real definition for it.
@@ -78,5 +88,7 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 	// owner, but as soon as we equip it, we should set it's owner to the character that has equipped it.
 	EquippedWeapon->SetOwner(Character);	// This SetOwner() function sets the owner of the EquippedWeapon to the actor that's passed in reference (Character).
 	
+	Character->GetCharacterMovement()->bOrientRotationToMovement = false;
+	Character->bUseControllerRotationYaw = true;
 	// RPC can be called both ways, so we could make an RPC to be called from the server and executed on a client, but we can use variable replication instead.
 }
