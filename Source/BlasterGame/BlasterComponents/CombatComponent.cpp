@@ -13,7 +13,8 @@ UCombatComponent::UCombatComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
 
-
+	BaseWalkSpeed = 600.f;
+	AimWalkSpeed = 450.f;
 }
 
 // Called when the game starts
@@ -21,6 +22,9 @@ void UCombatComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
+	if (Character) {
+		Character->GetCharacterMovement()->MaxWalkSpeed = BaseWalkSpeed;
+	}
 }
 
 void UCombatComponent::SetAiming(bool bIsAiming)
@@ -32,6 +36,21 @@ void UCombatComponent::SetAiming(bool bIsAiming)
 	// We don't need to check if the character is on the server, because no matter what, it will be executed on the server even if were on the client.
 	// So calling this function on the server means we're replicating it to all other clients. 
 	ServerSetAiming(bIsAiming);	
+
+	// If our Character is Aiming, set the Walk Speed to Aim Speed / else leave it at BaseWalkSpeed.
+	if (Character) {
+		Character->GetCharacterMovement()->MaxWalkSpeed = bIsAiming ? AimWalkSpeed : BaseWalkSpeed;
+	}
+}
+
+// For RPC, we have to add the "_Implementation" so Unreal can create the real definition for it.
+void UCombatComponent::ServerSetAiming_Implementation(bool bIsAiming)
+{
+	// This is the RPC that we sent to the server, so the server knows to replicate the aiming animation for all players holding (RMB). 
+	bAiming = bIsAiming;
+	if (Character) {
+		Character->GetCharacterMovement()->MaxWalkSpeed = bIsAiming ? AimWalkSpeed : BaseWalkSpeed;
+	}
 }
 
 // RepNotifier for our Equipped Weapon Animation.
@@ -41,13 +60,6 @@ void UCombatComponent::OnRep_EquippedWeapon()
 		Character->GetCharacterMovement()->bOrientRotationToMovement = false;
 		Character->bUseControllerRotationYaw = true;
 	}
-}
-
-// For RPC, we have to add the "_Implementation" so Unreal can create the real definition for it.
-void UCombatComponent::ServerSetAiming_Implementation(bool bIsAiming)	
-{
-	// This is the RPC that we sent to the server, so the server knows to replicate the aiming animation for all players holding (RMB). 
-	bAiming = bIsAiming;
 }
 
 void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)

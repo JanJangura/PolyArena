@@ -56,7 +56,8 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaTime)
 	FRotator MovementRotation = UKismetMathLibrary::MakeRotFromX(BlasterCharacter->GetVelocity());	// Rotation that corresponds to our movement. Returns our Direction Vector. 
 	
 	// This is how we get the Delta between the two Yaw Movements
-	// We want smooth transition from strafing left to strafing right and vice versa, so we'll just interpolate the lean value itself and gets around the interpolation time in the blend space. 
+	// We want smooth transition from strafing left to strafing right and vice versa, so we'll just interpolate the lean value itself and gets around the interpolation 
+	// time in the blend space. 
 	FRotator DeltaRot = UKismetMathLibrary::NormalizedDeltaRotator(MovementRotation, AimRotation);
 	DeltaRotation = FMath::RInterpTo(DeltaRotation, DeltaRot, DeltaTime, 6.f);
 	YawOffset = DeltaRotation.Yaw;
@@ -77,4 +78,8 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaTime)
 	Lean = FMath::Clamp(Interp, -90.f, 90.f);	// Setting our Lean Value, we'll clamp this in between 90 and -90 degrees.
 
 	// We didn't need to Replicate this because the function "GetBaseAimRotation()" is set on our clients and on the server, and we're using values that are already replicated.
+
+	// Acquiring our Character's Yaw information
+	AO_Yaw = BlasterCharacter->GetAO_Yaw();
+	AO_Pitch = BlasterCharacter->GetAO_Pitch();
 }

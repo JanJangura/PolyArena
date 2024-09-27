@@ -10,6 +10,8 @@
 #include "Net/UnrealNetwork.h"
 #include "BlasterGame/Weapon/Weapon.h"
 #include "BlasterGame/BlasterComponents/CombatComponent.h"
+#include "Components/CapsuleComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 
 // Sets default values
 ABlasterCharacter::ABlasterCharacter()
@@ -40,6 +42,17 @@ ABlasterCharacter::ABlasterCharacter()
 	// that will be replicated. First, our Combat Component itself needs to be replicated.
 	Combat = CreateDefaultSubobject<UCombatComponent>(TEXT("CombatComponent"));
 	Combat->SetIsReplicated(true);	// Now our Combat Component is designated to be a replicating component.
+
+	// Jump and Gravity Mechanics
+	JumpHeight = 800.f;
+	GravitySetting = 1.f;
+	GetCharacterMovement()->JumpZVelocity = JumpHeight;
+	GetCharacterMovement()->GravityScale = GravitySetting;
+
+	// Blocking Camera Issue 
+	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);	// Capsule will now not block the camera.
+	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);	// Mesh will now not block the camera.
 }
 
 // This is a Server Function that we need to let the Server know which variable we're replicating to the Owning Client.
@@ -75,6 +88,8 @@ void ABlasterCharacter::BeginPlay()
 void ABlasterCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	AimOffset(DeltaTime);
 }
 
 // Called to bind functionality to input. This is Character function.
@@ -177,6 +192,42 @@ void ABlasterCharacter::AimButtonReleased()
 {
 	if (Combat) {
 		Combat->SetAiming(false);
+	}
+}
+
+// This only happens when our character is not moving, when the character is still in idle position.
+void ABlasterCharacter::AimOffset(float DeltaTime)
+{
+	if (Combat && Combat->EquippedWeapon == nullptr) { return; }
+
+	// Locally Calculating our Speed.
+	FVector Velocity = GetVelocity();
+	Velocity.Z = 0.f;
+	float Speed = Velocity.Size(); // This gets the magnitude of our Vector.
+	bool bIsInAir = GetCharacterMovement()->IsFalling();
+
+	if (Speed == 0.f && !bIsInAir) {	// We're standing still and not jumping.
+		FRotator CurrentAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f);
+		// This is the Delta between CurrentAimRotation and StartingAimRotation. Difference in Rotation between our Starting and Current AimRotation.
+		FRotator DeltaAimRotation = UKismetMathLibrary::NormalizedDeltaRotator(CurrentAimRotation, StartingAimRotation);
+		AO_Yaw = DeltaAimRotation.Yaw;	// This is to Rotate our AimOffSet with our Mouse because remember it gets passed into BlasterAnimInstance.
+		bUseControllerRotationYaw = false;	// Setting our bUseControllerRotationYaw to false so our character doesn't turn in the direction of where our camera is facing. 
+	}
+
+	if (Speed > 0.f || bIsInAir) {	// Running, or Jumping.
+		StartingAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f);	// This is store for every single frame when running or in the air if we have a weapon.
+		AO_Yaw = 0.f;	// This Disables the rotation of AimOffSet because now we're moving and now AimOffSet Animation won't move.
+		bUseControllerRotationYaw = true; // Allows the character to rotate with the way the Camera is facing.
+	}
+
+	AO_Pitch = GetBaseAimRotation().Pitch;
+
+	// Unreal Engine Compresses Angles from 0 to 360, so only in positive numbers, when negative numbers are sent, they are masked and turned into positive angles. We fix that here.
+	if (AO_Pitch > 90.f && !IsLocallyControlled()) {
+		// Map Pitch from the range [270, 360) tp [-90, 0).
+		FVector2D InRange(270.f, 360.f);	// Declaring Range
+		FVector2D OutRange(-90.f, 0.f);		// Declaring the Range we would like to match.
+		AO_Pitch = FMath::GetMappedRangeValueClamped(InRange, OutRange, AO_Pitch);	// Applying the correction Here.
 	}
 }
 

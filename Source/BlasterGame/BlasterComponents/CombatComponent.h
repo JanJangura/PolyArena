@@ -51,6 +51,12 @@ private:
 	UPROPERTY(Replicated)	// This is so all clients can see whomever is aiming.
 	bool bAiming;
 
+	UPROPERTY(EditAnywhere)
+	float BaseWalkSpeed;
+
+	UPROPERTY(EditAnywhere)
+	float AimWalkSpeed;
+
 public:	
 	
 

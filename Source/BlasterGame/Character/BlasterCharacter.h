@@ -42,6 +42,7 @@ protected:
 	void EquipButtonPressed();	// This is an action mapping callback, so we don't have an input parameter.
 	void AimButtonPressed();
 	void AimButtonReleased();
+	void AimOffset(float DeltaTime);
 
 private:
 	// Setting up our Camera System
@@ -94,6 +95,10 @@ private:
 	UFUNCTION(Server, Reliable) 
 	void ServerEquippedButtonPressed();
 
+	float AO_Yaw;
+	float AO_Pitch;
+	FRotator StartingAimRotation;
+
 public:	
 	/* Replication STEP 4. FORCEINLINE is a simple getter.
 	// We need a public setter for our "OverlappingWeapon" variable.
@@ -114,4 +119,13 @@ public:
 
 	// This is for our Character's Aiming 
 	bool IsAiming();
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "C++ Jump")
+	float JumpHeight;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "C++ Jump")
+	float GravitySetting;
+
+	FORCEINLINE float GetAO_Yaw() const { return AO_Yaw; }
+	FORCEINLINE float GetAO_Pitch() const { return AO_Pitch; }
 };
