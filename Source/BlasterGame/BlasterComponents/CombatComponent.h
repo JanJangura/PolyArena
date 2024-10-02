@@ -6,6 +6,7 @@
 #include "Components/ActorComponent.h"
 #include "CombatComponent.generated.h"
 
+#define TRACE_LENGTH 80000.f
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class BLASTERGAME_API UCombatComponent : public UActorComponent
@@ -42,6 +43,17 @@ protected:
 
 	void FireButtonPressed(bool bPressed);
 
+	// This Server RPC is in Protected so we can change the value of this with child classes. This Server RPC is for firing the weapon.
+	UFUNCTION(Server, Reliable)
+	void ServerFire();
+
+	// This is our NetMulticast Server RPC, we will call this on the Server, which we'll link it with the Server RPC.
+	UFUNCTION(NetMulticast,Reliable)
+	void MulticastFire();
+
+	// Line Trace
+	void TraceUnderCrosshairs(FHitResult& TraceHitResult);
+
 private:
 	// We need this instance because we'll be referring back and forth. This also stops us from continously casting to our Character.
 	class ABlasterCharacter* Character;	
@@ -60,6 +72,8 @@ private:
 	float AimWalkSpeed;
 
 	bool bFireButtonPressed;
+
+	FVector HitTarget;
 public:	
 	
 

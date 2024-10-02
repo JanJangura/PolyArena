@@ -40,8 +40,8 @@ public:
 	// This function is needed when we need to show and now to show our pickup text.
 	void ShowPickupWidget(bool bShowWidget);
 
-	// Firing the Weapon.
-	void Fire();
+	// Firing the Weapon. We need to allow this to be override from other child classes.
+	virtual void Fire(const FVector& HitTarget);
 
 protected:
 	// Called when the game starts or when spawned
@@ -95,4 +95,5 @@ public:
 	// Getters and Setters
 	void SetWeaponState(EWeaponState State);	// A function that uses a Public setter in setting the Weapon State.
 	FORCEINLINE USphereComponent* GetAreaSphere() const { return AreaSphere; }
+	FORCEINLINE USkeletalMeshComponent* GetWeaponMesh() const { return WeaponMesh; }
 };

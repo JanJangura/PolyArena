@@ -150,7 +150,7 @@ void AWeapon::ShowPickupWidget(bool bShowWidget)
 	}
 }
 
-void AWeapon::Fire()
+void AWeapon::Fire(const FVector& HitTarget)
 {
 	if (FireAnimation) {
 		WeaponMesh->PlayAnimation(FireAnimation, false);	// Play the animation, and then true or false if we want to loop the animation.
