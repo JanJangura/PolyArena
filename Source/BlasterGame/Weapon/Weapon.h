@@ -40,6 +40,9 @@ public:
 	// This function is needed when we need to show and now to show our pickup text.
 	void ShowPickupWidget(bool bShowWidget);
 
+	// Firing the Weapon.
+	void Fire();
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -85,6 +88,9 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
 	class UWidgetComponent* PickupWidget;
 
+	// This is the animation for when the gun shoots. We want to play this animation.
+	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
+	class UAnimationAsset* FireAnimation;
 public:	
 	// Getters and Setters
 	void SetWeaponState(EWeaponState State);	// A function that uses a Public setter in setting the Weapon State.

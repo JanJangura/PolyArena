@@ -12,6 +12,7 @@
 #include "BlasterGame/BlasterComponents/CombatComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "BlasterAnimInstance.h"
 
 // Sets default values
 ABlasterCharacter::ABlasterCharacter()
@@ -53,6 +54,22 @@ ABlasterCharacter::ABlasterCharacter()
 	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);	// Capsule will now not block the camera.
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);	// Mesh will now not block the camera.
+
+	
+	// Initializes the FireMontage for us because it doesnt work in blueprints.
+	static ConstructorHelpers::FObjectFinder<UAnimMontage> FireMontageAsset(TEXT("AnimMontage'/Game/BP_Shooter_Character/Animation/FireWeapon.FireWeapon'"));
+
+	if (FireMontageAsset.Succeeded())
+	{
+		FireWeaponMontage = FireMontageAsset.Object;
+		//UE_LOG(LogTemp, Warning, TEXT("FireWeaponMontage loaded successfully!"));
+	}
+	else
+	{
+		FireWeaponMontage = nullptr;
+		//UE_LOG(LogTemp, Error, TEXT("Failed to load FireWeaponMontage."));
+	}
+	
 }
 
 // This is a Server Function that we need to let the Server know which variable we're replicating to the Owning Client.
@@ -81,7 +98,6 @@ void ABlasterCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 void ABlasterCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
 // Called every frame
@@ -110,6 +126,8 @@ void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	PlayerInputComponent->BindAction("Equip", IE_Pressed, this, &ABlasterCharacter::EquipButtonPressed);	
 	PlayerInputComponent->BindAction("Aim", IE_Pressed, this, &ABlasterCharacter::AimButtonPressed);
 	PlayerInputComponent->BindAction("Aim", IE_Released, this, &ABlasterCharacter::AimButtonReleased);
+	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &ABlasterCharacter::FireButtonPressed);
+	PlayerInputComponent->BindAction("Fire", IE_Released, this, &ABlasterCharacter::FireButtonReleased);
 }
 
 void ABlasterCharacter::PostInitializeComponents()
@@ -228,6 +246,38 @@ void ABlasterCharacter::AimOffset(float DeltaTime)
 		FVector2D InRange(270.f, 360.f);	// Declaring Range
 		FVector2D OutRange(-90.f, 0.f);		// Declaring the Range we would like to match.
 		AO_Pitch = FMath::GetMappedRangeValueClamped(InRange, OutRange, AO_Pitch);	// Applying the correction Here.
+	}
+}
+
+void ABlasterCharacter::PlayFireMontage(bool bAiming)
+{
+	if (Combat == nullptr || Combat->EquippedWeapon == nullptr) return;
+
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+
+	if (AnimInstance && FireWeaponMontage) {
+		AnimInstance->Montage_Play(FireWeaponMontage);	// Play this Montage
+		FName SectionName;
+		SectionName = bAiming ? FName("RifleAim") : FName("RifleHip");	// If we're aiming, return the name "RifleAim" Montage Section, else return "RifleHip" Montage Secion.
+		AnimInstance->Montage_JumpToSection(SectionName);	// Jump to the Anim Montage depending on the bool above and play that animation.
+	}
+	else {
+	}
+}
+
+void ABlasterCharacter::FireButtonPressed()
+{
+	if (Combat) {
+		Combat->FireButtonPressed(true);
+		//UE_LOG(LogTemp, Warning, TEXT("TRUE"));
+	}
+}
+
+void ABlasterCharacter::FireButtonReleased()
+{
+	if (Combat) {
+		Combat->FireButtonPressed(false);
+		//UE_LOG(LogTemp, Warning, TEXT("FALSE"));
 	}
 }
 

@@ -40,6 +40,8 @@ protected:
 	UFUNCTION()
 	void OnRep_EquippedWeapon();
 
+	void FireButtonPressed(bool bPressed);
+
 private:
 	// We need this instance because we'll be referring back and forth. This also stops us from continously casting to our Character.
 	class ABlasterCharacter* Character;	
@@ -57,6 +59,7 @@ private:
 	UPROPERTY(EditAnywhere)
 	float AimWalkSpeed;
 
+	bool bFireButtonPressed;
 public:	
 	
 

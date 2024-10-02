@@ -31,6 +31,9 @@ public:
 	// This function will give us acccess to our Combat Component.
 	virtual void PostInitializeComponents() override;	// This inherited function allows us to initalize things within it before the game is built.
 
+	// Play Fire Montage
+	void PlayFireMontage(bool bAiming);
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -43,6 +46,8 @@ protected:
 	void AimButtonPressed();
 	void AimButtonReleased();
 	void AimOffset(float DeltaTime);
+	void FireButtonPressed();
+	void FireButtonReleased();
 
 private:
 	// Setting up our Camera System
@@ -128,4 +133,7 @@ public:
 
 	FORCEINLINE float GetAO_Yaw() const { return AO_Yaw; }
 	FORCEINLINE float GetAO_Pitch() const { return AO_Pitch; }
+
+	UPROPERTY(EditAnywhere, Category = "Animation")
+	class UAnimMontage* FireWeaponMontage;
 };
