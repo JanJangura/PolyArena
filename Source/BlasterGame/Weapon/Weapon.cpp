@@ -8,6 +8,7 @@
 #include "Net/UnrealNetwork.h"
 #include "Animation/AnimationAsset.h"
 #include "Components/SkeletalMeshComponent.h"
+#include "BlasterGame/PlayerController/BlasterPlayerController.h"
 
 // Sets default values
 AWeapon::AWeapon()
@@ -95,6 +96,7 @@ void AWeapon::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeP
 
 	// In DOREPLIFETIME, we want to pass in the class and the variable.
 	DOREPLIFETIME(AWeapon, WeaponState);	// Now we've registered WeaponState in GetLifeTimeReplicatedProps, but we also need to make sure to add replicated to the UProperty.
+	DOREPLIFETIME(AWeapon, Ammo);
 }
 
 // Remember, this function only gets called on the server because it has the role Authority.
@@ -115,6 +117,34 @@ void AWeapon::OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActo
 	if (BlasterCharacter) {
 		BlasterCharacter->SetOverlappingWeapon(nullptr); // Instead of setting it to this class, we just set it to a nullptr.
 	}
+}
+
+void AWeapon::SetHUDAmmo()
+{
+	BlasterOwnerCharacter = BlasterOwnerCharacter == nullptr ? Cast<ABlasterCharacter>(GetOwner()) : BlasterOwnerCharacter;
+	if (BlasterOwnerCharacter) {
+		BlasterOwnerController = BlasterOwnerController == nullptr ? Cast<ABlasterPlayerController>(BlasterOwnerCharacter->Controller) : BlasterOwnerController;
+		if (BlasterOwnerController) {
+			BlasterOwnerController->SetHUDWeaponAmmo(Ammo);
+		}
+	}
+}
+
+void AWeapon::SpendRound()
+{
+	--Ammo;
+	SetHUDAmmo();
+}
+
+void AWeapon::OnRep_Ammo()
+{
+	SetHUDAmmo();
+}
+
+void AWeapon::OnRep_Owner()
+{
+	Super::OnRep_Owner();
+	SetHUDAmmo();
 }
 
 void AWeapon::SetWeaponState(EWeaponState State)
@@ -150,9 +180,13 @@ void AWeapon::ShowPickupWidget(bool bShowWidget)
 	}
 }
 
+// This should only be called on the Server.
 void AWeapon::Fire(const FVector& HitTarget)
 {
 	if (FireAnimation) {
 		WeaponMesh->PlayAnimation(FireAnimation, false);	// Play the animation, and then true or false if we want to loop the animation.
 	}
+
+
+	SpendRound();
 }

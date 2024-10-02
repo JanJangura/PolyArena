@@ -45,18 +45,24 @@ protected:
 
 	// This Server RPC is in Protected so we can change the value of this with child classes. This Server RPC is for firing the weapon.
 	UFUNCTION(Server, Reliable)
-	void ServerFire();
+	void ServerFire(const FVector_NetQuantize& TraceHitTarget);	// FVector_NetQuantize will take our FVector and round it down to whole numbers and send across the network. 
+											// Lowers bandwidth by cutting off information before sending data out. It is a child class of type FVector, but for network.
 
 	// This is our NetMulticast Server RPC, we will call this on the Server, which we'll link it with the Server RPC.
 	UFUNCTION(NetMulticast,Reliable)
-	void MulticastFire();
+	void MulticastFire(const FVector_NetQuantize& TraceHitTarget);
 
 	// Line Trace
 	void TraceUnderCrosshairs(FHitResult& TraceHitResult);
 
+	// Setting the CrossHairs based on the weapon we are using.
+	void SetHUDCrossHairs(float DeltaTime);
+
 private:
 	// We need this instance because we'll be referring back and forth. This also stops us from continously casting to our Character.
 	class ABlasterCharacter* Character;	
+	class ABlasterPlayerController* Controller;
+	class ABlasterHUD* HUD;
 
 	// This is the variable for the weapon in which the Blaster Character currently has equipped.
 	UPROPERTY(ReplicatedUsing = OnRep_EquippedWeapon)	// We need to add this "Replicated" key term to indicate that this is Replicated across all clients. Otherwise we're only setting it on the Server.
@@ -72,8 +78,6 @@ private:
 	float AimWalkSpeed;
 
 	bool bFireButtonPressed;
-
-	FVector HitTarget;
 public:	
 	
 

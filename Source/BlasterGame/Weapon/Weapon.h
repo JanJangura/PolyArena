@@ -37,11 +37,36 @@ public:
 	// This is the Server Function that we let the Server know which variable we're replicating to the Owning Client. We'll be overriding this now and Unreal will do the rest.
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
+	// Function for setting our HUD so we can reuse it over and over.
+	void SetHUDAmmo();
+
+	// Overriding OnRep_Owner
+	virtual void OnRep_Owner() override;
+
 	// This function is needed when we need to show and now to show our pickup text.
 	void ShowPickupWidget(bool bShowWidget);
 
 	// Firing the Weapon. We need to allow this to be override from other child classes.
 	virtual void Fire(const FVector& HitTarget);
+
+	// ****** Textures for the Weapon Crosshairs ******
+
+	UPROPERTY(EditAnywhere, Category = Crosshairs)
+	class UTexture2D* CrosshairsCenter;
+
+	UPROPERTY(EditAnywhere, Category = Crosshairs)
+	UTexture2D* CrosshairsLeft;
+
+	UPROPERTY(EditAnywhere, Category = Crosshairs)
+	UTexture2D* CrosshairsRight;
+
+	UPROPERTY(EditAnywhere, Category = Crosshairs)
+	UTexture2D* CrosshairsTop;
+
+	UPROPERTY(EditAnywhere, Category = Crosshairs)
+	UTexture2D* CrosshairsBottom;
+
+	// ****** END of Textures for the Weapon Crosshairs ******
 
 protected:
 	// Called when the game starts or when spawned
@@ -91,6 +116,24 @@ private:
 	// This is the animation for when the gun shoots. We want to play this animation.
 	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
 	class UAnimationAsset* FireAnimation;
+
+	UPROPERTY(EditAnywhere, ReplicatedUsing = OnRep_Ammo, Category = "Weapon")
+	int32 Ammo;
+
+	UFUNCTION()
+	void OnRep_Ammo();
+
+	void SpendRound();	// Subtract 1 from our ammo and check to see if the weapon has a valid owner, then we would like to update the HUD of that owner.
+
+	UPROPERTY(EditAnywhere, Category ="Weapon")
+	int32 MagCapacity;
+
+	UPROPERTY()
+	class ABlasterCharacter* BlasterOwnerCharacter;
+	
+	UPROPERTY()
+	class ABlasterPlayerController* BlasterOwnerController;
+
 public:	
 	// Getters and Setters
 	void SetWeaponState(EWeaponState State);	// A function that uses a Public setter in setting the Weapon State.

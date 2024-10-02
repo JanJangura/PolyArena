@@ -10,6 +10,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "DrawDebugHelpers.h"
+#include "BlasterGame/PlayerController/BlasterPlayerController.h"
+#include "BlasterGame/HUD/BlasterHUD.h"
 
 UCombatComponent::UCombatComponent()
 {
@@ -38,6 +40,43 @@ void UCombatComponent::BeginPlay()
 
 	if (Character) {
 		Character->GetCharacterMovement()->MaxWalkSpeed = BaseWalkSpeed;
+	}
+}
+
+void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+{
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+	SetHUDCrossHairs(DeltaTime);
+}
+
+void UCombatComponent::SetHUDCrossHairs(float DeltaTime)
+{
+	if (Character == nullptr || Character->Controller == nullptr) { return; }
+
+	Controller = Controller == nullptr ? Cast<ABlasterPlayerController>(Character->Controller) : Controller;
+	if (Controller) {
+		HUD = HUD == nullptr ? Cast<ABlasterHUD>(Controller->GetHUD()) : HUD;
+		if (HUD) { // If we do have an equipped Weapon.
+			FHUDPackage HUDPackage;
+
+			if (EquippedWeapon) {
+				HUDPackage.CrosshairsCenter = EquippedWeapon->CrosshairsCenter;
+				HUDPackage.CrosshairsLeft = EquippedWeapon->CrosshairsLeft;
+				HUDPackage.CrosshairsRight = EquippedWeapon->CrosshairsRight;
+				HUDPackage.CrosshairsTop = EquippedWeapon->CrosshairsTop;
+				HUDPackage.CrosshairsBottom = EquippedWeapon->CrosshairsBottom;
+			}
+			else {	// If we don't have an equipped Weapon.
+				HUDPackage.CrosshairsCenter = nullptr;
+				HUDPackage.CrosshairsLeft = nullptr;
+				HUDPackage.CrosshairsRight = nullptr;
+				HUDPackage.CrosshairsTop = nullptr;
+				HUDPackage.CrosshairsBottom = nullptr;
+			}
+
+			HUD->SetHUDPackage(HUDPackage);
+		}
 	}
 }
 
@@ -83,9 +122,12 @@ void UCombatComponent::FireButtonPressed(bool bPressed)
 									// The NetMulticast RPC called from the server runs on server and clients. Where as the Server RPC only runs on the server, even when called on 
 									// the Client. When calling NetMulticast RPC from Client, it only runs on the Client (kinda worthless on client, more used on Server).
 	if (bFireButtonPressed) {
-		ServerFire();	// Calling the Server RPC ServerFire(), so this function is only called on the server and not on any other clients
-						// and we don't need to include "_Implementation" to call it. Now we just need to do it on all Clients. We don't even need to check if this is on Server
-						// or not because we already declared it as a Server RPC.
+		FHitResult HitResult;
+		TraceUnderCrosshairs(HitResult);	// This is hwo we create a Line Trace and receive the HitResult.
+
+		ServerFire(HitResult.ImpactPoint);	// Calling the Server RPC ServerFire(), so this function is only called on the server and not on any other clients
+							// and we don't need to include "_Implementation" to call it. Now we just need to do it on all Clients. We don't even need to check if this is on Server
+							// or not because we already declared it as a Server RPC. ".ImpactPoint" is a FVector_NetQuantize all along, already optimized for multiplayer.
 	}
 }
 
@@ -126,49 +168,25 @@ void UCombatComponent::TraceUnderCrosshairs(FHitResult& TraceHitResult)
 			ECollisionChannel::ECC_Visibility	// We also need a Collision Channel, we'll use visibility as this is the most common. Rest of the stuff is optional.
 		);	// Now our Line Trace will hit something and retain that information whenever it hits something. In the case that we Trace and it doesn't hit something,
 		// we still need an endpoint so we can launch our projectile in that direction.
-		if (!TraceHitResult.bBlockingHit) {
-			TraceHitResult.ImpactPoint = End;	// This will at least allow us to have an impact point in our trace hit result.
-			// ImpactPoint is an FVector, that is the world position of our Line Trace if we hit something.
-			HitTarget = End;
-		}
-		else {
-			HitTarget = TraceHitResult.ImpactPoint;
-			// Draw A debug sphere here cause we know we got a blocking hit.
-			DrawDebugSphere(
-				GetWorld(),
-				TraceHitResult.ImpactPoint,
-				12.f,
-				12,
-				FColor::Red
-				);
-		}
 	}
 }
 
 // *REMEMBER, RPC needs _Implementation added to the function.	
-void UCombatComponent::ServerFire_Implementation()
+void UCombatComponent::ServerFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
 {
-	MulticastFire();	// We can call this NetMulticast RPC "MulticastFire()" function here, because we need to call it on the server in order to replicate the fire effect for
+	MulticastFire(TraceHitTarget);	// We can call this NetMulticast RPC "MulticastFire()" function here, because we need to call it on the server in order to replicate the fire effect for
 						// everyone, both clients and server.
 }
 
 // This is our NetMulticast RPC, and we'll need to call this from the Server RPC so all clients and server host can replicate the firing effects of our weapon.
-void UCombatComponent::MulticastFire_Implementation()
+void UCombatComponent::MulticastFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
 {
 	if (EquippedWeapon == nullptr) { return; }
 
 	if (Character) {
 		Character->PlayFireMontage(bAiming);	// Play the montage for the character.
-		EquippedWeapon->Fire(HitTarget);	// Play the weapons animation.
+		EquippedWeapon->Fire(TraceHitTarget);	// Play the weapons animation.
 	}
-}
-
-void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
-{
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	FHitResult HitResult;
-	TraceUnderCrosshairs(HitResult);
 }
 
 // We're gonna replicate this
@@ -191,7 +209,7 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 	// We need the weapon owner to be the character. Ownership is very important. We own the pawn that we're controlling, but an actor (like a weapon), doesn't have a defined
 	// owner, but as soon as we equip it, we should set it's owner to the character that has equipped it.
 	EquippedWeapon->SetOwner(Character);	// This SetOwner() function sets the owner of the EquippedWeapon to the actor that's passed in reference (Character).
-	
+	EquippedWeapon->SetHUDAmmo();
 	Character->GetCharacterMovement()->bOrientRotationToMovement = false;
 	Character->bUseControllerRotationYaw = true;
 	// RPC can be called both ways, so we could make an RPC to be called from the server and executed on a client, but we can use variable replication instead.
