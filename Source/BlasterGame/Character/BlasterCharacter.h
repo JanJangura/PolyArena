@@ -5,10 +5,11 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Net/UnrealNetwork.h"
+#include "BlasterGame/Interfaces/InteractWithCrosshairsInterface.h"
 #include "BlasterCharacter.generated.h"
 
 UCLASS()
-class BLASTERGAME_API ABlasterCharacter : public ACharacter
+class BLASTERGAME_API ABlasterCharacter : public ACharacter, public IInteractWithCrosshairsInterface
 {
 	GENERATED_BODY()
 
@@ -34,6 +35,9 @@ public:
 	// Play Fire Montage
 	void PlayFireMontage(bool bAiming);
 
+	UFUNCTION(NetMulticast, Unreliable)	// This is not very important, so we want it to be Unreliable
+	void MulticastHit();
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -48,6 +52,7 @@ protected:
 	void AimOffset(float DeltaTime);
 	void FireButtonPressed();
 	void FireButtonReleased();
+	void PlayHitReactMontage(); // Play Hit React Montage
 
 private:
 	// Setting up our Camera System
@@ -136,4 +141,10 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "Animation")
 	class UAnimMontage* FireWeaponMontage;
+
+	UPROPERTY(EditAnywhere, Category = "Animation")
+	class UAnimMontage* HitReactMontage;
+
+	FORCEINLINE UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+	FVector GetHitTarget() const;
 };

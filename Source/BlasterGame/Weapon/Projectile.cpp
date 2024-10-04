@@ -6,6 +6,8 @@
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Sound/SoundCue.h"
+#include "BlasterGame/BlasterGame.h"
+#include "BlasterGame/Character/BlasterCharacter.h"
 
 // Sets default values
 AProjectile::AProjectile()
@@ -17,9 +19,10 @@ AProjectile::AProjectile()
 	CollisionBox->SetCollisionObjectType(ECollisionChannel::ECC_WorldDynamic);
 	CollisionBox->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	CollisionBox->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
-	CollisionBox->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
-	CollisionBox->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldStatic, ECollisionResponse::ECR_Block);
-
+	CollisionBox->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);	// Projectile Blocks Visibility.
+	CollisionBox->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldStatic, ECollisionResponse::ECR_Block); // Projectile Blocks WorldStatics.
+	CollisionBox->SetCollisionResponseToChannel(ECC_SkeletalMesh, ECollisionResponse::ECR_Block); // Projectile Blocks Pawns, which is our characters.
+	
 	ProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovementComponent"));
 	ProjectileMovementComponent->bRotationFollowsVelocity = true;
 }
@@ -36,6 +39,11 @@ void AProjectile::BeginPlay()
 // This is how we know we hit something.
 void AProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
+	ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(OtherActor);
+	if (BlasterCharacter) {
+		BlasterCharacter->MulticastHit();	// We call this function because we want it to be replicated throughout both Server and Clients.
+	}
+
 	// This Destroys our Projectile Actor.
 	Destroy();
 }
@@ -50,7 +58,7 @@ void AProjectile::Destroyed()
 {
 	Super::Destroyed();
 
-	// This is Replicated already from the base class Destroyed, we're just adding on to it.
+	// This is Replicated already from the base class Destroyed(), we're just adding on to it.
 	if (ImpactParticles) {
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactParticles, GetActorTransform());	// Play the Particle at this Actor's Transform (Location)
 	}

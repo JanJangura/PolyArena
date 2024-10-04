@@ -11,7 +11,8 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "DrawDebugHelpers.h"
 #include "BlasterGame/PlayerController/BlasterPlayerController.h"
-#include "BlasterGame/HUD/BlasterHUD.h"
+//#include "BlasterGame/HUD/BlasterHUD.h"
+#include "Camera/CameraComponent.h"
 
 UCombatComponent::UCombatComponent()
 {
@@ -40,6 +41,11 @@ void UCombatComponent::BeginPlay()
 
 	if (Character) {
 		Character->GetCharacterMovement()->MaxWalkSpeed = BaseWalkSpeed;
+
+		if (Character->GetFollowCamera()) {
+			DefaultFOV = Character->GetFollowCamera()->FieldOfView; // "FieldOfView" is a variable for the camera's current Field of View. This should be our DefaultFOV
+			CurrentFOV = DefaultFOV;
+		}
 	}
 }
 
@@ -47,18 +53,24 @@ void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	SetHUDCrossHairs(DeltaTime);
+	if (Character && Character->IsLocallyControlled()) {
+		FHitResult HitResult;
+		TraceUnderCrosshairs(HitResult);
+		SetHUDCrossHairs(DeltaTime);
+		InterpFOV(DeltaTime);
+		HitTarget = HitResult.ImpactPoint;
+	}
 }
 
+// This is how we set the CrossHairs to our screen when picking up our Gun.
 void UCombatComponent::SetHUDCrossHairs(float DeltaTime)
 {
 	if (Character == nullptr || Character->Controller == nullptr) { return; }
 
-	Controller = Controller == nullptr ? Cast<ABlasterPlayerController>(Character->Controller) : Controller;
+	Controller = Controller == nullptr ? Cast<ABlasterPlayerController>(Character->Controller) : Controller;	// We'll only cast once so it's not so expensive.
 	if (Controller) {
-		HUD = HUD == nullptr ? Cast<ABlasterHUD>(Controller->GetHUD()) : HUD;
-		if (HUD) { // If we do have an equipped Weapon.
-			FHUDPackage HUDPackage;
+		HUD = HUD == nullptr ? Cast<ABlasterHUD>(Controller->GetHUD()) : HUD;	// If Hud is not nullptr, then we just set it equal to itself, so we should only cast once.
+		if (HUD) { // If we do have an equipped Weapon.			
 
 			if (EquippedWeapon) {
 				HUDPackage.CrosshairsCenter = EquippedWeapon->CrosshairsCenter;
@@ -74,10 +86,65 @@ void UCombatComponent::SetHUDCrossHairs(float DeltaTime)
 				HUDPackage.CrosshairsTop = nullptr;
 				HUDPackage.CrosshairsBottom = nullptr;
 			}
+			// Calculate Crosshair Spread
+			// We need to create a value that will always be somewhere between 0 and 1 for our character's movement. 0 meaning the slowest and 1 meaning the fastest for our character movement.
+			// Map our Speed [0, 600] -> [0, 1]
+			FVector2D WalkSpeedRange(0.f, Character->GetCharacterMovement()->MaxWalkSpeed);	// We want to map our Character's Movement to our Velocity Range.
+			FVector2D VelocityMultiplierRange(0.f, 1.f);	// Here's the value that we want to clamp on our Character's Movement Speed.
+			FVector Velocity = Character->GetVelocity();
+			Velocity.Z = 0.f;
+
+			// This will automatically convert our Walkspeed to our Velocity Range. "Velocity.Size()" will get the magnitude of our Vector, the length of it.
+			CrosshairVelocityFactor = FMath::GetMappedRangeValueClamped(WalkSpeedRange, VelocityMultiplierRange, Velocity.Size());
+			
+			if (Character->GetCharacterMovement()->IsFalling()) {	// This is when we are in air.
+				// Interpolate and Spread the Crosshairs more smoothly. FInterpto Requires a current value, a target value (2.25 is the Max Spread that we want),
+				// the DeltaTime, and the InterpSpeed.
+				CrosshairInAirFactor = FMath::FInterpTo(CrosshairInAirFactor, 2.25f, DeltaTime, 2.25f);
+			}
+			else {	// This is when we are on the ground.
+				CrosshairInAirFactor = FMath::FInterpTo(CrosshairInAirFactor, 0.F, DeltaTime, 30.f);	// When we hit the ground, we wanna Interp pretty fast back to 0 length.
+			}
+
+			if (bAiming) {
+				CrosshairAimFactor = FMath::FInterpTo(CrosshairVelocityFactor, 0.5f, DeltaTime, 30.f);
+			}
+			else {
+				CrosshairAimFactor = FMath::FInterpTo(CrosshairVelocityFactor, 0.f, DeltaTime, 30.f);
+			}
+
+			CrosshairShootingFactor = FMath::FInterpTo(CrosshairShootingFactor, 0.f, DeltaTime, 3.25f);		
+
+			// Now this is how much our Crosshair can spread.
+			HUDPackage.CrosshairSpread = 
+				0.25f +
+				CrosshairVelocityFactor + 
+				CrosshairShootingFactor +
+				CrosshairInAirFactor -
+				CrosshairAimFactor;
 
 			HUD->SetHUDPackage(HUDPackage);
 		}
 	}
+}
+
+void UCombatComponent::InterpFOV(float DeltaTime)
+{
+	if (EquippedWeapon == nullptr) { return; }
+
+	// Receiving the value of Camera so we can manipulate it.
+	if (bAiming) {
+		CurrentFOV = FMath::FInterpTo(CurrentFOV, EquippedWeapon->GetZoomedFOV(), DeltaTime, EquippedWeapon->GetZoomInterpSpeed());	// Interpolating for Aiming.
+	}
+	else {
+		CurrentFOV = FMath::FInterpTo(CurrentFOV, DefaultFOV, DeltaTime, ZoomInterpSpeed);	// Interpolating back to Aiming.
+	}
+
+	// Set the FOV on the Actual Camera.
+	if (Character && Character->GetFollowCamera()) {
+		Character->GetFollowCamera()->SetFieldOfView(CurrentFOV);
+	}
+
 }
 
 void UCombatComponent::SetAiming(bool bIsAiming)
@@ -123,15 +190,21 @@ void UCombatComponent::FireButtonPressed(bool bPressed)
 									// the Client. When calling NetMulticast RPC from Client, it only runs on the Client (kinda worthless on client, more used on Server).
 	if (bFireButtonPressed) {
 		FHitResult HitResult;
-		TraceUnderCrosshairs(HitResult);	// This is hwo we create a Line Trace and receive the HitResult.
+		TraceUnderCrosshairs(HitResult);	// This is how we create a Line Trace and receive the HitResult.
 
 		ServerFire(HitResult.ImpactPoint);	// Calling the Server RPC ServerFire(), so this function is only called on the server and not on any other clients
 							// and we don't need to include "_Implementation" to call it. Now we just need to do it on all Clients. We don't even need to check if this is on Server
 							// or not because we already declared it as a Server RPC. ".ImpactPoint" is a FVector_NetQuantize all along, already optimized for multiplayer.
+
+		if (EquippedWeapon) {
+			CrosshairShootingFactor += 1.f;
+			CrosshairShootingFactor = FMath::Clamp(CrosshairShootingFactor, 0.f, 3.f);
+			//UE_LOG(LogTemp, Error, TEXT("FireButtonPressed"));	
+		}
 	}
 }
 
-// This where we're going to have our projectiles launch from the center of the screen.
+// This is where we're going to have our projectiles launch from the center of the screen.
 void UCombatComponent::TraceUnderCrosshairs(FHitResult& TraceHitResult)
 {
 	FVector2D ViewportSize;	// We need our viewport size, the dimensions of it. Essentially the screen of what players see. 
@@ -168,6 +241,23 @@ void UCombatComponent::TraceUnderCrosshairs(FHitResult& TraceHitResult)
 			ECollisionChannel::ECC_Visibility	// We also need a Collision Channel, we'll use visibility as this is the most common. Rest of the stuff is optional.
 		);	// Now our Line Trace will hit something and retain that information whenever it hits something. In the case that we Trace and it doesn't hit something,
 		// we still need an endpoint so we can launch our projectile in that direction.
+
+		
+		// This sets the color of our Crosshair depending on what our TraceHitResult returns.
+		if (EquippedWeapon &&  TraceHitResult.bBlockingHit && TraceHitResult.GetActor()) { // Checking to see if that actor is valid and if that Actor implements "UInteractWithCrosshairsInterface" Interface.			
+
+			if (TraceHitResult.GetActor()->Implements<UInteractWithCrosshairsInterface>()) {
+				UE_LOG(LogTemp, Warning, TEXT("True"));
+				HUDPackage.CrosshairsColor = FLinearColor::Red;
+			}
+			else {
+				UE_LOG(LogTemp, Warning, TEXT("False"));
+			}
+		}
+		else {
+			HUDPackage.CrosshairsColor = FLinearColor::White;
+		}
+		
 	}
 }
 

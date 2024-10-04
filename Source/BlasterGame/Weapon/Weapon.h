@@ -68,6 +68,14 @@ public:
 
 	// ****** END of Textures for the Weapon Crosshairs ******
 
+
+	// ****** Zoom Field of View (FOV) while aiming ******
+	UPROPERTY(EditAnywhere)
+	float ZoomedFOV = 30.f;	// This is the Weapons Zoomed FOV, we can change this in the Editor for Child Classes so each weapon can have their own FOV.
+
+	UPROPERTY(EditAnywhere)
+	float ZoomInterpSpeed = 20.f;	// How fast we want the Camera to Zoom in when Aiming.
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -139,4 +147,6 @@ public:
 	void SetWeaponState(EWeaponState State);	// A function that uses a Public setter in setting the Weapon State.
 	FORCEINLINE USphereComponent* GetAreaSphere() const { return AreaSphere; }
 	FORCEINLINE USkeletalMeshComponent* GetWeaponMesh() const { return WeaponMesh; }
+	FORCEINLINE float GetZoomedFOV() const { return ZoomedFOV; }
+	FORCEINLINE float GetZoomInterpSpeed() const { return ZoomInterpSpeed; }
 };

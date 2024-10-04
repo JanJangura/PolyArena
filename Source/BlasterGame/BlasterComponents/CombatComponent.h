@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "BlasterGame/HUD/BlasterHUD.h"
 #include "CombatComponent.generated.h"
 
 #define TRACE_LENGTH 80000.f
@@ -78,6 +79,37 @@ private:
 	float AimWalkSpeed;
 
 	bool bFireButtonPressed;
+
+	
+	//	****** HUD and Crosshairs ******
+	FHUDPackage HUDPackage;
+
+	FVector HitTarget;
+
+	float CrosshairVelocityFactor; // Character Movement Speed Factor for Spreading the Crosshair.
+
+	float CrosshairInAirFactor;	// Character Movement InAir Factor for Spreading the Crosshair.
+
+	float CrosshairAimFactor; // This will Decrease the Spread of Crosshair when Aiming.
+
+	float CrosshairShootingFactor;	// This will Increase the Spread of Crosshair when Shooting.
+
+	//	****** End of HUD and Crosshairs ******
+
+
+	// ****** Aiming and FOV ******
+	float DefaultFOV;	// Field of View when Not Aiming, set to the camera's base FOV in BeginPlay.
+
+	UPROPERTY(EditAnywhere, category = "Combat")
+	float ZoomedFOV = 30.f;
+
+	float CurrentFOV; // Current Field of View.
+
+	UPROPERTY(EditAnywhere, category = "Combat")
+	float ZoomInterpSpeed = 20.f;
+
+	void InterpFOV(float DeltaTime);	// This will hand zooming when we're aiming.
+
 public:	
 	
 

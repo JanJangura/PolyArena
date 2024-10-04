@@ -13,6 +13,7 @@
 #include "Components/CapsuleComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "BlasterAnimInstance.h"
+#include "BlasterGame/BlasterGame.h"
 
 // Sets default values
 ABlasterCharacter::ABlasterCharacter()
@@ -53,8 +54,13 @@ ABlasterCharacter::ABlasterCharacter()
 	// Blocking Camera Issue 
 	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);	// Capsule will now not block the camera.
+	GetMesh()->SetCollisionObjectType(ECC_SkeletalMesh); // Defaulting our Character to this Custom Collision that we created.
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);	// Mesh will now not block the camera.
+	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
 
+	// Setting the Net Frequency to a Default Value
+	NetUpdateFrequency = 66.f;
+	MinNetUpdateFrequency = 33.f;
 	
 	// Initializes the FireMontage for us because it doesnt work in blueprints.
 	static ConstructorHelpers::FObjectFinder<UAnimMontage> FireMontageAsset(TEXT("AnimMontage'/Game/BP_Shooter_Character/Animation/FireWeapon.FireWeapon'"));
@@ -261,7 +267,18 @@ void ABlasterCharacter::PlayFireMontage(bool bAiming)
 		SectionName = bAiming ? FName("RifleAim") : FName("RifleHip");	// If we're aiming, return the name "RifleAim" Montage Section, else return "RifleHip" Montage Secion.
 		AnimInstance->Montage_JumpToSection(SectionName);	// Jump to the Anim Montage depending on the bool above and play that animation.
 	}
-	else {
+}
+
+void ABlasterCharacter::PlayHitReactMontage()
+{
+	if (Combat == nullptr || Combat->EquippedWeapon == nullptr) return;
+
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+
+	if (AnimInstance && HitReactMontage) {
+		AnimInstance->Montage_Play(HitReactMontage);	// Play this Montage
+		FName SectionName("FromFront");
+		AnimInstance->Montage_JumpToSection(SectionName);	// Jump to the Anim Montage depending on the bool above and play that animation.
 	}
 }
 
@@ -342,4 +359,15 @@ bool ABlasterCharacter::IsAiming()
 {
 	// We'll check if combat is valid and if Combat->bAiming is true.
 	return (Combat && Combat->bAiming);
+}
+
+FVector ABlasterCharacter::GetHitTarget() const
+{
+	if (Combat == nullptr) { return FVector(); }
+	return Combat->HitTarget;
+}
+
+void ABlasterCharacter::MulticastHit_Implementation()
+{
+	PlayHitReactMontage();
 }
