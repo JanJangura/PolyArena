@@ -8,6 +8,9 @@
 void AProjectileWeapon::Fire(const FVector& HitTarget)
 {
 	Super::Fire(HitTarget);	// This allows us to use functionality within the base (Parent) Class.
+
+	//if (!HasAuthority()) { return; }	// If it's not on the Server, then just return.
+
 	APawn* InstigatorPawn = Cast<APawn>(GetOwner());
 
 	// We'll spawn the projectile at the location of our muzzle flash socket. We can store this in a local variable.
@@ -15,8 +18,18 @@ void AProjectileWeapon::Fire(const FVector& HitTarget)
 	if (MuzzleFlashSocket) {
 		FTransform SocketTransform = MuzzleFlashSocket->GetSocketTransform(GetWeaponMesh());	// So now we know where we can spawn our projectile.
 		// From Muzzle flash socket to hit location from TraceUnderCrosshairs.
-		FVector ToTarget = HitTarget - SocketTransform.GetLocation();
-		FRotator TargetRotation = ToTarget.Rotation();
+
+		FVector ToTarget;
+		FRotator TargetRotation;
+
+		if (HitTarget.IsZero()) {
+			ToTarget = GetCenterOfCameraTransform() * 10000.f;
+		}
+		else {
+			ToTarget = HitTarget - SocketTransform.GetLocation();				
+		}
+		TargetRotation = ToTarget.Rotation();
+
 		if (ProjectileClass && InstigatorPawn) {
 			FActorSpawnParameters SpawnParams;
 			SpawnParams.Owner = GetOwner();

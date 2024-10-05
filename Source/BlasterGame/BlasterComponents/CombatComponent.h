@@ -110,6 +110,8 @@ private:
 
 	void InterpFOV(float DeltaTime);	// This will hand zooming when we're aiming.
 
+	FVector GetCenterOfCameraTransform();
+
 public:	
 	
 

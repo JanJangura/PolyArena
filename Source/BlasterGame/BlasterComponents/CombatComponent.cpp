@@ -103,14 +103,14 @@ void UCombatComponent::SetHUDCrossHairs(float DeltaTime)
 				CrosshairInAirFactor = FMath::FInterpTo(CrosshairInAirFactor, 2.25f, DeltaTime, 2.25f);
 			}
 			else {	// This is when we are on the ground.
-				CrosshairInAirFactor = FMath::FInterpTo(CrosshairInAirFactor, 0.F, DeltaTime, 30.f);	// When we hit the ground, we wanna Interp pretty fast back to 0 length.
+				CrosshairInAirFactor = FMath::FInterpTo(CrosshairInAirFactor, 0.F, DeltaTime, 15.f);	// When we hit the ground, we wanna Interp pretty fast back to 0 length.
 			}
 
 			if (bAiming) {
-				CrosshairAimFactor = FMath::FInterpTo(CrosshairVelocityFactor, 0.5f, DeltaTime, 30.f);
+				CrosshairAimFactor = FMath::FInterpTo(CrosshairVelocityFactor, 0.5f, DeltaTime, 15.f);
 			}
 			else {
-				CrosshairAimFactor = FMath::FInterpTo(CrosshairVelocityFactor, 0.f, DeltaTime, 30.f);
+				CrosshairAimFactor = FMath::FInterpTo(CrosshairVelocityFactor, 0.f, DeltaTime, 15.f);
 			}
 
 			CrosshairShootingFactor = FMath::FInterpTo(CrosshairShootingFactor, 0.f, DeltaTime, 3.25f);		
@@ -147,6 +147,33 @@ void UCombatComponent::InterpFOV(float DeltaTime)
 
 }
 
+FVector UCombatComponent::GetCenterOfCameraTransform()
+{
+	FVector2D ViewportSize;	// We need our viewport size, the dimensions of it. Essentially the screen of what players see. 
+	if (GEngine && GEngine->GameViewport) {	// We can get our Viewport from GEngine, but first we need to make sure that it's available.
+		GEngine->GameViewport->GetViewportSize(ViewportSize);	// This is how we get our Viewport Size from the function "GetViewportSize()".
+	}
+
+	// We can initalize the size of of our Vector, with the size of X and Y.
+	FVector2D CrosshairLocation(ViewportSize.X / 2.f, ViewportSize.Y / 2.f); // Now that we got our Viewport Size, we can get the X and Y Dimensions and manipulate to 
+	// get the center of the screen. Yet this is only local space and it's only in 2D. We need to take this information
+	// and transform it into 3D information.
+
+// This is how we'll turn our 2D screen space coordinate into 3D world-space point and direction.
+	FVector CrosshairWorldPosition;
+	FVector CrosshairWorldDirection;
+
+	// We'll need to get the player controller and we can do this by calling player zero. Even though it's a multiplayer game, each machine has a player 0 playing the game.
+	bool bScreenToWorld = UGameplayStatics::DeprojectScreenToWorld(
+		UGameplayStatics::GetPlayerController(this, 0), // "this" satifies the WorldContextObject (what were referencing in the world), and then "0" is the player Index. 
+		CrosshairLocation, // Now we'll need an FVector 2D screen position, the position that we'd like to project into world coordinates, which is our CrosshairLocation.
+		CrosshairWorldPosition,	// World Position Vector
+		CrosshairWorldDirection	// World Direction
+	);
+
+	return CrosshairWorldDirection;
+}
+
 void UCombatComponent::SetAiming(bool bIsAiming)
 {
 	// On the client, this aiming animation will work first on that client before it's sent through an RPC reaching the server. Therefore, the aiming
@@ -155,7 +182,7 @@ void UCombatComponent::SetAiming(bool bIsAiming)
 
 	// We don't need to check if the character is on the server, because no matter what, it will be executed on the server even if were on the client.
 	// So calling this function on the server means we're replicating it to all other clients. 
-	ServerSetAiming(bIsAiming);	
+	ServerSetAiming(bAiming);
 
 	// If our Character is Aiming, set the Walk Speed to Aim Speed / else leave it at BaseWalkSpeed.
 	if (Character) {
@@ -216,6 +243,7 @@ void UCombatComponent::TraceUnderCrosshairs(FHitResult& TraceHitResult)
 	FVector2D CrosshairLocation(ViewportSize.X / 2.f, ViewportSize.Y / 2.f); // Now that we got our Viewport Size, we can get the X and Y Dimensions and manipulate to 
 															// get the center of the screen. Yet this is only local space and it's only in 2D. We need to take this information
 															// and transform it into 3D information.
+															
 	// This is how we'll turn our 2D screen space coordinate into 3D world-space point and direction.
 	FVector CrosshairWorldPosition;
 	FVector CrosshairWorldDirection;
@@ -230,7 +258,16 @@ void UCombatComponent::TraceUnderCrosshairs(FHitResult& TraceHitResult)
 	// DeprojectScreenToWorld returns a boolean if this DeProjection is successful, so we can store this.
 	
 	if (bScreenToWorld) {	// If this is true, we've successfully got our 2D screen coordinates to 3D Projection.
-		FVector Start = CrosshairWorldPosition; // The starting position for our line trace.
+		FVector Start = CrosshairWorldPosition; // The starting position for our line trace, we actually need to start infront of our Character.
+		
+		// We're gonna start the Line Trace infront of our Character.
+		if (Character) {
+			float DistanceToCharacter = (Character->GetActorLocation() - Start).Size();	// Size() Pretty much Makes this a vector. 			
+			Start += CrosshairWorldDirection * (DistanceToCharacter + 100.f);
+			// DrawDebugSphere(GetWorld(), Start, 16.f, 12, FColor::Red, false);
+		}
+
+		// This is how long we want our Raytrace to be.
 		FVector End = Start + CrosshairWorldDirection * TRACE_LENGTH;	// So End starts at the Start position (Center of our Screen), and project out forward 
 														// in the crosshair world direction by one unit, but we can move it out forward more by multiplying by something large.
 		// To perform the line trace.
@@ -242,17 +279,20 @@ void UCombatComponent::TraceUnderCrosshairs(FHitResult& TraceHitResult)
 		);	// Now our Line Trace will hit something and retain that information whenever it hits something. In the case that we Trace and it doesn't hit something,
 		// we still need an endpoint so we can launch our projectile in that direction.
 
-		
-		// This sets the color of our Crosshair depending on what our TraceHitResult returns.
-		if (EquippedWeapon &&  TraceHitResult.bBlockingHit && TraceHitResult.GetActor()) { // Checking to see if that actor is valid and if that Actor implements "UInteractWithCrosshairsInterface" Interface.			
+		//DrawDebugLine(GetWorld(), Start, End, FColor::Red, false, 2.0f, 0, 2.0f);
 
+		// DrawDebugLine(GetWorld(), CrosshairWorldPosition, End, FColor::Orange);
+		// This sets the color of our Crosshair depending on what our TraceHitResult returns.
+		if (TraceHitResult.GetActor() && TraceHitResult.GetActor()->Implements<UInteractWithCrosshairsInterface>()) { // Checking to see if that actor is valid and if that Actor implements "UInteractWithCrosshairsInterface" Interface.			
+			HUDPackage.CrosshairsColor = FLinearColor::Red;
+			/*
+			AActor* HitActor = TraceHitResult.GetActor();			
+			UE_LOG(LogTemp, Warning, TEXT("Hit Actor: %s, Class: %s"), *HitActor->GetName(), *HitActor->GetClass()->GetName());
 			if (TraceHitResult.GetActor()->Implements<UInteractWithCrosshairsInterface>()) {
 				UE_LOG(LogTemp, Warning, TEXT("True"));
 				HUDPackage.CrosshairsColor = FLinearColor::Red;
 			}
-			else {
-				UE_LOG(LogTemp, Warning, TEXT("False"));
-			}
+			*/
 		}
 		else {
 			HUDPackage.CrosshairsColor = FLinearColor::White;
@@ -274,6 +314,7 @@ void UCombatComponent::MulticastFire_Implementation(const FVector_NetQuantize& T
 	if (EquippedWeapon == nullptr) { return; }
 
 	if (Character) {
+		EquippedWeapon->CenterOfCameraTransform = GetCenterOfCameraTransform();
 		Character->PlayFireMontage(bAiming);	// Play the montage for the character.
 		EquippedWeapon->Fire(TraceHitTarget);	// Play the weapons animation.
 	}

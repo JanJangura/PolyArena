@@ -109,6 +109,11 @@ private:
 	float AO_Pitch;
 	FRotator StartingAimRotation;
 
+	void HideCameraIfCharacterClose();
+
+	UPROPERTY(EditAnywhere)
+	float CameraThreshold = 200.f;
+
 public:	
 	/* Replication STEP 4. FORCEINLINE is a simple getter.
 	// We need a public setter for our "OverlappingWeapon" variable.
@@ -130,6 +135,8 @@ public:
 	// This is for our Character's Aiming 
 	bool IsAiming();
 
+	AWeapon* GetEquippedWeapon();
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "C++ Jump")
 	float JumpHeight;
 
@@ -146,5 +153,6 @@ public:
 	class UAnimMontage* HitReactMontage;
 
 	FORCEINLINE UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+
 	FVector GetHitTarget() const;
 };

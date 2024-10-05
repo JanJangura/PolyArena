@@ -5,6 +5,7 @@
 #include "BlasterCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "BlasterGame/Weapon/Weapon.h"
 
 void UBlasterAnimInstance::NativeInitializeAnimation()
 {
@@ -39,6 +40,9 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaTime)
 
 	// This checks if our EquippedWeapon from our BlasterCharacter is true.
 	bWeaponEquipped = BlasterCharacter->IsWeaponEquipped();
+
+	// This returns our Equipped Weapon from our Linked Character.
+	EquippedWeapon = BlasterCharacter->GetEquippedWeapon();
 
 	// We're setting the bAiming variable depending if our BlasterCharacter returns true when the player is aiming.
 	// This checks if BlasterCharacter has Combat Component and if the player CombatComponent "bAiming" variable is true, if it is, then we set this
@@ -82,4 +86,47 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaTime)
 	// Acquiring our Character's Yaw information
 	AO_Yaw = BlasterCharacter->GetAO_Yaw();
 	AO_Pitch = BlasterCharacter->GetAO_Pitch();
+
+	if (bWeaponEquipped && EquippedWeapon && EquippedWeapon->GetWeaponMesh() && BlasterCharacter->GetMesh()) {
+		static const FName LeftHandSocketName("LeftHandSocket");
+		static const FName RightHandBoneName("hand_r");
+		static const FName MuzzleFlash("MuzzleFlash");
+
+		// We'll retrieve the transform of our LeftHandSocket in WorldSpace.
+		LeftHandTransform = EquippedWeapon->GetWeaponMesh()->GetSocketTransform(LeftHandSocketName, ERelativeTransformSpace::RTS_World);
+
+		FVector OutPosition;	// This OutPosition will receieve date from the TransformToBoneSpace() function. This is the location of our LeftHandSocket Transformed to our Hand R BoneSpace.
+		FRotator OutRotation;	// This OutRotation will receieve date from the TransformToBoneSpace() function. This is the Rotation of our LeftHandSocket Transformed to our Hand R BoneSpace.
+
+		// We want the WorldSpace of our LeftHandTransform and converted into BoneSpace. We retrieve the Character's Mesh and call upon TransformToBoneSpace.
+		// We want to transform our LeftHandSocket on the Weapon into BoneSpace for one of the bones on our Character Mesh, which is the Right Hand. This is so
+		// our LeftHandSocket on the Weapon is relative to the Right Hand.
+		BlasterCharacter->GetMesh()->TransformToBoneSpace(RightHandBoneName, LeftHandTransform.GetLocation(), FRotator::ZeroRotator, OutPosition, OutRotation);
+		LeftHandTransform.SetLocation(OutPosition);
+		LeftHandTransform.SetRotation(FQuat(OutRotation));
+
+		if (BlasterCharacter->IsLocallyControlled()) {
+			// This let's us know that we are Locally Controlled and it's use is for inside of BP_Anim_Instance.
+			bLocallyControlled = true;
+
+			// Get the Transform of our "hand_r" Socket, Then rotate that arm towards the Rotation of the target that BlasterCharacter is shooting at.
+			FTransform RightHandTransform = EquippedWeapon->GetWeaponMesh()->GetSocketTransform(RightHandBoneName, ERelativeTransformSpace::RTS_World);
+
+			if (BlasterCharacter->GetHitTarget() != FVector::ZeroVector) {
+				FRotator LookAtRotation = UKismetMathLibrary::FindLookAtRotation(RightHandTransform.GetLocation(), RightHandTransform.GetLocation() + (RightHandTransform.GetLocation() - BlasterCharacter->GetHitTarget()));
+				RightHandRotation = FMath::RInterpTo(RightHandRotation, LookAtRotation, DeltaTime, 20.f);
+			}
+
+			/*	*** This is to draw RayCast Lines out of our Gun and from the center of our screen.
+			// Acquring the Transform of our MuzzleTip
+			FTransform MuzzleTipTransform = EquippedWeapon->GetWeaponMesh()->GetSocketTransform(MuzzleFlash, ERelativeTransformSpace::RTS_World);
+
+			// We can get the X-Axis accordingly from FRotationMatrix.
+			FVector MuzzleX(FRotationMatrix(MuzzleTipTransform.GetRotation().Rotator()).GetUnitAxis(EAxis::X));
+			DrawDebugLine(GetWorld(), MuzzleTipTransform.GetLocation(), MuzzleTipTransform.GetLocation() + MuzzleX * 1000.f, FColor::Red);
+			DrawDebugLine(GetWorld(), MuzzleTipTransform.GetLocation(), BlasterCharacter->GetHitTarget(), FColor::Orange);
+			*/
+		}
+		
+	}
 }

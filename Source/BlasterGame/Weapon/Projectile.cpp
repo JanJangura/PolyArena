@@ -8,11 +8,14 @@
 #include "Sound/SoundCue.h"
 #include "BlasterGame/BlasterGame.h"
 #include "BlasterGame/Character/BlasterCharacter.h"
+#include "Particles/ParticleSystemComponent.h"
+#include "Particles/ParticleSystem.h"
 
 // Sets default values
 AProjectile::AProjectile()
 {
 	PrimaryActorTick.bCanEverTick = true;
+	bReplicates = true;
 
 	CollisionBox = CreateDefaultSubobject<UBoxComponent>(TEXT("CollisionBox"));
 	SetRootComponent(CollisionBox);
@@ -22,6 +25,7 @@ AProjectile::AProjectile()
 	CollisionBox->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);	// Projectile Blocks Visibility.
 	CollisionBox->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldStatic, ECollisionResponse::ECR_Block); // Projectile Blocks WorldStatics.
 	CollisionBox->SetCollisionResponseToChannel(ECC_SkeletalMesh, ECollisionResponse::ECR_Block); // Projectile Blocks Pawns, which is our characters.
+	CollisionBox->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Block); // Projectile Blocks Pawns, which is our characters.
 	
 	ProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovementComponent"));
 	ProjectileMovementComponent->bRotationFollowsVelocity = true;
@@ -34,6 +38,16 @@ void AProjectile::BeginPlay()
 	if (HasAuthority()) {	// The Server can handle on doing the damage
 		CollisionBox->OnComponentHit.AddDynamic(this, &AProjectile::OnHit);	// Within Parameters of Add Dynamic, User Object is this Projectile class, and then the address of the operator.
 	}
+	if (Tracer) {
+		TracerComponent = UGameplayStatics::SpawnEmitterAttached(
+			Tracer,
+			CollisionBox,
+			FName(),
+			GetActorLocation(),
+			GetActorRotation(),
+			EAttachLocation::KeepWorldPosition
+		);
+	}
 }
 
 // This is how we know we hit something.
@@ -41,6 +55,7 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimi
 {
 	ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(OtherActor);
 	if (BlasterCharacter) {
+		UE_LOG(LogTemp, Warning, TEXT("%s"), BlasterCharacter ? TEXT("CharacterHit") : TEXT("CharacterNotHit"));
 		BlasterCharacter->MulticastHit();	// We call this function because we want it to be replicated throughout both Server and Clients.
 	}
 

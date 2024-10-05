@@ -104,6 +104,13 @@ void ABlasterCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 void ABlasterCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	// Blocking Camera Issue 
+	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);	// Capsule will now not block the camera.
+	//GetMesh()->SetCollisionObjectType(ECC_SkeletalMesh); // Defaulting our Character to this Custom Collision that we created.
+	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);	// Mesh will now not block the camera.
+	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
 }
 
 // Called every frame
@@ -112,6 +119,7 @@ void ABlasterCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	AimOffset(DeltaTime);
+	HideCameraIfCharacterClose();
 }
 
 // Called to bind functionality to input. This is Character function.
@@ -253,6 +261,7 @@ void ABlasterCharacter::AimOffset(float DeltaTime)
 		FVector2D OutRange(-90.f, 0.f);		// Declaring the Range we would like to match.
 		AO_Pitch = FMath::GetMappedRangeValueClamped(InRange, OutRange, AO_Pitch);	// Applying the correction Here.
 	}
+	
 }
 
 void ABlasterCharacter::PlayFireMontage(bool bAiming)
@@ -326,6 +335,27 @@ void ABlasterCharacter::OnRep_OverlappingWeapon(AWeapon* LastWeapon)
 	}
 }
 
+// This hides our Character when our Camera gets pushed too close too our Character, meaning that we're backing up on something.
+void ABlasterCharacter::HideCameraIfCharacterClose()
+{
+	// We only want what is Locally Controlled, the player that is controlling the computer.
+	if (!IsLocallyControlled()) { return; }
+
+	// Pretty Much if the CameraLocation - ActorLocation is < then CameraThreshold, we'll hide the Character.
+	if ((FollowCamera->GetComponentLocation() - GetActorLocation()).Size() < CameraThreshold) {
+		GetMesh()->SetVisibility(false);
+		if (Combat && Combat->EquippedWeapon && Combat->EquippedWeapon->GetWeaponMesh()) {
+			Combat->EquippedWeapon->GetWeaponMesh()->bOwnerNoSee = true;
+		}
+	}
+	else {
+		GetMesh()->SetVisibility(true);
+		if (Combat && Combat->EquippedWeapon && Combat->EquippedWeapon->GetWeaponMesh()) {
+			Combat->EquippedWeapon->GetWeaponMesh()->bOwnerNoSee = false;
+		}
+	}
+}
+
 // This is the condition in which we scoped it to being the player that is hosting the game on the Server and will showcase our PickupWidget here for that player specifically.
 void ABlasterCharacter::SetOverlappingWeapon(AWeapon* Weapon)
 {
@@ -361,10 +391,18 @@ bool ABlasterCharacter::IsAiming()
 	return (Combat && Combat->bAiming);
 }
 
+AWeapon* ABlasterCharacter::GetEquippedWeapon()
+{
+	if (Combat == nullptr) { return nullptr; }
+	return Combat->EquippedWeapon;
+}
+
 FVector ABlasterCharacter::GetHitTarget() const
 {
 	if (Combat == nullptr) { return FVector(); }
-	return Combat->HitTarget;
+	else {
+		return Combat->HitTarget;
+	}
 }
 
 void ABlasterCharacter::MulticastHit_Implementation()
