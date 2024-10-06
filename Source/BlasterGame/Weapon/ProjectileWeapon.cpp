@@ -9,7 +9,7 @@ void AProjectileWeapon::Fire(const FVector& HitTarget)
 {
 	Super::Fire(HitTarget);	// This allows us to use functionality within the base (Parent) Class.
 
-	//if (!HasAuthority()) { return; }	// If it's not on the Server, then just return.
+	if (!HasAuthority()) { return; }	// If it's not on the Server, then just return.
 
 	APawn* InstigatorPawn = Cast<APawn>(GetOwner());
 
@@ -23,7 +23,7 @@ void AProjectileWeapon::Fire(const FVector& HitTarget)
 		FRotator TargetRotation;
 
 		if (HitTarget.IsZero()) {
-			ToTarget = GetCenterOfCameraTransform() * 10000.f;
+			ToTarget = GetCenterOfCameraTransform();
 		}
 		else {
 			ToTarget = HitTarget - SocketTransform.GetLocation();				

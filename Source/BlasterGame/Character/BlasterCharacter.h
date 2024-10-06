@@ -38,6 +38,8 @@ public:
 	UFUNCTION(NetMulticast, Unreliable)	// This is not very important, so we want it to be Unreliable
 	void MulticastHit();
 
+	virtual void OnRep_ReplicatedMovement() override;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -50,6 +52,8 @@ protected:
 	void AimButtonPressed();
 	void AimButtonReleased();
 	void AimOffset(float DeltaTime);
+	void CalculateAO_Pitch();
+	void SimProxiesTurn();
 	void FireButtonPressed();
 	void FireButtonReleased();
 	void PlayHitReactMontage(); // Play Hit React Montage
@@ -114,6 +118,9 @@ private:
 	UPROPERTY(EditAnywhere)
 	float CameraThreshold = 200.f;
 
+	float TimeSinceLastMovementReplication;
+	float CalculateSpeed();
+
 public:	
 	/* Replication STEP 4. FORCEINLINE is a simple getter.
 	// We need a public setter for our "OverlappingWeapon" variable.
@@ -155,4 +162,6 @@ public:
 	FORCEINLINE UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 
 	FVector GetHitTarget() const;
+
+	FVector GetCenterOfCameraTransform();
 };

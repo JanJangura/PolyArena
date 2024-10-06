@@ -64,15 +64,18 @@ ABlasterCharacter::ABlasterCharacter()
 	
 	// Initializes the FireMontage for us because it doesnt work in blueprints.
 	static ConstructorHelpers::FObjectFinder<UAnimMontage> FireMontageAsset(TEXT("AnimMontage'/Game/BP_Shooter_Character/Animation/FireWeapon.FireWeapon'"));
+	static ConstructorHelpers::FObjectFinder<UAnimMontage> HitReactMontageAsset(TEXT("AnimMontage'/Game/BP_Shooter_Character/Animation/HitReact.HitReact'"));
 
-	if (FireMontageAsset.Succeeded())
+	if (FireMontageAsset.Succeeded() && HitReactMontageAsset.Succeeded())
 	{
 		FireWeaponMontage = FireMontageAsset.Object;
+		HitReactMontage = HitReactMontageAsset.Object;
 		//UE_LOG(LogTemp, Warning, TEXT("FireWeaponMontage loaded successfully!"));
 	}
 	else
 	{
 		FireWeaponMontage = nullptr;
+		HitReactMontageAsset = nullptr;
 		//UE_LOG(LogTemp, Error, TEXT("Failed to load FireWeaponMontage."));
 	}
 	
@@ -100,6 +103,14 @@ void ABlasterCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 	DOREPLIFETIME_CONDITION(ABlasterCharacter, OverlappingWeapon, COND_OwnerOnly); // This variable starts off uninitialized, it will be null until we set it.
 }
 
+// RepNotifier that Unreal Made for our Characters Movements
+void ABlasterCharacter::OnRep_ReplicatedMovement()
+{
+	Super::OnRep_ReplicatedMovement();
+	SimProxiesTurn();
+	TimeSinceLastMovementReplication = 0.f;
+}
+
 // Called when the game starts or when spawned
 void ABlasterCharacter::BeginPlay()
 {
@@ -108,7 +119,7 @@ void ABlasterCharacter::BeginPlay()
 	// Blocking Camera Issue 
 	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);	// Capsule will now not block the camera.
-	//GetMesh()->SetCollisionObjectType(ECC_SkeletalMesh); // Defaulting our Character to this Custom Collision that we created.
+	GetMesh()->SetCollisionObjectType(ECC_SkeletalMesh); // Defaulting our Character to this Custom Collision that we created.
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);	// Mesh will now not block the camera.
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
 }
@@ -118,7 +129,16 @@ void ABlasterCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	AimOffset(DeltaTime);
+	if (GetLocalRole() > ENetRole::ROLE_SimulatedProxy && IsLocallyControlled()) {	// This Greater Sign means that we only want to play AimOffSet with any roles above SimulatedProxy().
+		AimOffset(DeltaTime);
+	}
+	else {
+		TimeSinceLastMovementReplication += DeltaTime;
+		if (TimeSinceLastMovementReplication > 0.25f) {
+			OnRep_ReplicatedMovement();
+		}
+		CalculateAO_Pitch();
+	}
 	HideCameraIfCharacterClose();
 }
 
@@ -227,15 +247,19 @@ void ABlasterCharacter::AimButtonReleased()
 	}
 }
 
+// Calculating our Speed.
+float ABlasterCharacter::CalculateSpeed() {
+	FVector Velocity = GetVelocity();
+	Velocity.Z = 0.f;
+	return Velocity.Size();
+}
+
 // This only happens when our character is not moving, when the character is still in idle position.
 void ABlasterCharacter::AimOffset(float DeltaTime)
 {
 	if (Combat && Combat->EquippedWeapon == nullptr) { return; }
 
-	// Locally Calculating our Speed.
-	FVector Velocity = GetVelocity();
-	Velocity.Z = 0.f;
-	float Speed = Velocity.Size(); // This gets the magnitude of our Vector.
+	float Speed = CalculateSpeed(); // This gets the magnitude of our Vector.
 	bool bIsInAir = GetCharacterMovement()->IsFalling();
 
 	if (Speed == 0.f && !bIsInAir) {	// We're standing still and not jumping.
@@ -252,6 +276,12 @@ void ABlasterCharacter::AimOffset(float DeltaTime)
 		bUseControllerRotationYaw = true; // Allows the character to rotate with the way the Camera is facing.
 	}
 
+	CalculateAO_Pitch();
+	
+}
+
+void ABlasterCharacter::CalculateAO_Pitch()
+{
 	AO_Pitch = GetBaseAimRotation().Pitch;
 
 	// Unreal Engine Compresses Angles from 0 to 360, so only in positive numbers, when negative numbers are sent, they are masked and turned into positive angles. We fix that here.
@@ -261,7 +291,12 @@ void ABlasterCharacter::AimOffset(float DeltaTime)
 		FVector2D OutRange(-90.f, 0.f);		// Declaring the Range we would like to match.
 		AO_Pitch = FMath::GetMappedRangeValueClamped(InRange, OutRange, AO_Pitch);	// Applying the correction Here.
 	}
-	
+}
+
+void ABlasterCharacter::SimProxiesTurn()
+{
+	if (Combat == nullptr || Combat->EquippedWeapon == nullptr) { return; }
+	float Speed = CalculateSpeed();
 }
 
 void ABlasterCharacter::PlayFireMontage(bool bAiming)
@@ -280,11 +315,23 @@ void ABlasterCharacter::PlayFireMontage(bool bAiming)
 
 void ABlasterCharacter::PlayHitReactMontage()
 {
-	if (Combat == nullptr || Combat->EquippedWeapon == nullptr) return;
+	if (Combat == nullptr && Combat->EquippedWeapon == nullptr) {
+		return; 
+	}
 
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 
+	if (AnimInstance == nullptr) {
+		UE_LOG(LogTemp, Warning, TEXT("AnimInstance Nullptr"));
+	}
+	if (HitReactMontage == nullptr) {
+		UE_LOG(LogTemp, Warning, TEXT("HitReactMontage Nullptr"));
+	}
+
+
+
 	if (AnimInstance && HitReactMontage) {
+		UE_LOG(LogTemp, Warning, TEXT("AnimInstance & HitReactMontage NOT Nullptr"));
 		AnimInstance->Montage_Play(HitReactMontage);	// Play this Montage
 		FName SectionName("FromFront");
 		AnimInstance->Montage_JumpToSection(SectionName);	// Jump to the Anim Montage depending on the bool above and play that animation.
@@ -403,6 +450,12 @@ FVector ABlasterCharacter::GetHitTarget() const
 	else {
 		return Combat->HitTarget;
 	}
+}
+
+FVector ABlasterCharacter::GetCenterOfCameraTransform()
+{
+	if (Combat == nullptr) { return FVector(); }
+	return Combat->GetCenterOfCameraTransform();
 }
 
 void ABlasterCharacter::MulticastHit_Implementation()

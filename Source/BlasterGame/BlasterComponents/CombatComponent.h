@@ -44,6 +44,8 @@ protected:
 
 	void FireButtonPressed(bool bPressed);
 
+	void Fire();
+
 	// This Server RPC is in Protected so we can change the value of this with child classes. This Server RPC is for firing the weapon.
 	UFUNCTION(Server, Reliable)
 	void ServerFire(const FVector_NetQuantize& TraceHitTarget);	// FVector_NetQuantize will take our FVector and round it down to whole numbers and send across the network. 
@@ -100,17 +102,25 @@ private:
 	// ****** Aiming and FOV ******
 	float DefaultFOV;	// Field of View when Not Aiming, set to the camera's base FOV in BeginPlay.
 
-	UPROPERTY(EditAnywhere, category = "Combat")
+	UPROPERTY(EditAnywhere, category = Combat)
 	float ZoomedFOV = 30.f;
 
 	float CurrentFOV; // Current Field of View.
 
-	UPROPERTY(EditAnywhere, category = "Combat")
+	UPROPERTY(EditAnywhere, category = Combat)
 	float ZoomInterpSpeed = 20.f;
 
 	void InterpFOV(float DeltaTime);	// This will hand zooming when we're aiming.
 
 	FVector GetCenterOfCameraTransform();
+
+	// **** AutomaticFire ****
+	FTimerHandle FireTimer;
+
+	bool bCanFire = true;
+
+	void StartFireTimer();
+	void FireTimerFinished();
 
 public:	
 	

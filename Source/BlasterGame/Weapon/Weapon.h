@@ -76,6 +76,13 @@ public:
 	UPROPERTY(EditAnywhere)
 	float ZoomInterpSpeed = 20.f;	// How fast we want the Camera to Zoom in when Aiming.
 
+	// ***** AutoMatic Fire *****
+	UPROPERTY(EditAnywhere, Category = Combat)
+	float FireRate = .15f;
+
+	UPROPERTY(EditAnywhere, Category = Combat)
+	bool bAutomatic = true;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

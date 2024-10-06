@@ -116,6 +116,10 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaTime)
 				FRotator LookAtRotation = UKismetMathLibrary::FindLookAtRotation(RightHandTransform.GetLocation(), RightHandTransform.GetLocation() + (RightHandTransform.GetLocation() - BlasterCharacter->GetHitTarget()));
 				RightHandRotation = FMath::RInterpTo(RightHandRotation, LookAtRotation, DeltaTime, 20.f);
 			}
+			else {
+				FRotator LookAtRotation = UKismetMathLibrary::FindLookAtRotation(RightHandTransform.GetLocation(), RightHandTransform.GetLocation() - BlasterCharacter->GetCenterOfCameraTransform());
+				RightHandRotation = FMath::RInterpTo(RightHandRotation, LookAtRotation, DeltaTime, 20.f);
+			}
 
 			/*	*** This is to draw RayCast Lines out of our Gun and from the center of our screen.
 			// Acquring the Transform of our MuzzleTip

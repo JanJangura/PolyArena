@@ -13,6 +13,7 @@
 #include "BlasterGame/PlayerController/BlasterPlayerController.h"
 //#include "BlasterGame/HUD/BlasterHUD.h"
 #include "Camera/CameraComponent.h"
+#include "TimerManager.h"
 
 UCombatComponent::UCombatComponent()
 {
@@ -62,6 +63,255 @@ void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 	}
 }
 
+// For RPC, we have to add the "_Implementation" so Unreal can create the real definition for it.
+void UCombatComponent::ServerSetAiming_Implementation(bool bIsAiming)
+{
+	// This is the RPC that we sent to the server, so the server knows to replicate the aiming animation for all players holding (RMB). 
+	bAiming = bIsAiming;
+	if (Character) {
+		Character->GetCharacterMovement()->MaxWalkSpeed = bIsAiming ? AimWalkSpeed : BaseWalkSpeed;
+	}
+}
+
+void UCombatComponent::FireButtonPressed(bool bPressed)
+{									// Remember, Rep_Notifiers is only good for when we change the value of a variable.
+	bFireButtonPressed = bPressed;	// We don't want to use REP_NOTIFIERS with this boolean is because we're going to use Automatic Weapons. This will become expensive and demanding.
+									// We may need true to be played for a while because of the automatic fire. We'll need to use multicast RPC to do this.
+									// The NetMulticast RPC called from the server runs on server and clients. Where as the Server RPC only runs on the server, even when called on 
+									// the Client. When calling NetMulticast RPC from Client, it only runs on the Client (kinda worthless on client, more used on Server).
+	if (bFireButtonPressed && EquippedWeapon) {
+		Fire();
+	}
+}
+
+void UCombatComponent::Fire()
+{
+	if (bCanFire) {
+		bCanFire = false;
+
+		GetCenterOfCameraTransform();
+
+		ServerFire(HitTarget);	// Calling the Server RPC ServerFire(), so this function is only called on the server and not on any other clients
+		// and we don't need to include "_Implementation" to call it. Now we just need to do it on all Clients. We don't even need to check if this is on Server
+		// or not because we already declared it as a Server RPC. ".ImpactPoint" is a FVector_NetQuantize all along, already optimized for multiplayer.
+
+		if (EquippedWeapon) {
+			CrosshairShootingFactor += 1.f;
+			CrosshairShootingFactor = FMath::Clamp(CrosshairShootingFactor, 0.f, 3.f);
+			//UE_LOG(LogTemp, Error, TEXT("FireButtonPressed"));	
+		}
+
+		StartFireTimer();
+	}
+}
+
+void UCombatComponent::StartFireTimer()
+{
+	if (EquippedWeapon == nullptr || Character == nullptr) { UE_LOG(LogTemp, Warning, TEXT("StartFireTimerReturnedNull!!"));  return; }
+
+		Character->GetWorldTimerManager().SetTimer(
+			FireTimer,
+			this,
+			&UCombatComponent::FireTimerFinished,
+			EquippedWeapon->FireRate
+		);
+	
+}
+
+void UCombatComponent::FireTimerFinished()
+{
+	if (EquippedWeapon == nullptr) { return; }
+
+	bCanFire = true;
+
+	if (bFireButtonPressed && EquippedWeapon->bAutomatic) {
+		Fire();
+	}
+}
+
+// *REMEMBER, RPC needs _Implementation added to the function.	
+void UCombatComponent::ServerFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
+{
+	MulticastFire(TraceHitTarget);	// We can call this NetMulticast RPC "MulticastFire()" function here, because we need to call it on the server in order to replicate the fire effect for
+						// everyone, both clients and server.
+}
+
+// This is our NetMulticast RPC, and we'll need to call this from the Server RPC so all clients and server host can replicate the firing effects of our weapon.
+void UCombatComponent::MulticastFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
+{
+	if (EquippedWeapon == nullptr) { return; }
+
+	if (Character) {
+		EquippedWeapon->CenterOfCameraTransform = GetCenterOfCameraTransform();
+		Character->PlayFireMontage(bAiming);	// Play the montage for the character.
+		EquippedWeapon->Fire(TraceHitTarget);	// Play the weapons animation.
+	}
+}
+
+// We're gonna replicate this
+void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
+{
+	if (Character == nullptr || WeaponToEquip == nullptr) {	// Checking for validation
+		return;
+	}
+
+	EquippedWeapon = WeaponToEquip;	// Setting our Equipped Weapon instance to this "WeaponToEquip" class reference.
+	EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped);	// This sets our WeaponState to "Equipped".
+
+	const USkeletalMeshSocket* HandSocket = Character->GetMesh()->GetSocketByName(FName("RightHandSocket"));	// We'll define a HandSocket variable of type USkeletalMeshSocket.
+																												// Then, we'll retrieve our RightHandSocket that made and defined.
+	if (HandSocket) {	
+		HandSocket->AttachActor(EquippedWeapon, Character->GetMesh());	// In the HandSocket that we created to hold our weapon, we'll attach our "EquippedWeapon" reference.	
+		// AttachActor requires the Actor that attaches to the socket and the skeletal mesh component associated with the socket.
+	}
+
+	// We need the weapon owner to be the character. Ownership is very important. We own the pawn that we're controlling, but an actor (like a weapon), doesn't have a defined
+	// owner, but as soon as we equip it, we should set it's owner to the character that has equipped it.
+	EquippedWeapon->SetOwner(Character);	// This SetOwner() function sets the owner of the EquippedWeapon to the actor that's passed in reference (Character).
+	EquippedWeapon->SetHUDAmmo();
+	Character->GetCharacterMovement()->bOrientRotationToMovement = false;
+	Character->bUseControllerRotationYaw = true;
+	// RPC can be called both ways, so we could make an RPC to be called from the server and executed on a client, but we can use variable replication instead.
+}
+
+// RepNotifier for our Equipped Weapon Animation.
+void UCombatComponent::OnRep_EquippedWeapon()
+{
+	if (EquippedWeapon && Character) {
+		Character->GetCharacterMovement()->bOrientRotationToMovement = false;
+		Character->bUseControllerRotationYaw = true;
+	}
+}
+
+// This is our TraceUnderCrosshairs With Notes.
+/*	**** NOTES FOR RAY CASTING ****
+// This is where we're going to have our projectiles launch from the center of the screen.
+void UCombatComponent::TraceUnderCrosshairs(FHitResult& TraceHitResult)
+{
+	FVector2D ViewportSize;	// We need our viewport size, the dimensions of it. Essentially the screen of what players see. 
+	if (GEngine && GEngine->GameViewport) {	// We can get our Viewport from GEngine, but first we need to make sure that it's available.
+		GEngine->GameViewport->GetViewportSize(ViewportSize);	// This is how we get our Viewport Size from the function "GetViewportSize()".
+	}
+
+	// We can initalize the size of of our Vector, with the size of X and Y.
+	FVector2D CrosshairLocation(ViewportSize.X / 2.f, ViewportSize.Y / 2.f); // Now that we got our Viewport Size, we can get the X and Y Dimensions and manipulate to 
+															// get the center of the screen. Yet this is only local space and it's only in 2D. We need to take this information
+															// and transform it into 3D information.
+															
+	// This is how we'll turn our 2D screen space coordinate into 3D world-space point and direction.
+	FVector CrosshairWorldPosition;
+	FVector CrosshairWorldDirection;
+	
+	// We'll need to get the player controller and we can do this by calling player zero. Even though it's a multiplayer game, each machine has a player 0 playing the game.
+	bool bScreenToWorld = UGameplayStatics::DeprojectScreenToWorld(
+		UGameplayStatics::GetPlayerController(this, 0), // "this" satifies the WorldContextObject (what were referencing in the world), and then "0" is the player Index. 
+		CrosshairLocation, // Now we'll need an FVector 2D screen position, the position that we'd like to project into world coordinates, which is our CrosshairLocation.
+		CrosshairWorldPosition,	// World Position Vector
+		CrosshairWorldDirection	// World Direction
+	);	// After calling DeprojectScreenToWorld() function, our World Position and World Direction FVectors will automatically be filled in.
+	// DeprojectScreenToWorld returns a boolean if this DeProjection is successful, so we can store this.
+	
+	if (bScreenToWorld) {	// If this is true, we've successfully got our 2D screen coordinates to 3D Projection.
+		FVector Start = CrosshairWorldPosition; // The starting position for our line trace, we actually need to start infront of our Character.
+		
+		// We're gonna start the Line Trace infront of our Character.
+		if (Character) {
+			float DistanceToCharacter = (Character->GetActorLocation() - Start).Size();	// Size() Pretty much Makes this a vector. 			
+			Start += CrosshairWorldDirection * (DistanceToCharacter + 100.f);
+			// DrawDebugSphere(GetWorld(), Start, 16.f, 12, FColor::Red, false);
+		}
+
+		// This is how long we want our Raytrace to be.
+		FVector End = Start + CrosshairWorldDirection * TRACE_LENGTH;	// So End starts at the Start position (Center of our Screen), and project out forward 
+														// in the crosshair world direction by one unit, but we can move it out forward more by multiplying by something large.
+		// To perform the line trace.
+		GetWorld()->LineTraceSingleByChannel(
+			TraceHitResult,	// This will automatically be filled in by this LineTraceSingleByChannel. 
+			Start,	// This is where the Line Trace start.
+			End,	// This is where the Line Trace end.
+			ECollisionChannel::ECC_Visibility	// We also need a Collision Channel, we'll use visibility as this is the most common. Rest of the stuff is optional.
+		);	// Now our Line Trace will hit something and retain that information whenever it hits something. In the case that we Trace and it doesn't hit something,
+		// we still need an endpoint so we can launch our projectile in that direction.
+
+		//DrawDebugLine(GetWorld(), Start, End, FColor::Red, false, 2.0f, 0, 2.0f);
+
+		// DrawDebugLine(GetWorld(), CrosshairWorldPosition, End, FColor::Orange);
+		// This sets the color of our Crosshair depending on what our TraceHitResult returns.
+
+		if (TraceHitResult.GetActor() && TraceHitResult.GetActor()->Implements<UInteractWithCrosshairsInterface>()) { // Checking to see if that actor is valid and if that Actor implements "UInteractWithCrosshairsInterface" Interface.			
+			HUDPackage.CrosshairsColor = FLinearColor::Red;
+			
+			AActor* HitActor = TraceHitResult.GetActor();			
+			UE_LOG(LogTemp, Warning, TEXT("Hit Actor: %s, Class: %s"), *HitActor->GetName(), *HitActor->GetClass()->GetName());
+			if (TraceHitResult.GetActor()->Implements<UInteractWithCrosshairsInterface>()) {
+				UE_LOG(LogTemp, Warning, TEXT("True"));
+				HUDPackage.CrosshairsColor = FLinearColor::Red;
+			}
+			
+
+			UE_LOG(LogTemp, Warning, TEXT("Character Blocking: %d"), TraceHitResult.GetActor());
+		}
+		else {
+			HUDPackage.CrosshairsColor = FLinearColor::White;
+		}
+		
+	}
+}
+*/
+
+// Cleaner Version of our TraceUnderCrosshairs Function
+void UCombatComponent::TraceUnderCrosshairs(FHitResult& TraceHitResult)
+{
+	FVector2D ViewportSize;	
+	if (GEngine && GEngine->GameViewport) {
+		GEngine->GameViewport->GetViewportSize(ViewportSize);	
+	}
+
+	FVector2D CrosshairLocation(ViewportSize.X / 2.f, ViewportSize.Y / 2.f); 
+
+	FVector CrosshairWorldPosition;
+	FVector CrosshairWorldDirection;
+
+	bool bScreenToWorld = UGameplayStatics::DeprojectScreenToWorld(
+		UGameplayStatics::GetPlayerController(this, 0),  
+		CrosshairLocation, 
+		CrosshairWorldPosition,	
+		CrosshairWorldDirection	
+	);
+
+	if (bScreenToWorld) {	
+		FVector Start = CrosshairWorldPosition; 
+
+		if (Character) {
+			float DistanceToCharacter = (Character->GetActorLocation() - Start).Size();		
+			Start += CrosshairWorldDirection * (DistanceToCharacter + 100.f);
+			// DrawDebugSphere(GetWorld(), Start, 16.f, 12, FColor::Red, false);
+		}
+
+		FVector End = Start + CrosshairWorldDirection * TRACE_LENGTH;	
+
+		GetWorld()->LineTraceSingleByChannel(
+			TraceHitResult,	
+			Start,	
+			End,
+			ECollisionChannel::ECC_Visibility
+		);	
+
+		//DrawDebugLine(GetWorld(), Start, End, FColor::Red, false, 2.0f, 0, 2.0f);
+
+		// DrawDebugLine(GetWorld(), CrosshairWorldPosition, End, FColor::Orange);
+		// This sets the color of our Crosshair depending on what our TraceHitResult returns.
+
+		if (TraceHitResult.GetActor() && TraceHitResult.bBlockingHit && TraceHitResult.GetActor()->Implements<UInteractWithCrosshairsInterface>()) {
+			HUDPackage.CrosshairsColor = FLinearColor::Red;
+		}
+		else {
+			HUDPackage.CrosshairsColor = FLinearColor::White;
+		}
+
+	}
+}
+
 // This is how we set the CrossHairs to our screen when picking up our Gun.
 void UCombatComponent::SetHUDCrossHairs(float DeltaTime)
 {
@@ -96,7 +346,7 @@ void UCombatComponent::SetHUDCrossHairs(float DeltaTime)
 
 			// This will automatically convert our Walkspeed to our Velocity Range. "Velocity.Size()" will get the magnitude of our Vector, the length of it.
 			CrosshairVelocityFactor = FMath::GetMappedRangeValueClamped(WalkSpeedRange, VelocityMultiplierRange, Velocity.Size());
-			
+
 			if (Character->GetCharacterMovement()->IsFalling()) {	// This is when we are in air.
 				// Interpolate and Spread the Crosshairs more smoothly. FInterpto Requires a current value, a target value (2.25 is the Max Spread that we want),
 				// the DeltaTime, and the InterpSpeed.
@@ -113,12 +363,12 @@ void UCombatComponent::SetHUDCrossHairs(float DeltaTime)
 				CrosshairAimFactor = FMath::FInterpTo(CrosshairVelocityFactor, 0.f, DeltaTime, 15.f);
 			}
 
-			CrosshairShootingFactor = FMath::FInterpTo(CrosshairShootingFactor, 0.f, DeltaTime, 3.25f);		
+			CrosshairShootingFactor = FMath::FInterpTo(CrosshairShootingFactor, 0.f, DeltaTime, 3.25f);
 
 			// Now this is how much our Crosshair can spread.
-			HUDPackage.CrosshairSpread = 
+			HUDPackage.CrosshairSpread =
 				0.25f +
-				CrosshairVelocityFactor + 
+				CrosshairVelocityFactor +
 				CrosshairShootingFactor +
 				CrosshairInAirFactor -
 				CrosshairAimFactor;
@@ -188,160 +438,4 @@ void UCombatComponent::SetAiming(bool bIsAiming)
 	if (Character) {
 		Character->GetCharacterMovement()->MaxWalkSpeed = bIsAiming ? AimWalkSpeed : BaseWalkSpeed;
 	}
-}
-
-// For RPC, we have to add the "_Implementation" so Unreal can create the real definition for it.
-void UCombatComponent::ServerSetAiming_Implementation(bool bIsAiming)
-{
-	// This is the RPC that we sent to the server, so the server knows to replicate the aiming animation for all players holding (RMB). 
-	bAiming = bIsAiming;
-	if (Character) {
-		Character->GetCharacterMovement()->MaxWalkSpeed = bIsAiming ? AimWalkSpeed : BaseWalkSpeed;
-	}
-}
-
-// RepNotifier for our Equipped Weapon Animation.
-void UCombatComponent::OnRep_EquippedWeapon()
-{
-	if (EquippedWeapon && Character) {
-		Character->GetCharacterMovement()->bOrientRotationToMovement = false;
-		Character->bUseControllerRotationYaw = true;
-	}
-}
-
-void UCombatComponent::FireButtonPressed(bool bPressed)
-{									// Remember, Rep_Notifiers is only good for when we change the value of a variable.
-	bFireButtonPressed = bPressed;	// We don't want to use REP_NOTIFIERS with this boolean is because we're going to use Automatic Weapons. This will become expensive and demanding.
-									// We may need true to be played for a while because of the automatic fire. We'll need to use multicast RPC to do this.
-									// The NetMulticast RPC called from the server runs on server and clients. Where as the Server RPC only runs on the server, even when called on 
-									// the Client. When calling NetMulticast RPC from Client, it only runs on the Client (kinda worthless on client, more used on Server).
-	if (bFireButtonPressed) {
-		FHitResult HitResult;
-		TraceUnderCrosshairs(HitResult);	// This is how we create a Line Trace and receive the HitResult.
-
-		ServerFire(HitResult.ImpactPoint);	// Calling the Server RPC ServerFire(), so this function is only called on the server and not on any other clients
-							// and we don't need to include "_Implementation" to call it. Now we just need to do it on all Clients. We don't even need to check if this is on Server
-							// or not because we already declared it as a Server RPC. ".ImpactPoint" is a FVector_NetQuantize all along, already optimized for multiplayer.
-
-		if (EquippedWeapon) {
-			CrosshairShootingFactor += 1.f;
-			CrosshairShootingFactor = FMath::Clamp(CrosshairShootingFactor, 0.f, 3.f);
-			//UE_LOG(LogTemp, Error, TEXT("FireButtonPressed"));	
-		}
-	}
-}
-
-// This is where we're going to have our projectiles launch from the center of the screen.
-void UCombatComponent::TraceUnderCrosshairs(FHitResult& TraceHitResult)
-{
-	FVector2D ViewportSize;	// We need our viewport size, the dimensions of it. Essentially the screen of what players see. 
-	if (GEngine && GEngine->GameViewport) {	// We can get our Viewport from GEngine, but first we need to make sure that it's available.
-		GEngine->GameViewport->GetViewportSize(ViewportSize);	// This is how we get our Viewport Size from the function "GetViewportSize()".
-	}
-
-	// We can initalize the size of of our Vector, with the size of X and Y.
-	FVector2D CrosshairLocation(ViewportSize.X / 2.f, ViewportSize.Y / 2.f); // Now that we got our Viewport Size, we can get the X and Y Dimensions and manipulate to 
-															// get the center of the screen. Yet this is only local space and it's only in 2D. We need to take this information
-															// and transform it into 3D information.
-															
-	// This is how we'll turn our 2D screen space coordinate into 3D world-space point and direction.
-	FVector CrosshairWorldPosition;
-	FVector CrosshairWorldDirection;
-	
-	// We'll need to get the player controller and we can do this by calling player zero. Even though it's a multiplayer game, each machine has a player 0 playing the game.
-	bool bScreenToWorld = UGameplayStatics::DeprojectScreenToWorld(
-		UGameplayStatics::GetPlayerController(this, 0), // "this" satifies the WorldContextObject (what were referencing in the world), and then "0" is the player Index. 
-		CrosshairLocation, // Now we'll need an FVector 2D screen position, the position that we'd like to project into world coordinates, which is our CrosshairLocation.
-		CrosshairWorldPosition,	// World Position Vector
-		CrosshairWorldDirection	// World Direction
-	);	// After calling DeprojectScreenToWorld() function, our World Position and World Direction FVectors will automatically be filled in.
-	// DeprojectScreenToWorld returns a boolean if this DeProjection is successful, so we can store this.
-	
-	if (bScreenToWorld) {	// If this is true, we've successfully got our 2D screen coordinates to 3D Projection.
-		FVector Start = CrosshairWorldPosition; // The starting position for our line trace, we actually need to start infront of our Character.
-		
-		// We're gonna start the Line Trace infront of our Character.
-		if (Character) {
-			float DistanceToCharacter = (Character->GetActorLocation() - Start).Size();	// Size() Pretty much Makes this a vector. 			
-			Start += CrosshairWorldDirection * (DistanceToCharacter + 100.f);
-			// DrawDebugSphere(GetWorld(), Start, 16.f, 12, FColor::Red, false);
-		}
-
-		// This is how long we want our Raytrace to be.
-		FVector End = Start + CrosshairWorldDirection * TRACE_LENGTH;	// So End starts at the Start position (Center of our Screen), and project out forward 
-														// in the crosshair world direction by one unit, but we can move it out forward more by multiplying by something large.
-		// To perform the line trace.
-		GetWorld()->LineTraceSingleByChannel(
-			TraceHitResult,	// This will automatically be filled in by this LineTraceSingleByChannel. 
-			Start,	// This is where the Line Trace start.
-			End,	// This is where the Line Trace end.
-			ECollisionChannel::ECC_Visibility	// We also need a Collision Channel, we'll use visibility as this is the most common. Rest of the stuff is optional.
-		);	// Now our Line Trace will hit something and retain that information whenever it hits something. In the case that we Trace and it doesn't hit something,
-		// we still need an endpoint so we can launch our projectile in that direction.
-
-		//DrawDebugLine(GetWorld(), Start, End, FColor::Red, false, 2.0f, 0, 2.0f);
-
-		// DrawDebugLine(GetWorld(), CrosshairWorldPosition, End, FColor::Orange);
-		// This sets the color of our Crosshair depending on what our TraceHitResult returns.
-		if (TraceHitResult.GetActor() && TraceHitResult.GetActor()->Implements<UInteractWithCrosshairsInterface>()) { // Checking to see if that actor is valid and if that Actor implements "UInteractWithCrosshairsInterface" Interface.			
-			HUDPackage.CrosshairsColor = FLinearColor::Red;
-			/*
-			AActor* HitActor = TraceHitResult.GetActor();			
-			UE_LOG(LogTemp, Warning, TEXT("Hit Actor: %s, Class: %s"), *HitActor->GetName(), *HitActor->GetClass()->GetName());
-			if (TraceHitResult.GetActor()->Implements<UInteractWithCrosshairsInterface>()) {
-				UE_LOG(LogTemp, Warning, TEXT("True"));
-				HUDPackage.CrosshairsColor = FLinearColor::Red;
-			}
-			*/
-		}
-		else {
-			HUDPackage.CrosshairsColor = FLinearColor::White;
-		}
-		
-	}
-}
-
-// *REMEMBER, RPC needs _Implementation added to the function.	
-void UCombatComponent::ServerFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
-{
-	MulticastFire(TraceHitTarget);	// We can call this NetMulticast RPC "MulticastFire()" function here, because we need to call it on the server in order to replicate the fire effect for
-						// everyone, both clients and server.
-}
-
-// This is our NetMulticast RPC, and we'll need to call this from the Server RPC so all clients and server host can replicate the firing effects of our weapon.
-void UCombatComponent::MulticastFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
-{
-	if (EquippedWeapon == nullptr) { return; }
-
-	if (Character) {
-		EquippedWeapon->CenterOfCameraTransform = GetCenterOfCameraTransform();
-		Character->PlayFireMontage(bAiming);	// Play the montage for the character.
-		EquippedWeapon->Fire(TraceHitTarget);	// Play the weapons animation.
-	}
-}
-
-// We're gonna replicate this
-void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
-{
-	if (Character == nullptr || WeaponToEquip == nullptr) {	// Checking for validation
-		return;
-	}
-
-	EquippedWeapon = WeaponToEquip;	// Setting our Equipped Weapon instance to this "WeaponToEquip" class reference.
-	EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped);	// This sets our WeaponState to "Equipped".
-
-	const USkeletalMeshSocket* HandSocket = Character->GetMesh()->GetSocketByName(FName("RightHandSocket"));	// We'll define a HandSocket variable of type USkeletalMeshSocket.
-																												// Then, we'll retrieve our RightHandSocket that made and defined.
-	if (HandSocket) {	
-		HandSocket->AttachActor(EquippedWeapon, Character->GetMesh());	// In the HandSocket that we created to hold our weapon, we'll attach our "EquippedWeapon" reference.	
-		// AttachActor requires the Actor that attaches to the socket and the skeletal mesh component associated with the socket.
-	}
-
-	// We need the weapon owner to be the character. Ownership is very important. We own the pawn that we're controlling, but an actor (like a weapon), doesn't have a defined
-	// owner, but as soon as we equip it, we should set it's owner to the character that has equipped it.
-	EquippedWeapon->SetOwner(Character);	// This SetOwner() function sets the owner of the EquippedWeapon to the actor that's passed in reference (Character).
-	EquippedWeapon->SetHUDAmmo();
-	Character->GetCharacterMovement()->bOrientRotationToMovement = false;
-	Character->bUseControllerRotationYaw = true;
-	// RPC can be called both ways, so we could make an RPC to be called from the server and executed on a client, but we can use variable replication instead.
 }
