@@ -15,6 +15,13 @@ class BLASTERGAME_API UCharacterOverlay : public UUserWidget
 	GENERATED_BODY()
 	
 public:
+
+	UPROPERTY(meta = (BindWidget))	// This meta = (BindWidget) is needed to bind this variable to the progress bar within our CharacterOverlayWidget
+	class UProgressBar* HealthBar;
+
 	UPROPERTY(meta = (BindWidget))
-	class UTextBlock* WeaponAmmoAmount;
+	class UTextBlock* HealthText;
+
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* WeaponAmmoAmount;
 };

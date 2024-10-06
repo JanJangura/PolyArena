@@ -121,6 +121,16 @@ private:
 	float TimeSinceLastMovementReplication;
 	float CalculateSpeed();
 
+	// ***** PLAYER HEALTH *****
+	UPROPERTY(EditAnywhere, Category = "Player Stats")
+	float MaxHealth = 100.f;
+
+	UPROPERTY(ReplicatedUsing = OnRep_Health, VisibleAnywhere, Category = "Player Stats")
+	float Health = 100.f;	// We want to Replicate this.
+
+	UFUNCTION()
+	void OnRep_Health();
+
 public:	
 	/* Replication STEP 4. FORCEINLINE is a simple getter.
 	// We need a public setter for our "OverlappingWeapon" variable.

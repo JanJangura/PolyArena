@@ -1,23 +1,55 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "BlasterHUD.h"
+#include "GameFramework/Character.h"
 #include "GameFramework/PlayerController.h"
 #include "CharacterOverlay.h"
+#include "BlasterGame/Character/BlasterCharacter.h"
+#include "Kismet/GameplayStatics.h" 
+#include "LaunchGameButton.h"
 
 void ABlasterHUD::BeginPlay()
 {
 	Super::BeginPlay();
 
 	AddCharacterOverlay();
+	LaunchGameButtonFunction();
 }
 
+// This is where we create our Widget
 void ABlasterHUD::AddCharacterOverlay()
 {
+	// We need the Player Controller in order to create our Widget, because that's where we have to access in order to use our Widget.
 	APlayerController* PlayerController = GetOwningPlayerController();
-	if (PlayerController && CharacterOverlayClass) {
-		CharacterOverlay = CreateWidget<UCharacterOverlay>(PlayerController, CharacterOverlayClass);
-		CharacterOverlay->AddToViewport();
+	if (PlayerController && CharacterOverlayClass) {	// If our Player Controller and CharacterOverlayClass Widget is valid.
+
+		// We'll Create the Widget and then define which Class we're using, which is UCharacterOverlay, then what PlayerController, and then what Widget. Then
+		// CharacterOverlay is the object of this Class that we have specified. 
+		CharacterOverlay = CreateWidget<UCharacterOverlay>(PlayerController, CharacterOverlayClass); 
+
+		// Now we'll add this to our Viewport.
+		CharacterOverlay->AddToViewport();	
+	}
+}
+
+void ABlasterHUD::LaunchGameButtonFunction()
+{
+	class ABlasterCharacter* Character = Cast<ABlasterCharacter>(UGameplayStatics::GetPlayerCharacter(this,0));
+
+	if (Character && Character->HasAuthority()) {
+		APlayerController* PlayerController = GetOwningPlayerController();
+
+		if (PlayerController && LaunchGameButtonClass) {	// If our Player Controller and CharacterOverlayClass Widget is valid.
+
+			// We'll Create the Widget and then define which Class we're using, which is UCharacterOverlay, then what PlayerController, and then what Widget. Then
+			// CharacterOverlay is the object of this Class that we have specified. 
+			LaunchGameButton = CreateWidget<ULaunchGameButton>(PlayerController, LaunchGameButtonClass);
+
+			if (LaunchGameButton) {
+				// Now we'll add this to our Viewport.
+				LaunchGameButton->AddToViewport();
+			}
+		}
 	}
 }
 

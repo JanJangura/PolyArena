@@ -101,6 +101,7 @@ void ABlasterCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 	// to the client that owns the BlasterCharacter. So we should only see this pickup widget on the client that overlapped with the weapon. 
 	// *REMEMBER* This is called whenever the variable OverlappingWeapon changes value.
 	DOREPLIFETIME_CONDITION(ABlasterCharacter, OverlappingWeapon, COND_OwnerOnly); // This variable starts off uninitialized, it will be null until we set it.
+	DOREPLIFETIME(ABlasterCharacter, Health);
 }
 
 // RepNotifier that Unreal Made for our Characters Movements
@@ -252,6 +253,11 @@ float ABlasterCharacter::CalculateSpeed() {
 	FVector Velocity = GetVelocity();
 	Velocity.Z = 0.f;
 	return Velocity.Size();
+}
+
+void ABlasterCharacter::OnRep_Health()
+{
+
 }
 
 // This only happens when our character is not moving, when the character is still in idle position.

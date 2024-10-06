@@ -32,14 +32,21 @@ class BLASTERGAME_API ABlasterHUD : public AHUD
 public:
 	virtual void DrawHUD() override;
 
+	// This is so we can select in the Blaster HUD Blueprint and allow us to have the class we need when we'd like to create the Widget.
+	// Once we set this in our Blueprint, we can then create this Widget.
 	UPROPERTY(EditAnywhere, Category = "Player Stats")
-	TSubclassOf<class UUserWidget> CharacterOverlayClass;
+	TSubclassOf<class UUserWidget> CharacterOverlayClass;	// This is the CharacterOverlay Class that we'll need tp specify from BP.
+
+	UPROPERTY(EditAnywhere, Category = "Player Stats")
+	TSubclassOf<class UUserWidget> LaunchGameButtonClass;
 
 	class UCharacterOverlay* CharacterOverlay;
+	class ULaunchGameButton* LaunchGameButton;
 
 protected:
 	virtual void BeginPlay() override;
-	void AddCharacterOverlay();
+	void AddCharacterOverlay();	// This is a function to Add our Character Overlay Widget to this BlasterHUD.
+	void LaunchGameButtonFunction();
 
 private:
 	FHUDPackage HUDPackage;
