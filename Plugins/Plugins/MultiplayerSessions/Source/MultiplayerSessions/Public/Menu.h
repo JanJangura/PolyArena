@@ -62,7 +62,7 @@ private:
 	class UMultiplayerSessionsSubsystem* MultiplayerSessionsSubsystem;
 
 	// Match Settings
-	int32 NumPublicConnections{4};
+	int32 NumPublicConnections{10};
 	FString MatchType{TEXT("FreeForAll")};
 	FString PathToLobby{ TEXT("") };
 };

@@ -15,5 +15,13 @@ class BLASTERGAME_API ALobbyGameMode : public AGameMode
 	GENERATED_BODY()
 	
 public: 
+	UFUNCTION(BlueprintCallable)
 	virtual void PostLogin(APlayerController* NewPlayer) override;
+
+	UFUNCTION(BlueprintCallable)
+	void ServerJumpToGame(int32 TotalMaxPlayers);
+
+	// Lobby Settings
+	int32 CurrentNumOfPlayers;
+	int32 MaxPlayers{ 10 };
 };

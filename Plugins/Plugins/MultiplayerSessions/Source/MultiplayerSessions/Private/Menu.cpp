@@ -44,7 +44,7 @@ void UMenu::MenuSetup(int32 NumberOfPublicConnections, FString TypeOfMatch, FStr
 	}
 }
 
-bool UMenu::Initialize() // This is function Initializes immediately after the game is built.
+bool UMenu::Initialize() // This function Initializes immediately after the game is built.
 {
 	if (!Super::Initialize()) {
 		return false;
