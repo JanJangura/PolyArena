@@ -5,6 +5,7 @@
  
 #include "LobbyGameMode.h"
 #include "GameFramework/GameStateBase.h"
+#include "BlasterGame/HUD/BlasterHUD.h"
 
 void ALobbyGameMode::PostLogin(APlayerController* NewPlayer)
 {
@@ -23,7 +24,7 @@ void ALobbyGameMode::ServerJumpToGame(int32 TotalMaxPlayers)
 	// means you can actually detect when the object is being used. This PlayerArray contains a player state for each player who's joined the game and it being a TArray,
 	// it has a Num() function that returns the number of elements within the array as an int32.
 
-	if (CurrentNumOfPlayers == MaxPlayers) {	// We'll check to see if the amount of players have been met, so we can travel to the actual game when it's met.
+	if (CurrentNumOfPlayers == MaxPlayers || LaunchGameButtonClicked == true) {	// We'll check to see if the amount of players have been met, so we can travel to the actual game when it's met.
 		// We'll call ServerTravel() so all connecting players from the lobby, can travel to the Actual Game. Remember, ServerTravel() is a function that belongs to UWorld.
 		UWorld* World = GetWorld();
 

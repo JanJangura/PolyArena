@@ -66,6 +66,7 @@ private:
 	class ABlasterCharacter* Character;	
 	class ABlasterPlayerController* Controller;
 	class ABlasterHUD* HUD;
+	class ALobbyBlasterHUD* LobbyBlasterHUD;
 
 	// This is the variable for the weapon in which the Blaster Character currently has equipped.
 	UPROPERTY(ReplicatedUsing = OnRep_EquippedWeapon)	// We need to add this "Replicated" key term to indicate that this is Replicated across all clients. Otherwise we're only setting it on the Server.
@@ -99,6 +100,7 @@ private:
 	//	****** End of HUD and Crosshairs ******
 
 
+
 	// ****** Aiming and FOV ******
 	float DefaultFOV;	// Field of View when Not Aiming, set to the camera's base FOV in BeginPlay.
 
@@ -122,6 +124,7 @@ private:
 	void StartFireTimer();
 	void FireTimerFinished();
 
+	void PauseButtonToggle();
 public:	
 	
 

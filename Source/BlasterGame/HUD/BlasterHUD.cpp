@@ -7,20 +7,18 @@
 #include "BlasterGame/Character/BlasterCharacter.h"
 #include "Kismet/GameplayStatics.h" 
 #include "LaunchGameButton.h"
+#include "BlasterGame/PlayerController/BlasterPlayerController.h"
 
 void ABlasterHUD::BeginPlay()
 {
 	Super::BeginPlay();
 
-	AddCharacterOverlay();
-	LaunchGameButtonFunction();
+	DeclarationOfClasses();
 }
 
 // This is where we create our Widget
 void ABlasterHUD::AddCharacterOverlay()
 {
-	// We need the Player Controller in order to create our Widget, because that's where we have to access in order to use our Widget.
-	APlayerController* PlayerController = GetOwningPlayerController();
 	if (PlayerController && CharacterOverlayClass) {	// If our Player Controller and CharacterOverlayClass Widget is valid.
 
 		// We'll Create the Widget and then define which Class we're using, which is UCharacterOverlay, then what PlayerController, and then what Widget. Then
@@ -32,25 +30,34 @@ void ABlasterHUD::AddCharacterOverlay()
 	}
 }
 
-void ABlasterHUD::LaunchGameButtonFunction()
+void ABlasterHUD::AddPauseUI()
 {
-	class ABlasterCharacter* Character = Cast<ABlasterCharacter>(UGameplayStatics::GetPlayerCharacter(this,0));
-
-	if (Character && Character->HasAuthority()) {
-		APlayerController* PlayerController = GetOwningPlayerController();
-
-		if (PlayerController && LaunchGameButtonClass) {	// If our Player Controller and CharacterOverlayClass Widget is valid.
-
-			// We'll Create the Widget and then define which Class we're using, which is UCharacterOverlay, then what PlayerController, and then what Widget. Then
-			// CharacterOverlay is the object of this Class that we have specified. 
+	if (PlayerController->HasAuthority()) {
+		if (PlayerController && LaunchGameButtonClass) {
 			LaunchGameButton = CreateWidget<ULaunchGameButton>(PlayerController, LaunchGameButtonClass);
+			LaunchGameButton->AddToViewport();
+			LaunchGameButton->SetVisibility(ESlateVisibility::Hidden);
+		}
+		PauseUICreated = true;
+	}
+}
 
-			if (LaunchGameButton) {
-				// Now we'll add this to our Viewport.
-				LaunchGameButton->AddToViewport();
-			}
+void ABlasterHUD::DeclarationOfClasses()
+{
+	// We need the Player Controller in order to create our Widget, because that's where we have to access in order to use our Widget.
+	PlayerController = GetOwningPlayerController();
+	BlasterPlayerController = Cast<ABlasterPlayerController>(PlayerController);
+
+	if (PlayerController) {
+		APawn* ControlledPawn = PlayerController->GetPawn();
+
+		if (ControlledPawn) {
+			Character = Cast<ABlasterCharacter>(ControlledPawn);
 		}
 	}
+
+	AddCharacterOverlay();
+	AddPauseUI();
 }
 
 // This is where we get out HUD and then use this information so we can pass in out Textures and Draw the actual CrossHair.

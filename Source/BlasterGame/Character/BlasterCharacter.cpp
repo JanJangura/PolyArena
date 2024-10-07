@@ -14,6 +14,8 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "BlasterAnimInstance.h"
 #include "BlasterGame/BlasterGame.h"
+#include "BlasterGame/HUD/BlasterHUD.h"
+#include "BlasterGame/PlayerController/BlasterPlayerController.h"
 
 // Sets default values
 ABlasterCharacter::ABlasterCharacter()
@@ -141,6 +143,7 @@ void ABlasterCharacter::Tick(float DeltaTime)
 		CalculateAO_Pitch();
 	}
 	HideCameraIfCharacterClose();
+	
 }
 
 // Called to bind functionality to input. This is Character function.
@@ -163,6 +166,9 @@ void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	PlayerInputComponent->BindAction("Aim", IE_Released, this, &ABlasterCharacter::AimButtonReleased);
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &ABlasterCharacter::FireButtonPressed);
 	PlayerInputComponent->BindAction("Fire", IE_Released, this, &ABlasterCharacter::FireButtonReleased);
+
+	// This is our Pause Menu Logic
+	PlayerInputComponent->BindAction("PauseButton", IE_Pressed, this, &ABlasterCharacter::PauseButtonPressed);
 }
 
 void ABlasterCharacter::PostInitializeComponents()
@@ -341,6 +347,13 @@ void ABlasterCharacter::PlayHitReactMontage()
 		AnimInstance->Montage_Play(HitReactMontage);	// Play this Montage
 		FName SectionName("FromFront");
 		AnimInstance->Montage_JumpToSection(SectionName);	// Jump to the Anim Montage depending on the bool above and play that animation.
+	}
+}
+
+void ABlasterCharacter::PauseButtonPressed()
+{
+	if (Controller && HasAuthority()) {
+		//Combat->PauseButtonToggle();
 	}
 }
 

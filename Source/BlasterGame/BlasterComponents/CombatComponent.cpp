@@ -11,9 +11,10 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "DrawDebugHelpers.h"
 #include "BlasterGame/PlayerController/BlasterPlayerController.h"
-//#include "BlasterGame/HUD/BlasterHUD.h"
+#include "BlasterGame/HUD/BlasterHUD.h"
 #include "Camera/CameraComponent.h"
 #include "TimerManager.h"
+#include "BlasterGame/HUD/LobbyBlasterHUD.h"
 
 UCombatComponent::UCombatComponent()
 {
@@ -126,6 +127,15 @@ void UCombatComponent::FireTimerFinished()
 
 	if (bFireButtonPressed && EquippedWeapon->bAutomatic) {
 		Fire();
+	}
+}
+
+void UCombatComponent::PauseButtonToggle()
+{
+	LobbyBlasterHUD = LobbyBlasterHUD == nullptr ? Cast<ALobbyBlasterHUD>(Controller->GetHUD()) : LobbyBlasterHUD;
+
+	if (LobbyBlasterHUD) {
+//		LobbyBlasterHUD->ToggleLaunchGameButton();
 	}
 }
 

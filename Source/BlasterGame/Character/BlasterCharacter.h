@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "Net/UnrealNetwork.h"
 #include "BlasterGame/Interfaces/InteractWithCrosshairsInterface.h"
+#include "Blueprint/UserWidget.h"
 #include "BlasterCharacter.generated.h"
 
 UCLASS()
@@ -174,4 +175,6 @@ public:
 	FVector GetHitTarget() const;
 
 	FVector GetCenterOfCameraTransform();
+
+	void PauseButtonPressed();
 };

@@ -37,7 +37,7 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Player Stats")
 	TSubclassOf<class UUserWidget> CharacterOverlayClass;	// This is the CharacterOverlay Class that we'll need tp specify from BP.
 
-	UPROPERTY(EditAnywhere, Category = "Player Stats")
+	UPROPERTY(EditAnywhere, Category = "Launch Game")
 	TSubclassOf<class UUserWidget> LaunchGameButtonClass;
 
 	class UCharacterOverlay* CharacterOverlay;
@@ -46,7 +46,7 @@ public:
 protected:
 	virtual void BeginPlay() override;
 	void AddCharacterOverlay();	// This is a function to Add our Character Overlay Widget to this BlasterHUD.
-	void LaunchGameButtonFunction();
+
 
 private:
 	FHUDPackage HUDPackage;
@@ -58,5 +58,18 @@ private:
 	float CrosshairSpreadMax = 16.f;
 
 public:
+	class ABlasterCharacter* Character;
+
+	bool PauseUICreated = false;
+
+	APlayerController* PlayerController;
+	class ABlasterPlayerController* BlasterPlayerController;
+
+	void DeclarationOfClasses();
+	void AddPauseUI();
+
 	FORCEINLINE void SetHUDPackage(const FHUDPackage& Package) { HUDPackage = Package; }
+	FORCEINLINE bool RetrievePauseUICreated() { return PauseUICreated; }
+	FORCEINLINE APlayerController* RetrievePlayerController() { return PlayerController; }
+	FORCEINLINE ULaunchGameButton* RetrieveLaunchGameButton() { return LaunchGameButton; }
 };

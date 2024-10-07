@@ -13,5 +13,14 @@ UCLASS()
 class BLASTERGAME_API ULaunchGameButton : public UUserWidget
 {
 	GENERATED_BODY()
-	
+public:
+
+private:
+	UPROPERTY(meta = (BindWidget))	// This means that the button Widget on our blueprint will be linked to our button variable in C++.
+	class UButton* LaunchGameButton;
+
+	void LaunchButtonClicked();
+
+protected:
+	virtual bool Initialize() override; // This function is what the Menu Class Inherits. 
 };

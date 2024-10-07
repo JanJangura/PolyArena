@@ -16,8 +16,19 @@ class BLASTERGAME_API ABlasterPlayerController : public APlayerController
 
 public:
 	void SetHUDWeaponAmmo(int32 Ammo);
+	virtual void BeginPlay() override;
+	virtual void Tick(float DeltaTime) override;
 
 private:
 	UPROPERTY()
 	class ABlasterHUD* BlasterHUD;
+
+	class ABlasterCharacter* Character;
+;
+
+protected:
+	void TogglePauseMenu();
+
+public:
+
 };
