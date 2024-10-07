@@ -30,18 +30,6 @@ void ABlasterHUD::AddCharacterOverlay()
 	}
 }
 
-void ABlasterHUD::AddPauseUI()
-{
-	if (PlayerController->HasAuthority()) {
-		if (PlayerController && LaunchGameButtonClass) {
-			LaunchGameButton = CreateWidget<ULaunchGameButton>(PlayerController, LaunchGameButtonClass);
-			LaunchGameButton->AddToViewport();
-			LaunchGameButton->SetVisibility(ESlateVisibility::Hidden);
-		}
-		PauseUICreated = true;
-	}
-}
-
 void ABlasterHUD::DeclarationOfClasses()
 {
 	// We need the Player Controller in order to create our Widget, because that's where we have to access in order to use our Widget.
@@ -57,7 +45,7 @@ void ABlasterHUD::DeclarationOfClasses()
 	}
 
 	AddCharacterOverlay();
-	AddPauseUI();
+	//AddPauseUI();
 }
 
 // This is where we get out HUD and then use this information so we can pass in out Textures and Draw the actual CrossHair.

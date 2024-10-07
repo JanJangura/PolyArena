@@ -54,7 +54,7 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimi
 {
 	ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(OtherActor);
 	if (BlasterCharacter) {
-		UE_LOG(LogTemp, Warning, TEXT("%s"), BlasterCharacter ? TEXT("CharacterHit") : TEXT("CharacterNotHit"));
+		// UE_LOG(LogTemp, Warning, TEXT("%s"), BlasterCharacter ? TEXT("CharacterHit") : TEXT("CharacterNotHit"));
 		BlasterCharacter->MulticastHit();	// We call this function because we want it to be replicated throughout both Server and Clients.
 	}
 

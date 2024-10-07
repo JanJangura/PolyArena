@@ -135,7 +135,7 @@ void UCombatComponent::PauseButtonToggle()
 	LobbyBlasterHUD = LobbyBlasterHUD == nullptr ? Cast<ALobbyBlasterHUD>(Controller->GetHUD()) : LobbyBlasterHUD;
 
 	if (LobbyBlasterHUD) {
-//		LobbyBlasterHUD->ToggleLaunchGameButton();
+		LobbyBlasterHUD->ToggleLaunchGameButton();
 	}
 }
 

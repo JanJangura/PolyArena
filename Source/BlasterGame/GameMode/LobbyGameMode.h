@@ -13,6 +13,7 @@ UCLASS()
 class BLASTERGAME_API ALobbyGameMode : public AGameMode
 {
 	GENERATED_BODY()
+private:
 	
 public: 
 	UFUNCTION(BlueprintCallable)

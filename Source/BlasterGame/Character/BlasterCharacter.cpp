@@ -333,15 +333,6 @@ void ABlasterCharacter::PlayHitReactMontage()
 
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 
-	if (AnimInstance == nullptr) {
-		UE_LOG(LogTemp, Warning, TEXT("AnimInstance Nullptr"));
-	}
-	if (HitReactMontage == nullptr) {
-		UE_LOG(LogTemp, Warning, TEXT("HitReactMontage Nullptr"));
-	}
-
-
-
 	if (AnimInstance && HitReactMontage) {
 		UE_LOG(LogTemp, Warning, TEXT("AnimInstance & HitReactMontage NOT Nullptr"));
 		AnimInstance->Montage_Play(HitReactMontage);	// Play this Montage
@@ -353,7 +344,7 @@ void ABlasterCharacter::PlayHitReactMontage()
 void ABlasterCharacter::PauseButtonPressed()
 {
 	if (Controller && HasAuthority()) {
-		//Combat->PauseButtonToggle();
+		Combat->PauseButtonToggle();
 	}
 }
 

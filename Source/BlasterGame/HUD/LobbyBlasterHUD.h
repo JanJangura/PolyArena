@@ -13,17 +13,24 @@ UCLASS()
 class BLASTERGAME_API ALobbyBlasterHUD : public ABlasterHUD
 {
 	GENERATED_BODY()
-	
-private:
-	
-
-protected:
-	//virtual void BeginPlay() override;
 
 public:
-	//UUserWidget* LaunchGameButton;
+	ALobbyBlasterHUD();
 
-	//void ToggleLaunchGameButton();
-	//void HideLaunchGameButton();
-	//void ShowLaunchGameButton();
+private:
+	void AddPauseUI();
+
+protected:
+	virtual void BeginPlay() override;
+
+public:
+
+	UPROPERTY(EditAnywhere, Category = "Launch Game")
+	TSubclassOf<class UUserWidget> LaunchGameButtonClass;
+
+	class ULaunchGameButton* LaunchGameButton;
+
+	void ToggleLaunchGameButton();
+	void HideLaunchGameButton();
+	void ShowLaunchGameButton();
 };

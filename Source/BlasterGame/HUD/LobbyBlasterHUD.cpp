@@ -4,29 +4,35 @@
 #include "LobbyBlasterHUD.h"
 #include "BlasterGame/HUD/LaunchGameButton.h"
 
-/*
+ALobbyBlasterHUD::ALobbyBlasterHUD() {
+	static ConstructorHelpers::FClassFinder<ULaunchGameButton> WidgetClass(TEXT("/Game/BP_Shooter_Character/Blueprints/HUD/WBP_LaunchGameButton"));
+	if (WidgetClass.Succeeded())
+	{
+		LaunchGameButtonClass = WidgetClass.Class;
+	}
+}
+
 void ALobbyBlasterHUD::BeginPlay()
 {
 	Super::BeginPlay();
-	if (LaunchGameButton) {
-		LaunchGameButton = CreateWidget<ULaunchGameButton>(GetOwningPlayerController(), LaunchGameButtonClass);
 
-		if (LaunchGameButton)
-		{
-			LaunchGameButton->AddToViewport();
-		}
-		else
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Failed to create LaunchGameButton widget."));
-		}
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("LaunchGameButtonClass is null."));
-	}
-
-
+	AddPauseUI();
 }
+
+void ALobbyBlasterHUD::AddPauseUI()
+{
+	if (PlayerController) {
+		UE_LOG(LogTemp, Warning, TEXT("rEACHED"));
+		if (LaunchGameButtonClass) {
+			LaunchGameButton = CreateWidget<ULaunchGameButton>(PlayerController, LaunchGameButtonClass);
+			LaunchGameButton->AddToViewport();
+			LaunchGameButton->SetVisibility(ESlateVisibility::Hidden);
+			UE_LOG(LogTemp, Warning, TEXT("rEACHED"));
+		}
+		PauseUICreated = true;
+	}
+}
+
 
 void ALobbyBlasterHUD::HideLaunchGameButton()
 {
@@ -66,4 +72,4 @@ void ALobbyBlasterHUD::ToggleLaunchGameButton()
 			ShowLaunchGameButton();
 		}
 	}
-}*/
+}
