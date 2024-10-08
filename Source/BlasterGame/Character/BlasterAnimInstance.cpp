@@ -49,6 +49,10 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaTime)
 	// local variable "bAiming" to true, and then whenever this is true, the AnimInstance will switch to the aiming animation that we set up.
 	bAiming = BlasterCharacter->IsAiming();
 
+	// This is our ENUM Class
+	TurningInPlace = BlasterCharacter->GetTurningInPlace();
+
+	bElimmed = BlasterCharacter->IsElimmed();
 
 	// ******************************** Leaning and Strafing ********************************
 	// ******** Logic for STRAFING ********

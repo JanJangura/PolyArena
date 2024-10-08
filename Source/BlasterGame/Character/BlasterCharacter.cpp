@@ -61,6 +61,9 @@ ABlasterCharacter::ABlasterCharacter()
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);	// Mesh will now not block the camera.
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
 
+	// Default Value of TurningInPlace 
+	TurningInPlace = ETurningInPlace::ETIP_NotTurning;
+
 	// Setting the Net Frequency to a Default Value
 	NetUpdateFrequency = 66.f;
 	MinNetUpdateFrequency = 33.f;
@@ -68,17 +71,24 @@ ABlasterCharacter::ABlasterCharacter()
 	// Initializes the FireMontage for us because it doesnt work in blueprints.
 	static ConstructorHelpers::FObjectFinder<UAnimMontage> FireMontageAsset(TEXT("AnimMontage'/Game/BP_Shooter_Character/Animation/FireWeapon.FireWeapon'"));
 	static ConstructorHelpers::FObjectFinder<UAnimMontage> HitReactMontageAsset(TEXT("AnimMontage'/Game/BP_Shooter_Character/Animation/HitReact.HitReact'"));
+	static ConstructorHelpers::FObjectFinder<UAnimMontage> ElimMontageAsset(TEXT("AnimMontage'/Game/BP_Shooter_Character/Animation/Elim.Elim'"));
 
-	if (FireMontageAsset.Succeeded() && HitReactMontageAsset.Succeeded())
+	bool bMontagesAreValid = FireMontageAsset.Succeeded() 
+		&& HitReactMontageAsset.Succeeded() 
+		&& ElimMontageAsset.Succeeded();
+
+	if (bMontagesAreValid)
 	{
 		FireWeaponMontage = FireMontageAsset.Object;
 		HitReactMontage = HitReactMontageAsset.Object;
-		//UE_LOG(LogTemp, Warning, TEXT("FireWeaponMontage loaded successfully!"));
+		ElimMontage = ElimMontageAsset.Object;
+		// UE_LOG(LogTemp, Warning, TEXT("Elim loaded successfully!"));
 	}
 	else
 	{
 		FireWeaponMontage = nullptr;
 		HitReactMontageAsset = nullptr;
+		ElimMontage = nullptr;
 		//UE_LOG(LogTemp, Error, TEXT("Failed to load FireWeaponMontage."));
 	}
 	
@@ -115,9 +125,10 @@ void ABlasterCharacter::OnRep_ReplicatedMovement()
 	TimeSinceLastMovementReplication = 0.f;
 }
 
-void ABlasterCharacter::Elim()
+void ABlasterCharacter::Elim_Implementation()
 {
-
+	bElimmed = true;
+	PlayElimMontage();
 }
 
 // Called when the game starts or when spawned
@@ -300,17 +311,53 @@ void ABlasterCharacter::AimOffset(float DeltaTime)
 		// This is the Delta between CurrentAimRotation and StartingAimRotation. Difference in Rotation between our Starting and Current AimRotation.
 		FRotator DeltaAimRotation = UKismetMathLibrary::NormalizedDeltaRotator(CurrentAimRotation, StartingAimRotation);
 		AO_Yaw = DeltaAimRotation.Yaw;	// This is to Rotate our AimOffSet with our Mouse because remember it gets passed into BlasterAnimInstance.
-		bUseControllerRotationYaw = false;	// Setting our bUseControllerRotationYaw to false so our character doesn't turn in the direction of where our camera is facing. 
+
+		if (TurningInPlace == ETurningInPlace::ETIP_NotTurning) {
+			InterpAO_Yaw = AO_Yaw;
+		}
+		
+		bUseControllerRotationYaw = true;
+
+		if (!IsAiming()) {
+
+			TurningPlace(DeltaTime);
+		}
+		else {
+			AO_Yaw = 0.f;
+			TurningInPlace = ETurningInPlace::ETIP_NotTurning;
+			// bUseControllerRotationYaw = false; Setting our bUseControllerRotationYaw to false so our character doesn't turn in the direction of where our camera is facing. 
+		}
 	}
 
 	if (Speed > 0.f || bIsInAir) {	// Running, or Jumping.
 		StartingAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f);	// This is store for every single frame when running or in the air if we have a weapon.
 		AO_Yaw = 0.f;	// This Disables the rotation of AimOffSet because now we're moving and now AimOffSet Animation won't move.
 		bUseControllerRotationYaw = true; // Allows the character to rotate with the way the Camera is facing.
+		TurningInPlace = ETurningInPlace::ETIP_NotTurning;
 	}
 
 	CalculateAO_Pitch();
-	
+}
+
+void ABlasterCharacter::TurningPlace(float DeltaTime)
+{
+	// Remember that Yaw is our Horizonal Direction in which the player faces.
+	if (AO_Yaw > 90.f) {
+		TurningInPlace = ETurningInPlace::ETIP_Right;
+	}
+	else if (AO_Yaw < -90.f) {
+		TurningInPlace = ETurningInPlace::ETIP_Left;
+	}
+
+	if (TurningInPlace != ETurningInPlace::ETIP_NotTurning) {
+		InterpAO_Yaw = FMath::FInterpTo(InterpAO_Yaw, 0.f, DeltaTime, 4.f);
+		AO_Yaw = InterpAO_Yaw;
+
+		if (FMath::Abs(AO_Yaw) < 15.f) {
+			TurningInPlace = ETurningInPlace::ETIP_NotTurning;
+			StartingAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f);
+		}
+	}
 }
 
 void ABlasterCharacter::CalculateAO_Pitch()
@@ -343,6 +390,15 @@ void ABlasterCharacter::PlayFireMontage(bool bAiming)
 		FName SectionName;
 		SectionName = bAiming ? FName("RifleAim") : FName("RifleHip");	// If we're aiming, return the name "RifleAim" Montage Section, else return "RifleHip" Montage Secion.
 		AnimInstance->Montage_JumpToSection(SectionName);	// Jump to the Anim Montage depending on the bool above and play that animation.
+	}
+}
+
+void ABlasterCharacter::PlayElimMontage()
+{
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+
+	if (AnimInstance && ElimMontage) {
+		AnimInstance->Montage_Play(ElimMontage);	// Play this Montage
 	}
 }
 

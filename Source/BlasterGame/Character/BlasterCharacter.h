@@ -7,6 +7,7 @@
 #include "Net/UnrealNetwork.h"
 #include "BlasterGame/Interfaces/InteractWithCrosshairsInterface.h"
 #include "Blueprint/UserWidget.h"
+#include "BlasterGame/BlasterTypes/TurningInPlace.h"
 #include "BlasterCharacter.generated.h"
 
 UCLASS()
@@ -36,9 +37,13 @@ public:
 	// Play Fire Montage
 	void PlayFireMontage(bool bAiming);
 
+	// Play Elim Montage
+	void PlayElimMontage();
+
 	virtual void OnRep_ReplicatedMovement() override;
 
 	// Handles what happens when the player gets eliminated.
+	UFUNCTION(NetMulticast, Reliable)
 	void Elim();
 
 protected:
@@ -115,8 +120,12 @@ private:
 	void ServerEquippedButtonPressed();
 
 	float AO_Yaw;
+	float InterpAO_Yaw;
 	float AO_Pitch;
 	FRotator StartingAimRotation;
+
+	ETurningInPlace TurningInPlace;
+	void TurningPlace(float DeltaTime);
 
 	void HideCameraIfCharacterClose();
 
@@ -137,6 +146,8 @@ private:
 	void OnRep_Health();
 
 	class ABlasterPlayerController* BlasterPlayerController;
+
+	bool bElimmed = false;
 
 public:	
 	/* Replication STEP 4. FORCEINLINE is a simple getter.
@@ -161,6 +172,8 @@ public:
 
 	AWeapon* GetEquippedWeapon();
 
+	FORCEINLINE ETurningInPlace GetTurningInPlace() const { return TurningInPlace; }
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "C++ Jump")
 	float JumpHeight;
 
@@ -176,6 +189,9 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Animation")
 	class UAnimMontage* HitReactMontage;
 
+	UPROPERTY(EditAnywhere, Category = "Animation")
+	class UAnimMontage* ElimMontage;
+
 	FORCEINLINE UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 
 	FVector GetHitTarget() const;
@@ -183,4 +199,6 @@ public:
 	FVector GetCenterOfCameraTransform();
 
 	void PauseButtonPressed();
+
+	FORCEINLINE bool IsElimmed() const { return bElimmed; }
 };
