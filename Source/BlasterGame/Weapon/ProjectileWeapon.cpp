@@ -28,6 +28,7 @@ void AProjectileWeapon::Fire(const FVector& HitTarget)
 		else {
 			ToTarget = HitTarget - SocketTransform.GetLocation();				
 		}
+
 		TargetRotation = ToTarget.Rotation();
 
 		if (ProjectileClass && InstigatorPawn) {

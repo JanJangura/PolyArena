@@ -29,8 +29,6 @@ void ULaunchGameButton::LaunchButtonClicked()
 	if (GameModeBase) {
 		ALobbyGameMode* LobbyGameMode = Cast<ALobbyGameMode>(GameModeBase);
 		LobbyTearDown();
-		UE_LOG(LogTemp, Warning, TEXT("Called 1"));
-		
 		
 		if (LobbyGameMode) {
 			LobbyGameMode->LaunchGameButtonClicked = true;
@@ -47,30 +45,14 @@ void ULaunchGameButton::LobbyTearDown()
 {
 	RemoveFromParent(); // To Remove Widget
 
-	UWorld* World = GetWorld(); // Get Player Controller from the world
-	if (World) {
-		APlayerController* PlayerController = GetOwningPlayer(); //This is how we get our first player controller. 
-		if (PlayerController) {
-			ABlasterPlayerController* BlasterPlayerController = Cast<ABlasterPlayerController>(PlayerController);
+	APlayerController* PlayerController = GetOwningPlayer(); //This is how we get our first player controller. 
+	if (PlayerController) {
 
-			if (BlasterPlayerController) {
-				UE_LOG(LogTemp, Warning, TEXT("Called 2"));
-				BlasterPlayerController->SetNewHUD();
-			}
-			/*
-			FInputModeGameOnly InputModeData;
-			PlayerController->SetInputMode(InputModeData);
-			PlayerController->SetShowMouseCursor(false);
-			PlayerController->bShowMouseCursor = false;
-			*/
-			LobbyBlasterHUD = LobbyBlasterHUD == nullptr ? Cast<ALobbyBlasterHUD>(PlayerController->GetHUD()) : LobbyBlasterHUD;
-			if (LobbyBlasterHUD) {
-				LobbyBlasterHUD->HideLaunchGameButton();
-				UE_LOG(LogTemp, Warning, TEXT("Called 3"));
-			}
-			
-
-			
+		//ABlasterPlayerController* BlasterPlayerController = Cast<ABlasterPlayerController>(PlayerController);
+		
+		LobbyBlasterHUD = LobbyBlasterHUD == nullptr ? Cast<ALobbyBlasterHUD>(PlayerController->GetHUD()) : LobbyBlasterHUD;
+		if (LobbyBlasterHUD) {
+			LobbyBlasterHUD->HideLaunchGameButton();
 		}
 	}
 }

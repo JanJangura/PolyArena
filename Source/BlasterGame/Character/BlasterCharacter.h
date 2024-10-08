@@ -36,10 +36,10 @@ public:
 	// Play Fire Montage
 	void PlayFireMontage(bool bAiming);
 
-	UFUNCTION(NetMulticast, Unreliable)	// This is not very important, so we want it to be Unreliable
-	void MulticastHit();
-
 	virtual void OnRep_ReplicatedMovement() override;
+
+	// Handles what happens when the player gets eliminated.
+	void Elim();
 
 protected:
 	// Called when the game starts or when spawned
@@ -58,6 +58,10 @@ protected:
 	void FireButtonPressed();
 	void FireButtonReleased();
 	void PlayHitReactMontage(); // Play Hit React Montage
+
+	UFUNCTION()	// You will never get your callbacks called in response to a damage event if your receive damage function is not a UFUNCTION
+	void ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, class AController* InstigatorController, AActor* DamageCauser);
+	void UpdateHUDHealth();
 
 private:
 	// Setting up our Camera System
@@ -131,6 +135,8 @@ private:
 
 	UFUNCTION()
 	void OnRep_Health();
+
+	class ABlasterPlayerController* BlasterPlayerController;
 
 public:	
 	/* Replication STEP 4. FORCEINLINE is a simple getter.

@@ -45,7 +45,6 @@ void ABlasterHUD::DeclarationOfClasses()
 	}
 
 	AddCharacterOverlay();
-	//AddPauseUI();
 }
 
 // This is where we get out HUD and then use this information so we can pass in out Textures and Draw the actual CrossHair.

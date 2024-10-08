@@ -431,7 +431,9 @@ FVector UCombatComponent::GetCenterOfCameraTransform()
 		CrosshairWorldDirection	// World Direction
 	);
 
-	return CrosshairWorldDirection;
+	FVector Endpoint = CrosshairWorldDirection * 10000.f;
+
+	return Endpoint;
 }
 
 void UCombatComponent::SetAiming(bool bIsAiming)

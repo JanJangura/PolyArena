@@ -17,8 +17,8 @@ class BLASTERGAME_API ABlasterPlayerController : public APlayerController
 public:
 	ABlasterPlayerController();
 	void SetHUDWeaponAmmo(int32 Ammo);
-	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
+	void SetHUDHealth(float Health, float MaxHealth);
 
 private:
 	UPROPERTY()
@@ -27,12 +27,14 @@ private:
 	class ABlasterCharacter* Character;
 	AHUD* CurrentHUD;
 
+	/*
 	UPROPERTY(EditAnywhere, Category = "HUD")
 	TSubclassOf<ABlasterHUD> SpecialHUDClass;
+	*/
 
 protected:
-	
-
+	virtual void BeginPlay() override;
+	 
 public:
-	void SetNewHUD();
+	// void SetNewHUD();
 };

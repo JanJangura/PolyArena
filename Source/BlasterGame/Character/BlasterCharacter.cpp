@@ -16,6 +16,7 @@
 #include "BlasterGame/BlasterGame.h"
 #include "BlasterGame/HUD/BlasterHUD.h"
 #include "BlasterGame/PlayerController/BlasterPlayerController.h"
+#include "BlasterGame/GameMode/BlasterGameMode.h"
 
 // Sets default values
 ABlasterCharacter::ABlasterCharacter()
@@ -114,6 +115,11 @@ void ABlasterCharacter::OnRep_ReplicatedMovement()
 	TimeSinceLastMovementReplication = 0.f;
 }
 
+void ABlasterCharacter::Elim()
+{
+
+}
+
 // Called when the game starts or when spawned
 void ABlasterCharacter::BeginPlay()
 {
@@ -125,6 +131,12 @@ void ABlasterCharacter::BeginPlay()
 	GetMesh()->SetCollisionObjectType(ECC_SkeletalMesh); // Defaulting our Character to this Custom Collision that we created.
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);	// Mesh will now not block the camera.
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
+
+	UpdateHUDHealth();
+
+	if (HasAuthority()) {
+		OnTakeAnyDamage.AddDynamic(this, &ABlasterCharacter::ReceiveDamage);	// This is called because its linked with ApplyDamage on the Authority Character.
+	}
 }
 
 // Called every frame
@@ -263,7 +275,16 @@ float ABlasterCharacter::CalculateSpeed() {
 
 void ABlasterCharacter::OnRep_Health()
 {
+	UpdateHUDHealth();
+	PlayHitReactMontage();
+}
 
+void ABlasterCharacter::UpdateHUDHealth()
+{
+	BlasterPlayerController = BlasterPlayerController == nullptr ? Cast<ABlasterPlayerController>(Controller) : BlasterPlayerController;
+	if (BlasterPlayerController) {
+		BlasterPlayerController->SetHUDHealth(Health, MaxHealth);
+	}
 }
 
 // This only happens when our character is not moving, when the character is still in idle position.
@@ -338,6 +359,23 @@ void ABlasterCharacter::PlayHitReactMontage()
 		AnimInstance->Montage_Play(HitReactMontage);	// Play this Montage
 		FName SectionName("FromFront");
 		AnimInstance->Montage_JumpToSection(SectionName);	// Jump to the Anim Montage depending on the bool above and play that animation.
+	}
+}
+
+void ABlasterCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatorController, AActor* DamageCauser)
+{
+	Health = FMath::Clamp(Health - Damage, 0.f, MaxHealth);
+	UpdateHUDHealth();
+	PlayHitReactMontage();
+
+	if (Health <= 0.f) {
+		ABlasterGameMode* BlasterGameMode = GetWorld()->GetAuthGameMode<ABlasterGameMode>();
+		if (BlasterGameMode) {
+			BlasterPlayerController = BlasterPlayerController == nullptr ? Cast<ABlasterPlayerController>(Controller) : BlasterPlayerController;
+			ABlasterPlayerController* AttackerController = Cast<ABlasterPlayerController>(InstigatorController);
+
+			BlasterGameMode->PlayerEliminated(this, BlasterPlayerController, AttackerController);
+		}
 	}
 }
 
@@ -466,9 +504,4 @@ FVector ABlasterCharacter::GetCenterOfCameraTransform()
 {
 	if (Combat == nullptr) { return FVector(); }
 	return Combat->GetCenterOfCameraTransform();
-}
-
-void ABlasterCharacter::MulticastHit_Implementation()
-{
-	PlayHitReactMontage();
 }

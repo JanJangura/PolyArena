@@ -9,9 +9,12 @@
 #include "BlasterGame/HUD/LobbyBlasterHUD.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/HUD.h"
+#include "Components/ProgressBar.h"
+#include "Components/TextBlock.h"
 
 ABlasterPlayerController::ABlasterPlayerController()
 {
+	/*
 	static ConstructorHelpers::FClassFinder<ABlasterHUD> HUDClassFinder(TEXT("/Game/BP_Shooter_Character/Blueprints/HUD/BP_BlasterHUD"));
 	SpecialHUDClass = HUDClassFinder.Class;
 
@@ -20,6 +23,7 @@ ABlasterPlayerController::ABlasterPlayerController()
 	{
 		UE_LOG(LogTemp, Warning, TEXT("SpecialHUDClass could not be found!"));
 	}
+	*/
 }
 
 void ABlasterPlayerController::SetHUDWeaponAmmo(int32 Ammo)
@@ -37,7 +41,7 @@ void ABlasterPlayerController::SetHUDWeaponAmmo(int32 Ammo)
 void ABlasterPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
-	Character = Cast<ABlasterCharacter>(GetCharacter());
+	Character = Character == nullptr ? Cast<ABlasterCharacter>(GetCharacter()) : Character;
 	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
 }
 
@@ -48,29 +52,34 @@ void ABlasterPlayerController::Tick(float DeltaTime)
 
 }
 
+void ABlasterPlayerController::SetHUDHealth(float Health, float MaxHealth)
+{
+	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
+
+	bool bHUDValid = BlasterHUD && 
+		BlasterHUD->CharacterOverlay && 
+		BlasterHUD->CharacterOverlay->HealthBar && 
+		BlasterHUD->CharacterOverlay->HealthText;
+
+	if (bHUDValid) {
+		const float HealthPercent = Health / MaxHealth;
+		BlasterHUD->CharacterOverlay->HealthBar->SetPercent(HealthPercent);
+		FString HealthText = FString::Printf(TEXT("%d/%d"), FMath::CeilToInt(Health), FMath::CeilToInt(MaxHealth));
+		BlasterHUD->CharacterOverlay->HealthText->SetText(FText::FromString(HealthText));
+	}
+
+}
+
+/*
 void ABlasterPlayerController::SetNewHUD()
 {
 	UE_LOG(LogTemp, Warning, TEXT("SetNewHUD;"));
 
 	if (!SpecialHUDClass) { UE_LOG(LogTemp, Warning, TEXT("SpecialHUDClass;")); return; }
 
-	if (CurrentHUD) {
-		CurrentHUD->Destroy();
-		CurrentHUD = nullptr;
-		UE_LOG(LogTemp, Warning, TEXT("CurrentHUD->Destroy();"));
-	}
-
-	CurrentHUD = GetWorld()->SpawnActor<ABlasterHUD>(SpecialHUDClass);
-	UE_LOG(LogTemp, Warning, TEXT("CurrentHUD"));
-
-	if (CurrentHUD)
-	{
-		BlasterHUD = Cast<ABlasterHUD>(CurrentHUD);
 	
-		UE_LOG(LogTemp, Warning, TEXT("New HUD spawned and assigned successfully!"));
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Failed to spawn new HUD!"));
+	if (GEngine) {
+		GEngine->GameViewport->GetGameInstance()->GetFirstLocalPlayerController()->ClientSetHUD(SpecialHUDClass);
 	}
 }
+*/
