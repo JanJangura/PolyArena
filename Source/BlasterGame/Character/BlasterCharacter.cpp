@@ -95,7 +95,6 @@ ABlasterCharacter::ABlasterCharacter()
 		ElimMontage = nullptr;
 		//UE_LOG(LogTemp, Error, TEXT("Failed to load FireWeaponMontage."));
 	}
-	
 }
 
 // This is a Server Function that we need to let the Server know which variable we're replicating to the Owning Client.
@@ -133,11 +132,14 @@ void ABlasterCharacter::BeginPlay()
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);	// Mesh will now not block the camera.
 	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
 
-	UpdateHUDHealth();
-
 	if (HasAuthority()) {
 		OnTakeAnyDamage.AddDynamic(this, &ABlasterCharacter::ReceiveDamage);	// This is called because its linked with ApplyDamage on the Authority Character.
 	}
+
+	Health = MaxHealth;
+	UpdateHUDHealth();
+
+	UE_LOG(LogTemp, Warning, TEXT("Health: %f"), Health);
 }
 
 // Called every frame
@@ -294,6 +296,7 @@ void ABlasterCharacter::AimButtonPressed()
 {
 	if (Combat) {
 		Combat->SetAiming(true);
+		Combat->SetAiming(true);
 	}
 }
 
@@ -320,6 +323,11 @@ void ABlasterCharacter::OnRep_Health()
 void ABlasterCharacter::UpdateHUDHealth()
 {
 	BlasterPlayerController = BlasterPlayerController == nullptr ? Cast<ABlasterPlayerController>(Controller) : BlasterPlayerController;
+
+	if (HasAuthority()) {
+		UE_LOG(LogTemp, Warning, TEXT("BlasterPlayerController: %s"), BlasterPlayerController != nullptr ? TEXT("PlayController Valid") : TEXT("PlayerController is Not Valid"));
+	}
+	
 	if (BlasterPlayerController) {
 		BlasterPlayerController->SetHUDHealth(Health, MaxHealth);
 	}
@@ -431,7 +439,10 @@ void ABlasterCharacter::PlayElimMontage()
 
 void ABlasterCharacter::PlayHitReactMontage()
 {
-	if (Combat == nullptr && Combat->EquippedWeapon == nullptr) {
+	bool bCombat = Combat
+		&& Combat->EquippedWeapon;
+
+	if (!bCombat) {
 		return; 
 	}
 
@@ -446,13 +457,13 @@ void ABlasterCharacter::PlayHitReactMontage()
 
 void ABlasterCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatorController, AActor* DamageCauser)
 {
-	if (Health > 0.01f) {
+	if (Health > 0.f) {
 		Health = FMath::Clamp(Health - Damage, 0.f, MaxHealth);
 		UpdateHUDHealth();
 		PlayHitReactMontage();
 		UE_LOG(LogTemp, Warning, TEXT("HEALTH: %f"), Health);
 
-		if (Health <= 0.01f) {
+		if (Health <= 0.f) {
 			ABlasterGameMode* BlasterGameMode = GetWorld()->GetAuthGameMode<ABlasterGameMode>();
 			if (BlasterGameMode) {
 				BlasterPlayerController = BlasterPlayerController == nullptr ? Cast<ABlasterPlayerController>(Controller) : BlasterPlayerController;
@@ -472,6 +483,19 @@ void ABlasterCharacter::PauseButtonPressed()
 {
 	if (Controller && HasAuthority()) {
 		Combat->PauseButtonToggle();
+	}
+}
+
+void ABlasterCharacter::InitializePlayerHUDHealth()
+{
+	BlasterPlayerController = BlasterPlayerController == nullptr ? Cast<ABlasterPlayerController>(Controller) : BlasterPlayerController;
+
+	if (HasAuthority()) {
+		UE_LOG(LogTemp, Warning, TEXT("BlasterPlayerController: %s"), BlasterPlayerController != nullptr ? TEXT("PlayController Valid") : TEXT("PlayerController is Not Valid"));
+	}
+
+	if (BlasterPlayerController) {
+		UpdateHUDHealth();
 	}
 }
 

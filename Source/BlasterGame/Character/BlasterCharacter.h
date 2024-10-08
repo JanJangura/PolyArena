@@ -208,5 +208,7 @@ public:
 
 	void PauseButtonPressed();
 
+	void InitializePlayerHUDHealth();
+
 	FORCEINLINE bool IsElimmed() const { return bElimmed; }
 };
