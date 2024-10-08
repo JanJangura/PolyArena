@@ -16,6 +16,7 @@
 #include "BlasterGame/BlasterGame.h"
 #include "BlasterGame/HUD/BlasterHUD.h"
 #include "BlasterGame/PlayerController/BlasterPlayerController.h"
+#include "TimerManager.h"
 #include "BlasterGame/GameMode/BlasterGameMode.h"
 
 // Sets default values
@@ -125,10 +126,34 @@ void ABlasterCharacter::OnRep_ReplicatedMovement()
 	TimeSinceLastMovementReplication = 0.f;
 }
 
-void ABlasterCharacter::Elim_Implementation()
+// This is the Server that we'll call from the GameMode, then on the server we'll call MulticastElim() because that's including Clients and Server, but we only want the Server which is here.
+void ABlasterCharacter::Elim()
+{
+	MulticastElim();
+
+	// Here is our Timer that we would like to wait, clarified by ElimDelay, and then we call the function within it "ElimTimerFinished" so in there we can Respawn. 
+	GetWorldTimerManager().SetTimer(
+		ElimTimer,
+		this,
+		&ABlasterCharacter::ElimTimerFinished,
+		ElimDelay
+	);
+}
+
+// Remember, this is an Multicast RPC
+void ABlasterCharacter::MulticastElim_Implementation()
 {
 	bElimmed = true;
 	PlayElimMontage();
+}
+
+void ABlasterCharacter::ElimTimerFinished()
+{
+	// Get the GameMode so we can Request for a Respawn.
+	ABlasterGameMode* BlasterGameMode = GetWorld()->GetAuthGameMode<ABlasterGameMode>();
+	if (BlasterGameMode) {
+		BlasterGameMode->RequestRespawn(this, Controller);
+	}
 }
 
 // Called when the game starts or when spawned
@@ -422,9 +447,12 @@ void ABlasterCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const 
 {
 	Health = FMath::Clamp(Health - Damage, 0.f, MaxHealth);
 	UpdateHUDHealth();
-	PlayHitReactMontage();
 
-	if (Health <= 0.f) {
+	
+	if(Health > 0.1f){ 
+		PlayHitReactMontage(); 
+	}
+	else {
 		ABlasterGameMode* BlasterGameMode = GetWorld()->GetAuthGameMode<ABlasterGameMode>();
 		if (BlasterGameMode) {
 			BlasterPlayerController = BlasterPlayerController == nullptr ? Cast<ABlasterPlayerController>(Controller) : BlasterPlayerController;

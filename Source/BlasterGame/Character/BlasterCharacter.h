@@ -42,9 +42,11 @@ public:
 
 	virtual void OnRep_ReplicatedMovement() override;
 
+	void Elim();
+
 	// Handles what happens when the player gets eliminated.
 	UFUNCTION(NetMulticast, Reliable)
-	void Elim();
+	void MulticastElim();
 
 protected:
 	// Called when the game starts or when spawned
@@ -148,6 +150,13 @@ private:
 	class ABlasterPlayerController* BlasterPlayerController;
 
 	bool bElimmed = false;
+
+	FTimerHandle ElimTimer;
+
+	UPROPERTY(EditDefaultsOnly) // EditDefaultsOnly allows us to Edit this but only on the Default Character.
+	float ElimDelay = 3.f;
+
+	void ElimTimerFinished();
 
 public:	
 	/* Replication STEP 4. FORCEINLINE is a simple getter.
