@@ -6,7 +6,7 @@
         "PCH": "c:\\users\\alexm\\documents\\github\\polyarena\\intermediate\\build\\win64\\x64\\blastergameeditor\\development\\unrealed\\sharedpch.unrealed.project.novalfmtstr.valapi.cpp20.inclorderunreal5_3.h.pch",
         "Includes": [
             "c:\\users\\alexm\\documents\\github\\polyarena\\plugins\\plugins\\multiplayersessions\\intermediate\\build\\win64\\x64\\unrealeditor\\development\\multiplayersessions\\definitions.multiplayersessions.h",
-            "c:\\users\\alexm\\documents\\github\\polyarena\\plugins\\plugins\\multiplayersessions\\source\\multiplayersessions\\private\\menu.cpp",
+            "c:\\users\\alexm\\documents\\github\\polyarena\\plugins\\plugins\\multiplayersessions\\intermediate\\build\\win64\\unrealeditor\\inc\\multiplayersessions\\uht\\menu.gen.cpp",
             "c:\\users\\alexm\\documents\\github\\polyarena\\plugins\\plugins\\multiplayersessions\\source\\multiplayersessions\\public\\menu.h",
             "c:\\program files\\epic games\\ue_5.4\\engine\\source\\runtime\\umg\\public\\blueprint\\userwidget.h",
             "c:\\program files\\epic games\\ue_5.4\\engine\\source\\runtime\\umg\\public\\blueprint\\widgetchild.h",
@@ -57,6 +57,9 @@
             "c:\\program files\\epic games\\ue_5.4\\engine\\plugins\\online\\onlinebase\\source\\public\\online\\onlinesessionnames.h",
             "c:\\users\\alexm\\documents\\github\\polyarena\\plugins\\plugins\\multiplayersessions\\intermediate\\build\\win64\\unrealeditor\\inc\\multiplayersessions\\uht\\multiplayersessionssubsystem.generated.h",
             "c:\\users\\alexm\\documents\\github\\polyarena\\plugins\\plugins\\multiplayersessions\\intermediate\\build\\win64\\unrealeditor\\inc\\multiplayersessions\\uht\\menu.generated.h",
+            "c:\\users\\alexm\\documents\\github\\polyarena\\plugins\\plugins\\multiplayersessions\\intermediate\\build\\win64\\unrealeditor\\inc\\multiplayersessions\\uht\\multiplayersessions.init.gen.cpp",
+            "c:\\users\\alexm\\documents\\github\\polyarena\\plugins\\plugins\\multiplayersessions\\intermediate\\build\\win64\\unrealeditor\\inc\\multiplayersessions\\uht\\multiplayersessionssubsystem.gen.cpp",
+            "c:\\users\\alexm\\documents\\github\\polyarena\\plugins\\plugins\\multiplayersessions\\source\\multiplayersessions\\private\\menu.cpp",
             "c:\\users\\alexm\\documents\\github\\polyarena\\plugins\\plugins\\multiplayersessions\\source\\multiplayersessions\\private\\multiplayersessions.cpp",
             "c:\\users\\alexm\\documents\\github\\polyarena\\plugins\\plugins\\multiplayersessions\\source\\multiplayersessions\\public\\multiplayersessions.h",
             "c:\\users\\alexm\\documents\\github\\polyarena\\plugins\\plugins\\multiplayersessions\\source\\multiplayersessions\\private\\multiplayersessionssubsystem.cpp"

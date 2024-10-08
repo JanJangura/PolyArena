@@ -27,7 +27,7 @@ void ABlasterGameMode::RequestRespawn(ACharacter* ElimmedCharacter, AController*
 		ElimmedCharacter->Destroy(); 
 	}
 	if (ElimmedController) {
-
+		
 		// This is a function that the Game Mode inherits called "RestartPlayerAtPlayerStart()", there are multiple functions for restarting a Player, but 
 		// "RestartPlayerAtPlayerStart" takes an actor, which it uses as a Player Start and it spawns a new character at the location of that Start Spot.
 		// So RestartPlayerAtPlayerStart can take any actor and it'll spawn the character at that start spot, but we would usually use a PlayerStart for this found in Editor.

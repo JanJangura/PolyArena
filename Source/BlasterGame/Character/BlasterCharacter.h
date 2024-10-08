@@ -152,11 +152,19 @@ private:
 	bool bElimmed = false;
 
 	FTimerHandle ElimTimer;
+	FTimerHandle TimerHandle_UpdateHUD;
+	FTimerHandle TimerHandle_ElimMontage;
+	FTimerHandle TimerHandle_DeathMontage;
 
 	UPROPERTY(EditDefaultsOnly) // EditDefaultsOnly allows us to Edit this but only on the Default Character.
 	float ElimDelay = 3.f;
 
 	void ElimTimerFinished();
+
+	void InitializePlayerHUDHealth();
+
+	void EliminatePlayer(AController* InstigatorController);
+
 public:	
 	/* Replication STEP 4. FORCEINLINE is a simple getter.
 	// We need a public setter for our "OverlappingWeapon" variable.
@@ -207,8 +215,6 @@ public:
 	FVector GetCenterOfCameraTransform();
 
 	void PauseButtonPressed();
-
-	void InitializePlayerHUDHealth();
 
 	FORCEINLINE bool IsElimmed() const { return bElimmed; }
 };
