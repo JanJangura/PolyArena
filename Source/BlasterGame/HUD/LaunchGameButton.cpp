@@ -12,33 +12,30 @@
 
 void ULaunchGameButton::NativeConstruct()
 {
+	Super::NativeConstruct();
 	if (LaunchGameButton) {
 		LaunchGameButton->OnClicked.AddDynamic(this, &ULaunchGameButton::LaunchButtonClicked);
-
 	}
 	UE_LOG(LogTemp, Warning, TEXT("Called 4"));
-	Super::NativeConstruct();
 }
 
 void ULaunchGameButton::LaunchButtonClicked()
 {
-	LaunchGameButton->SetIsEnabled(false);
-
+	if (LaunchGameButton) {
+		LaunchGameButton->SetIsEnabled(false);
+	}
+	
 	AGameModeBase* GameModeBase = UGameplayStatics::GetGameMode(this);
 
 	if (GameModeBase) {
 		ALobbyGameMode* LobbyGameMode = Cast<ALobbyGameMode>(GameModeBase);
-		LobbyTearDown();
 		
 		if (LobbyGameMode) {
-			LobbyGameMode->LaunchGameButtonClicked = true;
-			LobbyGameMode->ServerJumpToGame(LobbyGameMode->MaxPlayers);
+			LobbyTearDown();
+			LobbyGameMode->ServerJumpToGame(LobbyGameMode->CurrentNumOfPlayers);
 			UE_LOG(LogTemp, Warning, TEXT("LaunchGameButtonClicked"));
 		}
-		
-		
 	}
-	
 }
 
 void ULaunchGameButton::LobbyTearDown()
@@ -46,11 +43,13 @@ void ULaunchGameButton::LobbyTearDown()
 	RemoveFromParent(); // To Remove Widget
 
 	APlayerController* PlayerController = GetOwningPlayer(); //This is how we get our first player controller. 
+
 	if (PlayerController) {
 
 		//ABlasterPlayerController* BlasterPlayerController = Cast<ABlasterPlayerController>(PlayerController);
 		
-		LobbyBlasterHUD = LobbyBlasterHUD == nullptr ? Cast<ALobbyBlasterHUD>(PlayerController->GetHUD()) : LobbyBlasterHUD;
+		class ALobbyBlasterHUD* LobbyBlasterHUD = Cast<ALobbyBlasterHUD>(PlayerController->GetHUD());
+
 		if (LobbyBlasterHUD) {
 			LobbyBlasterHUD->HideLaunchGameButton();
 		}

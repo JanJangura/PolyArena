@@ -157,7 +157,6 @@ private:
 	float ElimDelay = 3.f;
 
 	void ElimTimerFinished();
-
 public:	
 	/* Replication STEP 4. FORCEINLINE is a simple getter.
 	// We need a public setter for our "OverlappingWeapon" variable.

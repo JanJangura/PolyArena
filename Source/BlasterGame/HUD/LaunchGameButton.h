@@ -26,7 +26,6 @@ private:
 	
 	void LobbyTearDown();
 
-	class ALobbyBlasterHUD* LobbyBlasterHUD;
 protected:
 	
 };

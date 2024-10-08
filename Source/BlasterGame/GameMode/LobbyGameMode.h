@@ -22,9 +22,6 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void ServerJumpToGame(int32 TotalMaxPlayers);
 
-	// If the LaunchGameButton is clicked, then this needs to be true.
-	bool LaunchGameButtonClicked = false;
-
 	// Lobby Settings
 	int32 CurrentNumOfPlayers;
 	int32 MaxPlayers{ 10 };

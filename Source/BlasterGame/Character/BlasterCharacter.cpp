@@ -25,6 +25,9 @@ ABlasterCharacter::ABlasterCharacter()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	// Adjusting our Spawn Location
+	SpawnCollisionHandlingMethod = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+
 	// Constructing our Camera Boom
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));	
 	CameraBoom->SetupAttachment(GetMesh()); // Attaching our Camera Boom to our Character's Mesh. This is because when we crouch, our character's capsule changes size.
@@ -118,6 +121,43 @@ void ABlasterCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 	DOREPLIFETIME(ABlasterCharacter, Health);
 }
 
+// Called when the game starts or when spawned
+void ABlasterCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+
+	// Blocking Camera Issue 
+	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);	// Capsule will now not block the camera.
+	GetMesh()->SetCollisionObjectType(ECC_SkeletalMesh); // Defaulting our Character to this Custom Collision that we created.
+	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);	// Mesh will now not block the camera.
+	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
+
+	UpdateHUDHealth();
+
+	if (HasAuthority()) {
+		OnTakeAnyDamage.AddDynamic(this, &ABlasterCharacter::ReceiveDamage);	// This is called because its linked with ApplyDamage on the Authority Character.
+	}
+}
+
+// Called every frame
+void ABlasterCharacter::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	if (GetLocalRole() > ENetRole::ROLE_SimulatedProxy && IsLocallyControlled()) {	// This Greater Sign means that we only want to play AimOffSet with any roles above SimulatedProxy().
+		AimOffset(DeltaTime);
+	}
+	else {
+		TimeSinceLastMovementReplication += DeltaTime;
+		if (TimeSinceLastMovementReplication > 0.25f) {
+			OnRep_ReplicatedMovement();
+		}
+		CalculateAO_Pitch();
+	}
+	HideCameraIfCharacterClose();
+}
+
 // RepNotifier that Unreal Made for our Characters Movements
 void ABlasterCharacter::OnRep_ReplicatedMovement()
 {
@@ -154,44 +194,6 @@ void ABlasterCharacter::ElimTimerFinished()
 	if (BlasterGameMode) {
 		BlasterGameMode->RequestRespawn(this, Controller);
 	}
-}
-
-// Called when the game starts or when spawned
-void ABlasterCharacter::BeginPlay()
-{
-	Super::BeginPlay();
-
-	// Blocking Camera Issue 
-	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
-	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);	// Capsule will now not block the camera.
-	GetMesh()->SetCollisionObjectType(ECC_SkeletalMesh); // Defaulting our Character to this Custom Collision that we created.
-	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);	// Mesh will now not block the camera.
-	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
-
-	UpdateHUDHealth();
-
-	if (HasAuthority()) {
-		OnTakeAnyDamage.AddDynamic(this, &ABlasterCharacter::ReceiveDamage);	// This is called because its linked with ApplyDamage on the Authority Character.
-	}
-}
-
-// Called every frame
-void ABlasterCharacter::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-	if (GetLocalRole() > ENetRole::ROLE_SimulatedProxy && IsLocallyControlled()) {	// This Greater Sign means that we only want to play AimOffSet with any roles above SimulatedProxy().
-		AimOffset(DeltaTime);
-	}
-	else {
-		TimeSinceLastMovementReplication += DeltaTime;
-		if (TimeSinceLastMovementReplication > 0.25f) {
-			OnRep_ReplicatedMovement();
-		}
-		CalculateAO_Pitch();
-	}
-	HideCameraIfCharacterClose();
-	
 }
 
 // Called to bind functionality to input. This is Character function.
@@ -436,7 +438,6 @@ void ABlasterCharacter::PlayHitReactMontage()
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 
 	if (AnimInstance && HitReactMontage) {
-		UE_LOG(LogTemp, Warning, TEXT("AnimInstance & HitReactMontage NOT Nullptr"));
 		AnimInstance->Montage_Play(HitReactMontage);	// Play this Montage
 		FName SectionName("FromFront");
 		AnimInstance->Montage_JumpToSection(SectionName);	// Jump to the Anim Montage depending on the bool above and play that animation.
@@ -445,22 +446,26 @@ void ABlasterCharacter::PlayHitReactMontage()
 
 void ABlasterCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatorController, AActor* DamageCauser)
 {
-	Health = FMath::Clamp(Health - Damage, 0.f, MaxHealth);
-	UpdateHUDHealth();
+	if (Health > 0.01f) {
+		Health = FMath::Clamp(Health - Damage, 0.f, MaxHealth);
+		UpdateHUDHealth();
+		PlayHitReactMontage();
+		UE_LOG(LogTemp, Warning, TEXT("HEALTH: %f"), Health);
 
-	
-	if(Health > 0.1f){ 
-		PlayHitReactMontage(); 
-	}
-	else {
-		ABlasterGameMode* BlasterGameMode = GetWorld()->GetAuthGameMode<ABlasterGameMode>();
-		if (BlasterGameMode) {
-			BlasterPlayerController = BlasterPlayerController == nullptr ? Cast<ABlasterPlayerController>(Controller) : BlasterPlayerController;
-			ABlasterPlayerController* AttackerController = Cast<ABlasterPlayerController>(InstigatorController);
+		if (Health <= 0.01f) {
+			ABlasterGameMode* BlasterGameMode = GetWorld()->GetAuthGameMode<ABlasterGameMode>();
+			if (BlasterGameMode) {
+				BlasterPlayerController = BlasterPlayerController == nullptr ? Cast<ABlasterPlayerController>(Controller) : BlasterPlayerController;
+				ABlasterPlayerController* AttackerController = Cast<ABlasterPlayerController>(InstigatorController);
 
-			BlasterGameMode->PlayerEliminated(this, BlasterPlayerController, AttackerController);
+				if (BlasterPlayerController && AttackerController) {
+					bElimmed = true;
+					BlasterGameMode->PlayerEliminated(this, BlasterPlayerController, AttackerController);
+				}
+			}
 		}
 	}
+	
 }
 
 void ABlasterCharacter::PauseButtonPressed()

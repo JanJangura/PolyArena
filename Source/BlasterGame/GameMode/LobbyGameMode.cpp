@@ -12,8 +12,13 @@ void ALobbyGameMode::PostLogin(APlayerController* NewPlayer)
 	// PostLogin() is the first place where it's safe to access the player's controller that has just joined the game. 
 	Super::PostLogin(NewPlayer);
 
-	CurrentNumOfPlayers = GameState.Get()->PlayerArray.Num();
-	ServerJumpToGame(MaxPlayers);
+	if (GameState) {
+		CurrentNumOfPlayers = GameState->PlayerArray.Num();
+
+		if (CurrentNumOfPlayers == MaxPlayers) {
+			ServerJumpToGame(MaxPlayers);
+		}
+	}
 }
 
 void ALobbyGameMode::ServerJumpToGame(int32 TotalMaxPlayers)
@@ -24,7 +29,7 @@ void ALobbyGameMode::ServerJumpToGame(int32 TotalMaxPlayers)
 	// means you can actually detect when the object is being used. This PlayerArray contains a player state for each player who's joined the game and it being a TArray,
 	// it has a Num() function that returns the number of elements within the array as an int32.
 
-	if (CurrentNumOfPlayers == MaxPlayers || LaunchGameButtonClicked == true) {	// We'll check to see if the amount of players have been met, so we can travel to the actual game when it's met.
+	if (CurrentNumOfPlayers == MaxPlayers) {	// We'll check to see if the amount of players have been met, so we can travel to the actual game when it's met.
 		// We'll call ServerTravel() so all connecting players from the lobby, can travel to the Actual Game. Remember, ServerTravel() is a function that belongs to UWorld.
 		UWorld* World = GetWorld();
 
@@ -32,10 +37,10 @@ void ALobbyGameMode::ServerJumpToGame(int32 TotalMaxPlayers)
 			// We want to travel Seamlessly to the Game Level. So we'll use the boolean variable called "bUseSeamlessTravel" that exists on the GameMode class and set that to true.
 			bUseSeamlessTravel = true;
 
-			// ServerTravel() takes in an address to travel to. The server only ever exists on the GameMode, so when we call this function, we can travel to the level we want to. 
+				// ServerTravel() takes in an address to travel to. The server only ever exists on the GameMode, so when we call this function, we can travel to the level we want to. 
 			// Then all connected clients will travel to that level. In parameters, ServerTravel() takes an FString, then we can use the syntax "?" to add additional options to 
 			// the address. In this case, the option we need is "listen" because we want to dedicate this BlasterMap to be opened as a listen server for clients to connect to. 
-			World->ServerTravel(FString("/Game/Scenes/BlasterMap?listen"));
+				World->ServerTravel(FString("/Game/Scenes/BlasterMap?listen"));
 		}
 	}
 }
