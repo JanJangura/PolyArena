@@ -32,16 +32,7 @@ void ABlasterPlayerController::OnPossess(APawn* InPawn)
 
 ABlasterPlayerController::ABlasterPlayerController()
 {
-	/*
-	static ConstructorHelpers::FClassFinder<ABlasterHUD> HUDClassFinder(TEXT("/Game/BP_Shooter_Character/Blueprints/HUD/BP_BlasterHUD"));
-	SpecialHUDClass = HUDClassFinder.Class;
 
-	// Ensure that SpecialHUDClass is valid
-	if (!SpecialHUDClass)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("SpecialHUDClass could not be found!"));
-	}
-	*/
 }
 
 void ABlasterPlayerController::SetHUDWeaponAmmo(int32 Ammo)
@@ -53,6 +44,19 @@ void ABlasterPlayerController::SetHUDWeaponAmmo(int32 Ammo)
 	if (bHUDValid) {
 		FString AmmoText = FString::Printf(TEXT("%d"), Ammo);
 		BlasterHUD->CharacterOverlay->WeaponAmmoAmount->SetText(FText::FromString(AmmoText));
+	}
+}
+
+void ABlasterPlayerController::SetHUDCarriedAmmo(int32 Ammo)
+{
+	bool bHUDValid = BlasterHUD &&
+		BlasterHUD->CharacterOverlay &&
+		BlasterHUD->CharacterOverlay->CarriedAmmoAmount;
+
+	if (bHUDValid) {
+		//FString AmmoText = FString::Printf(TEXT("%d"), Ammo);
+		FString AmmoText = FString::Printf(TEXT("INFINITE"));
+		BlasterHUD->CharacterOverlay->CarriedAmmoAmount->SetText(FText::FromString(AmmoText));
 	}
 }
 
@@ -81,17 +85,3 @@ void ABlasterPlayerController::SetHUDHealth(float Health, float MaxHealth)
 	}
 
 }
-
-/*
-void ABlasterPlayerController::SetNewHUD()
-{
-	UE_LOG(LogTemp, Warning, TEXT("SetNewHUD;"));
-
-	if (!SpecialHUDClass) { UE_LOG(LogTemp, Warning, TEXT("SpecialHUDClass;")); return; }
-
-	
-	if (GEngine) {
-		GEngine->GameViewport->GetGameInstance()->GetFirstLocalPlayerController()->ClientSetHUD(SpecialHUDClass);
-	}
-}
-*/

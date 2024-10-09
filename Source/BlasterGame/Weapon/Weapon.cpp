@@ -119,6 +119,12 @@ void AWeapon::OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActo
 	}
 }
 
+void AWeapon::AddAmmo(int32 AmmoToAdd)
+{
+	Ammo += AmmoToAdd;
+	SetHUDAmmo();
+}
+
 void AWeapon::SetHUDAmmo()
 {
 	BlasterOwnerCharacter = BlasterOwnerCharacter == nullptr ? Cast<ABlasterCharacter>(GetOwner()) : BlasterOwnerCharacter;
@@ -144,7 +150,13 @@ void AWeapon::OnRep_Ammo()
 void AWeapon::OnRep_Owner()
 {
 	Super::OnRep_Owner();
-	SetHUDAmmo();
+	if (Owner == nullptr) {
+		BlasterOwnerCharacter = nullptr;
+		BlasterOwnerController = nullptr;
+	}
+	else {
+		SetHUDAmmo();
+	}
 }
 
 void AWeapon::SetWeaponState(EWeaponState State)
@@ -156,9 +168,20 @@ void AWeapon::SetWeaponState(EWeaponState State)
 	case EWeaponState::EWS_Equipped:
 		ShowPickupWidget(false); // Now that we picked up this weapon, we don't need to prompt the "Press E" widget anymore. We'll turn it off here.
 		AreaSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision); // Removing the Collision off of the weapon now on the server.
+		WeaponMesh->SetSimulatePhysics(false);	// This is how we allow our Gun to fall to the ground.
+		WeaponMesh->SetEnableGravity(false);
+		WeaponMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		break;
 	case EWeaponState::EWS_Dropped:
-		AreaSphere->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics); 
+		if (HasAuthority()) {	// Need to make sure that Spawning the AreaSphere is on the server and not on the client.
+			AreaSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+		}
+		WeaponMesh->SetSimulatePhysics(true);	// This is how we allow our Gun to fall to the ground.
+		WeaponMesh->SetEnableGravity(true);
+		WeaponMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+
+		// If someone walks up and tries to equip the gun when Physics is enabled, it won't work because Physics is enabled. So before we equip
+		// the weapon, we need to disable the gun's physics.
 		break;
 	}
 }
@@ -169,7 +192,13 @@ void AWeapon::OnRep_WeaponState()
 	switch (WeaponState) {
 	case EWeaponState::EWS_Equipped:
 		ShowPickupWidget(false); // Now that we picked up this weapon, we don't need to prompt the "Press E" widget anymore. We'll turn it off here.
-		break;
+		WeaponMesh->SetSimulatePhysics(false);	// This is how we allow our Gun to fall to the ground.
+		WeaponMesh->SetEnableGravity(false);
+		WeaponMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	case EWeaponState::EWS_Dropped:
+		WeaponMesh->SetSimulatePhysics(true);	// This is how we allow our Gun to fall to the ground.
+		WeaponMesh->SetEnableGravity(true);
+		WeaponMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	}
 }
 
@@ -187,6 +216,17 @@ void AWeapon::Fire(const FVector& HitTarget)
 		WeaponMesh->PlayAnimation(FireAnimation, false);	// Play the animation, and then true or false if we want to loop the animation.
 	}
 
-
 	SpendRound();
+}
+
+void AWeapon::Dropped()
+{
+	SetWeaponState(EWeaponState::EWS_Dropped);
+	
+	// We should Detach the weapon from the Character. Skeletal Mesh Components have this functionality. 
+	FDetachmentTransformRules DetachRules(EDetachmentRule::KeepWorld, true);	// This is a struct, and within this struct we need to set rules for the Detachment.
+	WeaponMesh->DetachFromComponent(DetachRules);	// We can Detach this Mesh using the DetachRules.
+	SetOwner(nullptr);	// Now that the weapon is unequipped, there is no owner.
+	BlasterOwnerCharacter = nullptr;
+	BlasterOwnerController = nullptr;
 }

@@ -34,6 +34,9 @@ void UCombatComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 
 	// Now when this value changes, it will replicate in all clients.
 	DOREPLIFETIME(UCombatComponent, bAiming);
+
+	// This only matters for the owning client, so we need Condition and clarify that it only applies to the Owner. "DOREPLIFETIME_CONDITION" and "COND_OwnerOnly" is used here.
+	DOREPLIFETIME_CONDITION(UCombatComponent, CarriedAmmo, COND_OwnerOnly);
 }
 
 // Called when the game starts
@@ -47,6 +50,9 @@ void UCombatComponent::BeginPlay()
 		if (Character->GetFollowCamera()) {
 			DefaultFOV = Character->GetFollowCamera()->FieldOfView; // "FieldOfView" is a variable for the camera's current Field of View. This should be our DefaultFOV
 			CurrentFOV = DefaultFOV;
+		}
+		if (Character->HasAuthority()) {
+			InitializeCarriedAmmo();
 		}
 	}
 }
@@ -139,6 +145,19 @@ void UCombatComponent::PauseButtonToggle()
 	}
 }
 
+void UCombatComponent::OnRep_CarriedAmmo()
+{
+	Controller = Controller == nullptr ? Cast<ABlasterPlayerController>(Character->Controller) : Controller;
+	if (Controller) {
+		Controller->SetHUDCarriedAmmo(CarriedAmmo);
+	}
+}
+
+void UCombatComponent::InitializeCarriedAmmo()
+{
+	CarriedAmmoMap.Emplace(EWeaponType::EWT_AssaultRifle, StartingARAmmo);
+}
+
 // *REMEMBER, RPC needs _Implementation added to the function.	
 void UCombatComponent::ServerFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
 {
@@ -158,11 +177,14 @@ void UCombatComponent::MulticastFire_Implementation(const FVector_NetQuantize& T
 	}
 }
 
-// We're gonna replicate this
+// This is on the Server.
 void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 {
 	if (Character == nullptr || WeaponToEquip == nullptr) {	// Checking for validation
 		return;
+	}
+	if (EquippedWeapon) {
+		EquippedWeapon->Dropped();
 	}
 
 	EquippedWeapon = WeaponToEquip;	// Setting our Equipped Weapon instance to this "WeaponToEquip" class reference.
@@ -179,15 +201,57 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 	// owner, but as soon as we equip it, we should set it's owner to the character that has equipped it.
 	EquippedWeapon->SetOwner(Character);	// This SetOwner() function sets the owner of the EquippedWeapon to the actor that's passed in reference (Character).
 	EquippedWeapon->SetHUDAmmo();
+
+	// Carried Ammo is set here.
+	if (CarriedAmmoMap.Contains(EquippedWeapon->GetWeaponType())) {
+		CarriedAmmo = CarriedAmmoMap[EquippedWeapon->GetWeaponType()];
+	}
+
+	Controller = Controller == nullptr ? Cast<ABlasterPlayerController>(Character->Controller) : Controller;
+	if (Controller) {
+		Controller->SetHUDCarriedAmmo(CarriedAmmo);
+	}
+
 	Character->GetCharacterMovement()->bOrientRotationToMovement = false;
 	Character->bUseControllerRotationYaw = true;
 	// RPC can be called both ways, so we could make an RPC to be called from the server and executed on a client, but we can use variable replication instead.
+}
+
+void UCombatComponent::ServerAddAmmo_Implementation(EWeaponType WeaponType, int32 AmmoAmount)
+{
+	if (Character == nullptr || EquippedWeapon == nullptr) { return; }
+	if (CarriedAmmoMap.Contains(WeaponType)) {
+		if (EquippedWeapon) {
+			CarriedAmmoMap[EquippedWeapon->GetWeaponType()] = EquippedWeapon->GetAmmo() + AmmoAmount;
+			EquippedWeapon->AddAmmo(CarriedAmmoMap[EquippedWeapon->GetWeaponType()]);
+		}
+	}
+}
+
+void UCombatComponent::PickupAmmo(EWeaponType WeaponType, int32 AmmoAmount)
+{
+	//ServerAddAmmo(WeaponType, AmmoAmount);
+	if (Character == nullptr || EquippedWeapon == nullptr) { return; }
+
+	if (CarriedAmmoMap.Contains(WeaponType)) {
+		if (EquippedWeapon) {
+			EquippedWeapon->AddAmmo(AmmoAmount);
+		}
+	}
 }
 
 // RepNotifier for our Equipped Weapon Animation.
 void UCombatComponent::OnRep_EquippedWeapon()
 {
 	if (EquippedWeapon && Character) {
+		EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped);	// This sets our WeaponState to "Equipped".
+
+		const USkeletalMeshSocket* HandSocket = Character->GetMesh()->GetSocketByName(FName("RightHandSocket"));	// We'll define a HandSocket variable of type USkeletalMeshSocket.
+		// Then, we'll retrieve our RightHandSocket that made and defined.
+		if (HandSocket) {
+			HandSocket->AttachActor(EquippedWeapon, Character->GetMesh());	// In the HandSocket that we created to hold our weapon, we'll attach our "EquippedWeapon" reference.	
+			// AttachActor requires the Actor that attaches to the socket and the skeletal mesh component associated with the socket.
+		}
 		Character->GetCharacterMovement()->bOrientRotationToMovement = false;
 		Character->bUseControllerRotationYaw = true;
 	}

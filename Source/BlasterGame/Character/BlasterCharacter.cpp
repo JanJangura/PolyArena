@@ -16,6 +16,7 @@
 #include "BlasterGame/BlasterGame.h"
 #include "BlasterGame/HUD/BlasterHUD.h"
 #include "BlasterGame/PlayerController/BlasterPlayerController.h"
+#include "BlasterGame/Pickups/AmmoPickup.h"
 #include "TimerManager.h"
 #include "BlasterGame/GameMode/BlasterGameMode.h"
 
@@ -169,6 +170,10 @@ void ABlasterCharacter::OnRep_ReplicatedMovement()
 // This is the Server that we'll call from the GameMode, then on the server we'll call MulticastElim() because that's including Clients and Server, but we only want the Server which is here.
 void ABlasterCharacter::Elim()
 {
+	if (Combat && Combat->EquippedWeapon) {
+		Combat->EquippedWeapon->Dropped();
+	}
+
 	MulticastElim();
 
 	// Here is our Timer that we would like to wait, clarified by ElimDelay, and then we call the function within it "ElimTimerFinished" so in there we can Respawn. 
@@ -183,9 +188,22 @@ void ABlasterCharacter::Elim()
 // Remember, this is an Multicast RPC
 void ABlasterCharacter::MulticastElim_Implementation()
 {
+	if (BlasterPlayerController) {
+		BlasterPlayerController->SetHUDWeaponAmmo(0);
+	}
+
 	bElimmed = true;
-	
 	PlayElimMontage();
+
+	// Disable Character Movement
+	GetCharacterMovement()->DisableMovement();	// Disables Movement
+	GetCharacterMovement()->StopMovementImmediately();	// Disables the rotation of the Character
+	if (BlasterPlayerController) {
+		DisableInput(BlasterPlayerController);	// Disable Input stops the character from Shooting the Gun.
+	}
+	// Disable Collision
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);	// Disables the Capsule Component
+	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);	// Disables the Mesh Component
 }
 
 void ABlasterCharacter::ElimTimerFinished()
@@ -456,52 +474,86 @@ void ABlasterCharacter::PlayHitReactMontage()
 
 void ABlasterCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatorController, AActor* DamageCauser)
 {
-	if (Health > 0.f) {
-		Health = FMath::Clamp(Health - Damage, 0.f, MaxHealth);
-		UpdateHUDHealth();
-		PlayHitReactMontage();
+	Health = FMath::Clamp(Health - Damage, 0.f, MaxHealth);
+	UpdateHUDHealth();
+	PlayHitReactMontage();
 
-		if (Health == 0.f) {
-			ABlasterGameMode* BlasterGameMode = GetWorld()->GetAuthGameMode<ABlasterGameMode>();
-			if (BlasterGameMode) {
-				BlasterPlayerController = BlasterPlayerController == nullptr ? Cast<ABlasterPlayerController>(Controller) : BlasterPlayerController;
-				ABlasterPlayerController* AttackerController = Cast<ABlasterPlayerController>(InstigatorController);
+	if (Health <= 0.f) {
+		GetWorld()->GetTimerManager().ClearTimer(HealthRegenTimerHandle);
+		ABlasterGameMode* BlasterGameMode = GetWorld()->GetAuthGameMode<ABlasterGameMode>();
+		if (BlasterGameMode) {
+			BlasterPlayerController = BlasterPlayerController == nullptr ? Cast<ABlasterPlayerController>(Controller) : BlasterPlayerController;
+			ABlasterPlayerController* AttackerController = Cast<ABlasterPlayerController>(InstigatorController);
 
-				if (BlasterPlayerController && AttackerController) {
-					bElimmed = true;
-					BlasterGameMode->PlayerEliminated(this, BlasterPlayerController, AttackerController);
-				}
-		
+			if (BlasterPlayerController && AttackerController) {
+				bElimmed = true;
+				BlasterGameMode->PlayerEliminated(this, BlasterPlayerController, AttackerController);
 			}
+
 		}
 	}
-	
+	else {
+		GetWorld()->GetTimerManager().SetTimer(HealthRegenTimerHandle, this, &ABlasterCharacter::RegenerateHealth, HealthRegenInterval, true);
+	}
 }
-void ABlasterCharacter::EliminatePlayer(AController* InstigatorController) {
-	/*ABlasterGameMode* BlasterGameMode = GetWorld()->GetAuthGameMode<ABlasterGameMode>();
-	if (BlasterGameMode) {
-		BlasterPlayerController = BlasterPlayerController == nullptr ? Cast<ABlasterPlayerController>(Controller) : BlasterPlayerController;
-		ABlasterPlayerController* AttackerController = Cast<ABlasterPlayerController>(InstigatorController);
 
-		if (BlasterPlayerController && AttackerController) {
-			bElimmed = true;
-			BlasterGameMode->PlayerEliminated(this, BlasterPlayerController, AttackerController);
-			if (!BlasterPlayerController) {
-				UE_LOG(LogTemp, Warning, TEXT("BlasterPlayerController is NOT Null"));
-			}
-			if (!AttackerController) {
-				UE_LOG(LogTemp, Warning, TEXT("BlasterPlayerController is NOT Null"));
-			}
+void ABlasterCharacter::RegenerateHealth()
+{
+	float CurrentHealth = Health;
+
+	Health = FMath::Clamp(Health + HealthRegenAmount, 0.f, MaxHealth);
+	UpdateHUDHealth();
+
+	// If health reaches max, stop regeneration
+	if (Health >= MaxHealth) {
+		GetWorld()->GetTimerManager().ClearTimer(HealthRegenTimerHandle);
+		UE_LOG(LogTemp, Warning, TEXT("Health is at maximum. Stopping regeneration."));
+	}
+	else if (Health <= 0.f) {
+		GetWorld()->GetTimerManager().ClearTimer(HealthRegenTimerHandle);
+		UE_LOG(LogTemp, Warning, TEXT("Health is zero or below. Stopping regeneration."));
+	}
+}
+
+void ABlasterCharacter::SpawnAmmoPacks()
+{
+	if (!HasAuthority()) { return; }
+	SpawnAmmoPickup = AAmmoPickup::StaticClass();
+
+	if (SpawnAmmoPickup)
+	{
+		// Get the current actor location (your character's location)
+		FVector ActorLocation = GetActorLocation();
+
+		// Add an offset to drop items around the character
+		FVector Offset(0.f, 0.f, 500.f);  // Adjust X, Y, Z for different spawn locations
+
+		// Combine location and offset
+		FVector SpawnLocation = ActorLocation + Offset;
+
+		// Random rotation for the spawned item
+		FRotator SpawnRotation = FRotator::ZeroRotator;
+
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.Owner = this;
+		SpawnParams.Instigator = GetInstigator();
+
+
+		UWorld* World = GetWorld();
+		if (World) {
+			World->SpawnActor<AAmmoPickup>(
+				SpawnAmmoPickup,
+				SpawnLocation,
+				SpawnRotation
+			);
+			UE_LOG(LogTemp, Warning, TEXT("reached"));
+			UE_LOG(LogTemp, Warning, TEXT("SpawnAmmoPickup Class: %s"), *SpawnAmmoPickup->GetName());
+
 		}
-		else {
-			if (!BlasterPlayerController) {
-				UE_LOG(LogTemp, Warning, TEXT("BlasterPlayerController is Null"));
-			}
-			if (!AttackerController) {
-				UE_LOG(LogTemp, Warning, TEXT("BlasterPlayerController is Null"));
-			}
-		}
-	}*/
+	}
+	else {
+		UE_LOG(LogTemp, Warning, TEXT("SpawnAmmoPickup NOT reached"));
+	}
 }
 
 void ABlasterCharacter::PauseButtonPressed()

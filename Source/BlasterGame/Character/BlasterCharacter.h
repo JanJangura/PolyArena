@@ -152,13 +152,14 @@ private:
 	bool bElimmed = false;
 
 	FTimerHandle ElimTimer;
+	FTimerHandle HealthRegenTimerHandle;
 
 	UPROPERTY(EditDefaultsOnly) // EditDefaultsOnly allows us to Edit this but only on the Default Character.
 	float ElimDelay = 3.f;
 
 	void ElimTimerFinished();
 
-	void EliminatePlayer(AController* InstigatorController);
+	void RegenerateHealth(); // Function to handle health regeneration
 
 public:	
 	/* Replication STEP 4. FORCEINLINE is a simple getter.
@@ -211,7 +212,19 @@ public:
 
 	void PauseButtonPressed();
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn")
+	TSubclassOf<class AAmmoPickup> SpawnAmmoPickup;
+
+	void SpawnAmmoPacks();
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Health")
+	float HealthRegenAmount = 5.0f; // Amount of health to regenerate per interval
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Health")
+	float HealthRegenInterval = 1.0f; // Time interval for health regeneration
+
 	FORCEINLINE bool IsElimmed() const { return bElimmed; }
 	FORCEINLINE float GetHealth() const { return Health; }
 	FORCEINLINE float GetMaxHealth() const { return MaxHealth; }
+	FORCEINLINE UCombatComponent* GetCombat() const { return Combat; }
 };

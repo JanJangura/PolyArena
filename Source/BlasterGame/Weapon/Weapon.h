@@ -8,6 +8,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "WeaponTypes.h"
 #include "Weapon.generated.h"
 
 // Setting an Enum for the state of the weapon. This is a scoped Enum, meaning we're going to make an Enum Class called EWeaponState and use uint8. This is so
@@ -83,6 +84,8 @@ public:
 	UPROPERTY(EditAnywhere, Category = Combat)
 	bool bAutomatic = true;
 
+	void AddAmmo(int32 AmmoToAdd);
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -149,7 +152,13 @@ private:
 	UPROPERTY()
 	class ABlasterPlayerController* BlasterOwnerController;
 
+	UPROPERTY(EditAnywhere)
+	EWeaponType WeaponType;
+
 public:	
+	// Handles Dropping the Weapon
+	void Dropped();
+
 	// Getters and Setters
 	void SetWeaponState(EWeaponState State);	// A function that uses a Public setter in setting the Weapon State.
 	FORCEINLINE USphereComponent* GetAreaSphere() const { return AreaSphere; }
@@ -159,4 +168,7 @@ public:
 
 	FVector CenterOfCameraTransform;
 	FORCEINLINE FVector GetCenterOfCameraTransform() const { return CenterOfCameraTransform; }
+	FORCEINLINE EWeaponType GetWeaponType() const { return WeaponType; }
+	FORCEINLINE int32 GetAmmo() const { return Ammo; }
+	FORCEINLINE int32 GetMagCapacity() const { return MagCapacity; }
 };

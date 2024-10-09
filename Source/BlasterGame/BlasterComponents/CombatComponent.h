@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "BlasterGame/HUD/BlasterHUD.h"
+#include "BlasterGame/Weapon/WeaponTypes.h"
 #include "CombatComponent.generated.h"
 
 #define TRACE_LENGTH 80000.f
@@ -28,6 +29,8 @@ public:
 
 	// Within this EquipWeapon, we need a Weapon to equip, we can forward a class instance of AWeapon class.
 	void EquipWeapon(class AWeapon* WeaponToEquip);	
+
+	void PickupAmmo(EWeaponType WeaponType, int32 AmmoAmount);
 
 protected:
 	virtual void BeginPlay() override;
@@ -60,6 +63,10 @@ protected:
 
 	// Setting the CrossHairs based on the weapon we are using.
 	void SetHUDCrossHairs(float DeltaTime);
+
+	// This is TEMPORARY
+	UFUNCTION(Server, Reliable)
+	void ServerAddAmmo(EWeaponType WeaponType, int32 AmmoAmount);
 
 private:
 	// We need this instance because we'll be referring back and forth. This also stops us from continously casting to our Character.
@@ -125,6 +132,23 @@ private:
 	void FireTimerFinished();
 
 	void PauseButtonToggle();
+
+	UPROPERTY(ReplicatedUsing = OnRep_CarriedAmmo)
+	int32 CarriedAmmo;	// This is the Carried Ammo for the currently equiped Weapon that the player is holding.
+
+	UFUNCTION()
+	void OnRep_CarriedAmmo();
+
+	// TMap cannot be replicated. This is because TMap is a Hash Algorithm that will figure out a way to associate the key (EWeapnType) with the value (int32). 
+	// When we add a key valued pair to the Ammo Map, everytime we attemp to look up the value using the key, our team map will run a hash function that will come up with an index.
+	// We don't want to map this, we only replicate the value that we're currently using, which is CarriedAmmo.
+	TMap<EWeaponType, int32> CarriedAmmoMap;
+
+	UPROPERTY(EditAnywhere)
+	int32 StartingARAmmo = 30;
+
+	void InitializeCarriedAmmo();
+
 public:	
 	
 
