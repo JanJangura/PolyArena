@@ -134,7 +134,6 @@ void ABlasterCharacter::BeginPlay()
 
 	if (HasAuthority()) {
 		OnTakeAnyDamage.AddDynamic(this, &ABlasterCharacter::ReceiveDamage);	// This is called because its linked with ApplyDamage on the Authority Character.
-		GetWorldTimerManager().SetTimer(TimerHandle_UpdateHUD, this, &ABlasterCharacter::UpdateHUDHealth, 0.1f, false);
 	}
 
 	Health = MaxHealth;
@@ -185,6 +184,7 @@ void ABlasterCharacter::Elim()
 void ABlasterCharacter::MulticastElim_Implementation()
 {
 	bElimmed = true;
+	
 	PlayElimMontage();
 }
 
@@ -434,9 +434,6 @@ void ABlasterCharacter::PlayElimMontage()
 	if (AnimInstance && ElimMontage) {
 		AnimInstance->Montage_Play(ElimMontage);	// Play this Montage
 	}
-	else {
-		GetWorldTimerManager().SetTimer(TimerHandle_ElimMontage, this, &ABlasterCharacter::PlayElimMontage, 0.1f, false);
-	}
 }
 
 void ABlasterCharacter::PlayHitReactMontage()
@@ -464,14 +461,24 @@ void ABlasterCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const 
 		UpdateHUDHealth();
 		PlayHitReactMontage();
 
-		if (Health <= 0.f) {
-			EliminatePlayer(InstigatorController);
+		if (Health == 0.f) {
+			ABlasterGameMode* BlasterGameMode = GetWorld()->GetAuthGameMode<ABlasterGameMode>();
+			if (BlasterGameMode) {
+				BlasterPlayerController = BlasterPlayerController == nullptr ? Cast<ABlasterPlayerController>(Controller) : BlasterPlayerController;
+				ABlasterPlayerController* AttackerController = Cast<ABlasterPlayerController>(InstigatorController);
+
+				if (BlasterPlayerController && AttackerController) {
+					bElimmed = true;
+					BlasterGameMode->PlayerEliminated(this, BlasterPlayerController, AttackerController);
+				}
+		
+			}
 		}
 	}
 	
 }
 void ABlasterCharacter::EliminatePlayer(AController* InstigatorController) {
-	ABlasterGameMode* BlasterGameMode = GetWorld()->GetAuthGameMode<ABlasterGameMode>();
+	/*ABlasterGameMode* BlasterGameMode = GetWorld()->GetAuthGameMode<ABlasterGameMode>();
 	if (BlasterGameMode) {
 		BlasterPlayerController = BlasterPlayerController == nullptr ? Cast<ABlasterPlayerController>(Controller) : BlasterPlayerController;
 		ABlasterPlayerController* AttackerController = Cast<ABlasterPlayerController>(InstigatorController);
@@ -479,11 +486,22 @@ void ABlasterCharacter::EliminatePlayer(AController* InstigatorController) {
 		if (BlasterPlayerController && AttackerController) {
 			bElimmed = true;
 			BlasterGameMode->PlayerEliminated(this, BlasterPlayerController, AttackerController);
+			if (!BlasterPlayerController) {
+				UE_LOG(LogTemp, Warning, TEXT("BlasterPlayerController is NOT Null"));
+			}
+			if (!AttackerController) {
+				UE_LOG(LogTemp, Warning, TEXT("BlasterPlayerController is NOT Null"));
+			}
 		}
 		else {
-			
+			if (!BlasterPlayerController) {
+				UE_LOG(LogTemp, Warning, TEXT("BlasterPlayerController is Null"));
+			}
+			if (!AttackerController) {
+				UE_LOG(LogTemp, Warning, TEXT("BlasterPlayerController is Null"));
+			}
 		}
-	}
+	}*/
 }
 
 void ABlasterCharacter::PauseButtonPressed()
@@ -491,11 +509,6 @@ void ABlasterCharacter::PauseButtonPressed()
 	if (Controller && HasAuthority()) {
 		Combat->PauseButtonToggle();
 	}
-}
-
-void ABlasterCharacter::InitializePlayerHUDHealth()
-{
-	
 }
 
 void ABlasterCharacter::FireButtonPressed()

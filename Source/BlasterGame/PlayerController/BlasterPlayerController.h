@@ -19,6 +19,7 @@ public:
 	void SetHUDWeaponAmmo(int32 Ammo);
 	virtual void Tick(float DeltaTime) override;
 	void SetHUDHealth(float Health, float MaxHealth);
+	virtual void OnPossess(APawn* InPawn) override;
 
 private:
 	UPROPERTY()

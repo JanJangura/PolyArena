@@ -1,23 +1,23 @@
 {
     "Version": "1.2",
     "Data": {
-        "Source": "c:\\users\\alexm\\documents\\github\\polyarena\\plugins\\plugins\\multiplayersessions\\intermediate\\build\\win64\\unrealeditor\\inc\\multiplayersessions\\uht\\multiplayersessionssubsystem.gen.cpp",
+        "Source": "f:\\multiplayercourse\\blastergame\\plugins\\plugins\\multiplayersessions\\intermediate\\build\\win64\\unrealeditor\\inc\\multiplayersessions\\uht\\multiplayersessionssubsystem.gen.cpp",
         "ProvidedModule": "",
-        "PCH": "c:\\users\\alexm\\documents\\github\\polyarena\\intermediate\\build\\win64\\x64\\blastergameeditor\\development\\unrealed\\sharedpch.unrealed.project.novalfmtstr.valapi.cpp20.inclorderunreal5_3.h.pch",
+        "PCH": "f:\\multiplayercourse\\blastergame\\intermediate\\build\\win64\\x64\\blastergameeditor\\development\\unrealed\\sharedpch.unrealed.project.novalfmtstr.valapi.cpp20.inclorderunreal5_3.h.pch",
         "Includes": [
-            "c:\\users\\alexm\\documents\\github\\polyarena\\plugins\\plugins\\multiplayersessions\\intermediate\\build\\win64\\x64\\unrealeditor\\development\\multiplayersessions\\definitions.multiplayersessions.h",
-            "c:\\users\\alexm\\documents\\github\\polyarena\\plugins\\plugins\\multiplayersessions\\source\\multiplayersessions\\public\\multiplayersessionssubsystem.h",
-            "c:\\program files\\epic games\\ue_5.4\\engine\\plugins\\online\\onlinesubsystem\\source\\public\\interfaces\\onlinesessioninterface.h",
-            "c:\\program files\\epic games\\ue_5.4\\engine\\plugins\\online\\onlinesubsystem\\source\\public\\onlinesubsystemtypes.h",
-            "c:\\program files\\epic games\\ue_5.4\\engine\\plugins\\online\\onlinesubsystem\\source\\public\\onlinesubsystemnames.h",
-            "c:\\program files\\epic games\\ue_5.4\\engine\\plugins\\online\\onlinesubsystem\\source\\public\\onlinedelegatemacros.h",
-            "c:\\program files\\epic games\\ue_5.4\\engine\\plugins\\online\\onlinesubsystem\\source\\public\\interfaces\\onlinesessiondelegates.h",
-            "c:\\program files\\epic games\\ue_5.4\\engine\\plugins\\online\\onlinesubsystem\\source\\public\\onlinekeyvaluepair.h",
-            "c:\\program files\\epic games\\ue_5.4\\engine\\plugins\\online\\onlinesubsystem\\source\\public\\onlinesubsystem.h",
-            "c:\\program files\\epic games\\ue_5.4\\engine\\plugins\\online\\onlinesubsystem\\source\\public\\onlinesubsystemmodule.h",
-            "c:\\program files\\epic games\\ue_5.4\\engine\\plugins\\online\\onlinesubsystem\\source\\public\\onlinesessionsettings.h",
-            "c:\\program files\\epic games\\ue_5.4\\engine\\plugins\\online\\onlinebase\\source\\public\\online\\onlinesessionnames.h",
-            "c:\\users\\alexm\\documents\\github\\polyarena\\plugins\\plugins\\multiplayersessions\\intermediate\\build\\win64\\unrealeditor\\inc\\multiplayersessions\\uht\\multiplayersessionssubsystem.generated.h"
+            "f:\\multiplayercourse\\blastergame\\plugins\\plugins\\multiplayersessions\\intermediate\\build\\win64\\x64\\unrealeditor\\development\\multiplayersessions\\definitions.multiplayersessions.h",
+            "f:\\multiplayercourse\\blastergame\\plugins\\plugins\\multiplayersessions\\source\\multiplayersessions\\public\\multiplayersessionssubsystem.h",
+            "f:\\ue_5.4\\engine\\plugins\\online\\onlinesubsystem\\source\\public\\interfaces\\onlinesessioninterface.h",
+            "f:\\ue_5.4\\engine\\plugins\\online\\onlinesubsystem\\source\\public\\onlinesubsystemtypes.h",
+            "f:\\ue_5.4\\engine\\plugins\\online\\onlinesubsystem\\source\\public\\onlinesubsystemnames.h",
+            "f:\\ue_5.4\\engine\\plugins\\online\\onlinesubsystem\\source\\public\\onlinedelegatemacros.h",
+            "f:\\ue_5.4\\engine\\plugins\\online\\onlinesubsystem\\source\\public\\interfaces\\onlinesessiondelegates.h",
+            "f:\\ue_5.4\\engine\\plugins\\online\\onlinesubsystem\\source\\public\\onlinekeyvaluepair.h",
+            "f:\\ue_5.4\\engine\\plugins\\online\\onlinesubsystem\\source\\public\\onlinesubsystem.h",
+            "f:\\ue_5.4\\engine\\plugins\\online\\onlinesubsystem\\source\\public\\onlinesubsystemmodule.h",
+            "f:\\ue_5.4\\engine\\plugins\\online\\onlinesubsystem\\source\\public\\onlinesessionsettings.h",
+            "f:\\ue_5.4\\engine\\plugins\\online\\onlinebase\\source\\public\\online\\onlinesessionnames.h",
+            "f:\\multiplayercourse\\blastergame\\plugins\\plugins\\multiplayersessions\\intermediate\\build\\win64\\unrealeditor\\inc\\multiplayersessions\\uht\\multiplayersessionssubsystem.generated.h"
         ],
         "ImportedModules": [],
         "ImportedHeaderUnits": []

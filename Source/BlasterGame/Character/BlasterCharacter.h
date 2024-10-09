@@ -152,16 +152,11 @@ private:
 	bool bElimmed = false;
 
 	FTimerHandle ElimTimer;
-	FTimerHandle TimerHandle_UpdateHUD;
-	FTimerHandle TimerHandle_ElimMontage;
-	FTimerHandle TimerHandle_DeathMontage;
 
 	UPROPERTY(EditDefaultsOnly) // EditDefaultsOnly allows us to Edit this but only on the Default Character.
 	float ElimDelay = 3.f;
 
 	void ElimTimerFinished();
-
-	void InitializePlayerHUDHealth();
 
 	void EliminatePlayer(AController* InstigatorController);
 
@@ -217,4 +212,6 @@ public:
 	void PauseButtonPressed();
 
 	FORCEINLINE bool IsElimmed() const { return bElimmed; }
+	FORCEINLINE float GetHealth() const { return Health; }
+	FORCEINLINE float GetMaxHealth() const { return MaxHealth; }
 };
