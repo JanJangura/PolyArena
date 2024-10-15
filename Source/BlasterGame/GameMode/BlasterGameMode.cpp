@@ -6,11 +6,72 @@
 #include "BlasterGame/PlayerController/BlasterPlayerController.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/PlayerStart.h"
+#include "BlasterGame/PlayerState/BlasterPlayerState.h"
+
+namespace MatchState
+{
+	const FName Cooldown = FName("Cooldown");
+}
 
 // Remember, this is only happening on the Server.
 
+ABlasterGameMode::ABlasterGameMode()
+{
+	bDelayedStart = true;	// The Game Mode will stay in the waiting to Start State and it'll actually spawn a default Pawn for all players. This pawn can fly around the level.
+}
+
+void ABlasterGameMode::BeginPlay()
+{
+	Super::BeginPlay();
+
+	LevelStartingTime = GetWorld()->GetTimeSeconds();
+}
+
+void ABlasterGameMode::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	if (MatchState == MatchState::WaitingToStart) {
+
+		CountDownTime = WarmupTime - GetWorld()->GetTimeSeconds() + LevelStartingTime;
+		if (CountDownTime <= 0.f) {
+			StartMatch();	// This function is inherited within the GameMode Class.
+		}
+	}
+	else if (MatchState == MatchState::InProgress) {
+		CountDownTime = WarmupTime + MatchTime - GetWorld()->GetTimeSeconds() + LevelStartingTime;
+		if (CountDownTime <= 0.f) {
+			SetMatchState(MatchState::Cooldown); // This is how we'll set the MatchState to Cooldown.
+		}
+	}
+}
+
+void ABlasterGameMode::OnMatchStateSet()
+{
+	Super::OnMatchStateSet();
+
+	// This iterator allows us to loop through all PlayerControllers that exist in the game. 
+	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It) {
+		ABlasterPlayerController* BlasterPlayer = Cast<ABlasterPlayerController>(*It);
+		if (BlasterPlayer) {
+			BlasterPlayer->OnMatchStateSet(MatchState);
+		}
+	}
+}
+
 void ABlasterGameMode::PlayerEliminated(ABlasterCharacter* ElimmedCharacter, ABlasterPlayerController* VictimController, ABlasterPlayerController* AttackerController)
 {
+	ABlasterPlayerState* AttackPlayerState = AttackerController ? Cast<ABlasterPlayerState>(AttackerController->PlayerState) : nullptr;
+	ABlasterPlayerState* VictimPlayerState = VictimController ? Cast<ABlasterPlayerState>(VictimController->PlayerState) : nullptr;
+
+	if (AttackPlayerState && AttackPlayerState != VictimPlayerState) {
+		AttackPlayerState->AddToScore(1.f);
+	}
+
+	if (VictimPlayerState && VictimPlayerState != AttackPlayerState) {
+		VictimPlayerState->AddToDefeats(1);
+	}
+
 	if (ElimmedCharacter) {
 		ElimmedCharacter->Elim();
 	}
@@ -46,3 +107,5 @@ void ABlasterGameMode::RequestRespawn(ACharacter* ElimmedCharacter, AController*
 		RestartPlayerAtPlayerStart(ElimmedController, PlayerStart[Selection]);
 	}
 }
+
+

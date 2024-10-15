@@ -19,6 +19,7 @@
 #include "BlasterGame/Pickups/AmmoPickup.h"
 #include "TimerManager.h"
 #include "BlasterGame/GameMode/BlasterGameMode.h"
+#include "BlasterGame/PlayerState/BlasterPlayerState.h"
 
 // Sets default values
 ABlasterCharacter::ABlasterCharacter()
@@ -157,6 +158,7 @@ void ABlasterCharacter::Tick(float DeltaTime)
 		CalculateAO_Pitch();
 	}
 	HideCameraIfCharacterClose();
+	PollInit();
 }
 
 // RepNotifier that Unreal Made for our Characters Movements
@@ -347,6 +349,18 @@ void ABlasterCharacter::UpdateHUDHealth()
 	
 	if (BlasterPlayerController) {
 		BlasterPlayerController->SetHUDHealth(Health, MaxHealth);
+	}
+}
+
+void ABlasterCharacter::PollInit()
+{
+	if (BlasterPlayerState == nullptr) {
+		// This allows us to avoid Casting
+		BlasterPlayerState = GetPlayerState<ABlasterPlayerState>();
+		if (BlasterPlayerState) {
+			BlasterPlayerState->AddToScore(0.f);
+			BlasterPlayerState->AddToDefeats(0);
+		}
 	}
 }
 

@@ -8,6 +8,7 @@
 #include "Kismet/GameplayStatics.h" 
 #include "LaunchGameButton.h"
 #include "BlasterGame/PlayerController/BlasterPlayerController.h"
+#include "Announcement.h"
 
 void ABlasterHUD::BeginPlay()
 {
@@ -19,6 +20,8 @@ void ABlasterHUD::BeginPlay()
 // This is where we create our Widget
 void ABlasterHUD::AddCharacterOverlay()
 {
+	PlayerController = GetOwningPlayerController();
+
 	if (PlayerController && CharacterOverlayClass) {	// If our Player Controller and CharacterOverlayClass Widget is valid.
 
 		// We'll Create the Widget and then define which Class we're using, which is UCharacterOverlay, then what PlayerController, and then what Widget. Then
@@ -30,21 +33,32 @@ void ABlasterHUD::AddCharacterOverlay()
 	}
 }
 
+void ABlasterHUD::AddAnouncement()
+{
+	PlayerController = GetOwningPlayerController();
+
+	if (PlayerController && AnnouncementClass) {	// If our Player Controller and Announcement Widget is valid.
+
+		Announcement = CreateWidget<UAnnouncement>(PlayerController, AnnouncementClass);
+
+		// Now we'll add this to our Viewport.
+		Announcement->AddToViewport();
+	}
+}
+
 void ABlasterHUD::DeclarationOfClasses()
 {
 	// We need the Player Controller in order to create our Widget, because that's where we have to access in order to use our Widget.
 	PlayerController = GetOwningPlayerController();
-	BlasterPlayerController = Cast<ABlasterPlayerController>(PlayerController);
+	ABlasterPlayerController* BlasterPlayerController = Cast<ABlasterPlayerController>(PlayerController);
 
 	if (PlayerController) {
 		APawn* ControlledPawn = PlayerController->GetPawn();
 
 		if (ControlledPawn) {
-			Character = Cast<ABlasterCharacter>(ControlledPawn);
+			class ABlasterCharacter* Character = Cast<ABlasterCharacter>(ControlledPawn);
 		}
 	}
-
-	AddCharacterOverlay();
 }
 
 // This is where we get out HUD and then use this information so we can pass in out Textures and Draw the actual CrossHair.

@@ -69,6 +69,7 @@ protected:
 	UFUNCTION()	// You will never get your callbacks called in response to a damage event if your receive damage function is not a UFUNCTION
 	void ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, class AController* InstigatorController, AActor* DamageCauser);
 	void UpdateHUDHealth();
+	void PollInit(); // As soon as our PlayerState is valid, we'll initialize our HUD using any relevant Data that exists on the PlayerState.
 
 private:
 	// Setting up our Camera System
@@ -147,6 +148,7 @@ private:
 	UFUNCTION()
 	void OnRep_Health();
 
+	UPROPERTY()
 	class ABlasterPlayerController* BlasterPlayerController;
 
 	bool bElimmed = false;
@@ -160,6 +162,9 @@ private:
 	void ElimTimerFinished();
 
 	void RegenerateHealth(); // Function to handle health regeneration
+
+	UPROPERTY()
+	class ABlasterPlayerState* BlasterPlayerState;
 
 public:	
 	/* Replication STEP 4. FORCEINLINE is a simple getter.

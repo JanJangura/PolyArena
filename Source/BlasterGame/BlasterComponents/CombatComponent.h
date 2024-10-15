@@ -70,9 +70,13 @@ protected:
 
 private:
 	// We need this instance because we'll be referring back and forth. This also stops us from continously casting to our Character.
+	UPROPERTY()
 	class ABlasterCharacter* Character;	
+	UPROPERTY()
 	class ABlasterPlayerController* Controller;
+	UPROPERTY()
 	class ABlasterHUD* HUD;
+	UPROPERTY()
 	class ALobbyBlasterHUD* LobbyBlasterHUD;
 
 	// This is the variable for the weapon in which the Blaster Character currently has equipped.

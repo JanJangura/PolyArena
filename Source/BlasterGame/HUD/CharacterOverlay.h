@@ -23,8 +23,17 @@ public:
 	class UTextBlock* HealthText;
 
 	UPROPERTY(meta = (BindWidget))
+	class UTextBlock* ScoreAmount;
+
+	UPROPERTY(meta = (BindWidget))
+	class UTextBlock* DefeatsAmount;
+
+	UPROPERTY(meta = (BindWidget))
 	UTextBlock* WeaponAmmoAmount;
 
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* CarriedAmmoAmount;
+
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* MatchCountdownText;
 };

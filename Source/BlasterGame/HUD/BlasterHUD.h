@@ -37,11 +37,21 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Player Stats")
 	TSubclassOf<class UUserWidget> CharacterOverlayClass;	// This is the CharacterOverlay Class that we'll need tp specify from BP.
 
+	void AddCharacterOverlay();	// This is a function to Add our Character Overlay Widget to this BlasterHUD.
+	
+	UPROPERTY()
 	class UCharacterOverlay* CharacterOverlay;
+	
+	UPROPERTY(EditAnywhere, Category = "Announcements")
+	TSubclassOf<UUserWidget> AnnouncementClass;
+
+	UPROPERTY()
+	class UAnnouncement* Announcement;
+
+	void AddAnouncement();
 
 protected:
 	virtual void BeginPlay() override;
-	void AddCharacterOverlay();	// This is a function to Add our Character Overlay Widget to this BlasterHUD.
 
 private:
 	FHUDPackage HUDPackage;
@@ -53,12 +63,10 @@ private:
 	float CrosshairSpreadMax = 16.f;
 
 public:
-	class ABlasterCharacter* Character;
 
 	bool PauseUICreated = false;
 
 	APlayerController* PlayerController;
-	class ABlasterPlayerController* BlasterPlayerController;
 
 	void DeclarationOfClasses();
 
