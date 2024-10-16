@@ -116,14 +116,17 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaTime)
 			// Get the Transform of our "hand_r" Socket, Then rotate that arm towards the Rotation of the target that BlasterCharacter is shooting at.
 			FTransform RightHandTransform = EquippedWeapon->GetWeaponMesh()->GetSocketTransform(RightHandBoneName, ERelativeTransformSpace::RTS_World);
 
-			if (BlasterCharacter->GetHitTarget() != FVector::ZeroVector) {
-				FRotator LookAtRotation = UKismetMathLibrary::FindLookAtRotation(RightHandTransform.GetLocation(), RightHandTransform.GetLocation() + (RightHandTransform.GetLocation() - BlasterCharacter->GetHitTarget()));
-				RightHandRotation = FMath::RInterpTo(RightHandRotation, LookAtRotation, DeltaTime, 20.f);
+			if (!BlasterCharacter->GetDisableGameplay()) {
+				if (BlasterCharacter->GetHitTarget() != FVector::ZeroVector) {
+					FRotator LookAtRotation = UKismetMathLibrary::FindLookAtRotation(RightHandTransform.GetLocation(), RightHandTransform.GetLocation() + (RightHandTransform.GetLocation() - BlasterCharacter->GetHitTarget()));
+					RightHandRotation = FMath::RInterpTo(RightHandRotation, LookAtRotation, DeltaTime, 20.f);
+				}
+				else {
+					FRotator LookAtRotation = UKismetMathLibrary::FindLookAtRotation(RightHandTransform.GetLocation(), RightHandTransform.GetLocation() - BlasterCharacter->GetCenterOfCameraTransform());
+					RightHandRotation = FMath::RInterpTo(RightHandRotation, LookAtRotation, DeltaTime, 20.f);
+				}
 			}
-			else {
-				FRotator LookAtRotation = UKismetMathLibrary::FindLookAtRotation(RightHandTransform.GetLocation(), RightHandTransform.GetLocation() - BlasterCharacter->GetCenterOfCameraTransform());
-				RightHandRotation = FMath::RInterpTo(RightHandRotation, LookAtRotation, DeltaTime, 20.f);
-			}
+			
 
 			/*	*** This is to draw RayCast Lines out of our Gun and from the center of our screen.
 			// Acquring the Transform of our MuzzleTip

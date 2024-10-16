@@ -36,10 +36,16 @@ public:
 
 	float LevelStartingTime = 0.f;
 
+	UPROPERTY(EditDefaultsOnly)
+	float MaxKillScore = 10.f;
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void OnMatchStateSet() override;
 
 private:
-	float CountDownTime = 0.f;
+	float CountdownTime = 0.f;
+
+public:
+	FORCEINLINE float GetCountdownTime() const { return CountdownTime; }
 };

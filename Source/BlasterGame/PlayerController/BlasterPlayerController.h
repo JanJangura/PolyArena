@@ -32,6 +32,7 @@ public:
 	void OnMatchStateSet(FName State);
 	void HandleMatchHasStarted();
 	void HandleCooldown();
+	void CastBlasterHUD();
 
 protected:
 	virtual void BeginPlay() override;
@@ -63,11 +64,14 @@ protected:
 	void ServerCheckMatchState();
 
 	UFUNCTION(Client, Reliable)	// This will handle informing the Client of the Match State when they join. 
-	void ClientJoinMidGame(FName StateOfMatch, float Warmup, float Match, float StartingTime);
+	void ClientJoinMidGame(FName StateOfMatch, float Warmup, float Match, float Cooldown, float StartingTime);
 
 private:
 	UPROPERTY()
 	class ABlasterHUD* BlasterHUD;
+
+	UPROPERTY()
+	class ABlasterGameMode* BlasterGameMode;
 
 	class ABlasterCharacter* Character;
 
@@ -76,6 +80,7 @@ private:
 	float LevelStartingTime = 0.f;
 	float MatchTime = 0.f;
 	float WarmupTime = 0.f;
+	float CooldownTime = 0.f;
 	uint32 CountdownInt = 0; 
 
 	// We need this to be replicated so all Clients can have access to this.
@@ -94,5 +99,4 @@ private:
 	float HUDMaxHealth;
 	float HUDScore;	// Eliminated
 	int32 HUDDefeats; // Deaths
-
 };

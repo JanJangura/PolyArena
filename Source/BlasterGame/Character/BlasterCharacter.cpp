@@ -20,6 +20,7 @@
 #include "TimerManager.h"
 #include "BlasterGame/GameMode/BlasterGameMode.h"
 #include "BlasterGame/PlayerState/BlasterPlayerState.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 ABlasterCharacter::ABlasterCharacter()
@@ -120,6 +121,7 @@ void ABlasterCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 	// *REMEMBER* This is called whenever the variable OverlappingWeapon changes value.
 	DOREPLIFETIME_CONDITION(ABlasterCharacter, OverlappingWeapon, COND_OwnerOnly); // This variable starts off uninitialized, it will be null until we set it.
 	DOREPLIFETIME(ABlasterCharacter, Health);
+	DOREPLIFETIME(ABlasterCharacter, bDisableGameplay);
 }
 
 // Called when the game starts or when spawned
@@ -142,10 +144,35 @@ void ABlasterCharacter::BeginPlay()
 	UpdateHUDHealth();
 }
 
+void ABlasterCharacter::Destroyed()
+{
+	Super::Destroyed();
+
+	ABlasterGameMode* BlasterGameMode = Cast<ABlasterGameMode>(UGameplayStatics::GetGameMode(this));
+
+	bool bMatchNotInProgress = BlasterGameMode && BlasterGameMode->GetMatchState() != MatchState::InProgress;
+	if (Combat && Combat->EquippedWeapon && bMatchNotInProgress) {
+		Combat->EquippedWeapon->Destroy();
+	}
+}
+
 // Called every frame
 void ABlasterCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	RotateInPlace(DeltaTime);
+	HideCameraIfCharacterClose();
+	PollInit();
+}
+
+void ABlasterCharacter::RotateInPlace(float DeltaTime)
+{
+	if (bDisableGameplay) { 
+		bUseControllerRotationYaw = false;
+		TurningInPlace = ETurningInPlace::ETIP_NotTurning;
+		return; 
+	}
 
 	if (GetLocalRole() > ENetRole::ROLE_SimulatedProxy && IsLocallyControlled()) {	// This Greater Sign means that we only want to play AimOffSet with any roles above SimulatedProxy().
 		AimOffset(DeltaTime);
@@ -157,8 +184,6 @@ void ABlasterCharacter::Tick(float DeltaTime)
 		}
 		CalculateAO_Pitch();
 	}
-	HideCameraIfCharacterClose();
-	PollInit();
 }
 
 // RepNotifier that Unreal Made for our Characters Movements
@@ -201,7 +226,7 @@ void ABlasterCharacter::MulticastElim_Implementation()
 	GetCharacterMovement()->DisableMovement();	// Disables Movement
 	GetCharacterMovement()->StopMovementImmediately();	// Disables the rotation of the Character
 	if (BlasterPlayerController) {
-		DisableInput(BlasterPlayerController);	// Disable Input stops the character from Shooting the Gun.
+		bDisableGameplay = true;	// Disable Input stops the character from Shooting the Gun.
 	}
 	// Disable Collision
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);	// Disables the Capsule Component
@@ -253,6 +278,8 @@ void ABlasterCharacter::PostInitializeComponents()
 ////////////// MOVEMENTS //////////////
 void ABlasterCharacter::MoveForward(float Value)
 {
+	if (bDisableGameplay) return; // This is to Disable Movement in the Cooldown State.
+
 	if (Controller != nullptr && Value != 0.f) {
 		// We want to move forward in our controller's forward direction and not the character's. 
 
@@ -272,6 +299,8 @@ void ABlasterCharacter::MoveForward(float Value)
 
 void ABlasterCharacter::MoveRight(float Value)
 {
+	if (bDisableGameplay) return;
+
 	// Notes for understanding these codes are similar in ABlasterCharacter::MoveForward(float Value).
 	if (Controller != nullptr && Value != 0.f) {
 
@@ -293,9 +322,18 @@ void ABlasterCharacter::LookUp(float value)
 	AddControllerPitchInput(value); // Value will determine how fast we move our mouse and AddControllerPitchInput is going to add Pitch to our controller rotation.
 }
 
+void ABlasterCharacter::Jump()
+{
+	if (bDisableGameplay) return;
+
+	Super::Jump();
+}
+
 // When the E key is pressed, EquipButtonPressed() function will only call the EquipWeapon() function if we have authority. 
 void ABlasterCharacter::EquipButtonPressed()
 {
+	if (bDisableGameplay) return;
+
 	// Keep in mind when pressing "E" is done on both Client and Server, but things like equpping Weapon should only be done on the Server. 
 	if (Combat) {	
 		if (HasAuthority()) { // Only the server is allowed to call the weapon, "HasAuthority" checks if it's on the server.
@@ -313,6 +351,8 @@ void ABlasterCharacter::EquipButtonPressed()
 
 void ABlasterCharacter::AimButtonPressed()
 {
+	if (bDisableGameplay) return;
+
 	if (Combat) {
 		Combat->SetAiming(true);
 		Combat->SetAiming(true);
@@ -321,6 +361,8 @@ void ABlasterCharacter::AimButtonPressed()
 
 void ABlasterCharacter::AimButtonReleased()
 {
+	if (bDisableGameplay) return;
+
 	if (Combat) {
 		Combat->SetAiming(false);
 	}
@@ -572,6 +614,8 @@ void ABlasterCharacter::SpawnAmmoPacks()
 
 void ABlasterCharacter::PauseButtonPressed()
 {
+	if (bDisableGameplay) return;
+
 	if (Controller && HasAuthority()) {
 		Combat->PauseButtonToggle();
 	}
@@ -579,6 +623,8 @@ void ABlasterCharacter::PauseButtonPressed()
 
 void ABlasterCharacter::FireButtonPressed()
 {
+	if (bDisableGameplay) return;
+
 	if (Combat) {
 		Combat->FireButtonPressed(true);
 		//UE_LOG(LogTemp, Warning, TEXT("TRUE"));
@@ -587,6 +633,8 @@ void ABlasterCharacter::FireButtonPressed()
 
 void ABlasterCharacter::FireButtonReleased()
 {
+	if (bDisableGameplay) return;
+
 	if (Combat) {
 		Combat->FireButtonPressed(false);
 		//UE_LOG(LogTemp, Warning, TEXT("FALSE"));

@@ -48,6 +48,9 @@ public:
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastElim();
 
+	UPROPERTY(Replicated)
+	bool bDisableGameplay = false; // This is a Boolean that we'll use to turn off the Movement controls while in the Cooldown State, but we'll only allow access to look around.
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -56,6 +59,7 @@ protected:
 	void MoveRight(float Value);
 	void Turn(float value);
 	void LookUp(float value);
+	virtual void Jump() override;
 	void EquipButtonPressed();	// This is an action mapping callback, so we don't have an input parameter.
 	void AimButtonPressed();
 	void AimButtonReleased();
@@ -65,11 +69,13 @@ protected:
 	void FireButtonPressed();
 	void FireButtonReleased();
 	void PlayHitReactMontage(); // Play Hit React Montage
+	virtual void Destroyed() override;
 
 	UFUNCTION()	// You will never get your callbacks called in response to a damage event if your receive damage function is not a UFUNCTION
 	void ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, class AController* InstigatorController, AActor* DamageCauser);
 	void UpdateHUDHealth();
 	void PollInit(); // As soon as our PlayerState is valid, we'll initialize our HUD using any relevant Data that exists on the PlayerState.
+	void RotateInPlace(float DelaTime);
 
 private:
 	// Setting up our Camera System
@@ -232,4 +238,5 @@ public:
 	FORCEINLINE float GetHealth() const { return Health; }
 	FORCEINLINE float GetMaxHealth() const { return MaxHealth; }
 	FORCEINLINE UCombatComponent* GetCombat() const { return Combat; }
+	FORCEINLINE bool GetDisableGameplay() const { return bDisableGameplay; }
 };

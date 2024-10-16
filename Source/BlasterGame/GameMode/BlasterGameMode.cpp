@@ -7,6 +7,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/PlayerStart.h"
 #include "BlasterGame/PlayerState/BlasterPlayerState.h"
+#include "BlasterGame/GameState/BlasterGameState.h"
 
 namespace MatchState
 {
@@ -32,16 +33,22 @@ void ABlasterGameMode::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	if (MatchState == MatchState::WaitingToStart) {
-
-		CountDownTime = WarmupTime - GetWorld()->GetTimeSeconds() + LevelStartingTime;
-		if (CountDownTime <= 0.f) {
+		CountdownTime = WarmupTime - GetWorld()->GetTimeSeconds() + LevelStartingTime;
+		if (CountdownTime <= 0.f) {
 			StartMatch();	// This function is inherited within the GameMode Class.
 		}
 	}
 	else if (MatchState == MatchState::InProgress) {
-		CountDownTime = WarmupTime + MatchTime - GetWorld()->GetTimeSeconds() + LevelStartingTime;
-		if (CountDownTime <= 0.f) {
+		CountdownTime = WarmupTime + MatchTime - GetWorld()->GetTimeSeconds() + LevelStartingTime;
+		if (CountdownTime <= 0.f) {
 			SetMatchState(MatchState::Cooldown); // This is how we'll set the MatchState to Cooldown.
+		}
+	}
+	else if (MatchState == MatchState::Cooldown) {
+		CountdownTime = CooldownTime + WarmupTime + MatchTime - GetWorld()->GetTimeSeconds() + LevelStartingTime;
+		
+		if (CountdownTime <= 0.f) {
+			RestartGame();	// This function is inherited within the GameMode Class.
 		}
 	}
 }
@@ -55,20 +62,27 @@ void ABlasterGameMode::OnMatchStateSet()
 		ABlasterPlayerController* BlasterPlayer = Cast<ABlasterPlayerController>(*It);
 		if (BlasterPlayer) {
 			BlasterPlayer->OnMatchStateSet(MatchState);
+			BlasterPlayer->CastBlasterHUD();
 		}
 	}
 }
 
 void ABlasterGameMode::PlayerEliminated(ABlasterCharacter* ElimmedCharacter, ABlasterPlayerController* VictimController, ABlasterPlayerController* AttackerController)
 {
-	ABlasterPlayerState* AttackPlayerState = AttackerController ? Cast<ABlasterPlayerState>(AttackerController->PlayerState) : nullptr;
+	ABlasterPlayerState* AttackerPlayerState = AttackerController ? Cast<ABlasterPlayerState>(AttackerController->PlayerState) : nullptr;
 	ABlasterPlayerState* VictimPlayerState = VictimController ? Cast<ABlasterPlayerState>(VictimController->PlayerState) : nullptr;
+	ABlasterGameState* BlasterGameState = GetGameState<ABlasterGameState>();
 
-	if (AttackPlayerState && AttackPlayerState != VictimPlayerState) {
-		AttackPlayerState->AddToScore(1.f);
+	if (AttackerPlayerState && AttackerPlayerState != VictimPlayerState && BlasterGameState) {
+		AttackerPlayerState->AddToScore(1.f);
+		BlasterGameState->UpdateTopScore(AttackerPlayerState);
+
+		if (AttackerPlayerState->GetScore() == MaxKillScore) {
+			SetMatchState(MatchState::Cooldown);
+		}
 	}
 
-	if (VictimPlayerState && VictimPlayerState != AttackPlayerState) {
+	if (VictimPlayerState && VictimPlayerState != AttackerPlayerState) {
 		VictimPlayerState->AddToDefeats(1);
 	}
 
