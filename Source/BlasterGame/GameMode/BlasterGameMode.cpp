@@ -77,9 +77,9 @@ void ABlasterGameMode::PlayerEliminated(ABlasterCharacter* ElimmedCharacter, ABl
 		AttackerPlayerState->AddToScore(1.f);
 		BlasterGameState->UpdateTopScore(AttackerPlayerState);
 
-		if (AttackerPlayerState->GetScore() == MaxKillScore) {
+		/*if (AttackerPlayerState->GetScore() == MaxKillScore) {
 			SetMatchState(MatchState::Cooldown);
-		}
+		}*/
 	}
 
 	if (VictimPlayerState && VictimPlayerState != AttackerPlayerState) {

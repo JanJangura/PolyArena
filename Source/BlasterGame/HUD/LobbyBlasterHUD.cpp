@@ -42,8 +42,6 @@ void ALobbyBlasterHUD::HideLaunchGameButton()
 	PlayerController->SetInputMode(InputModeData);
 	PlayerController->SetShowMouseCursor(false);
 	PlayerController->bShowMouseCursor = false;
-
-	UE_LOG(LogTemp, Warning, TEXT("Hidden"));
 }
 
 void ALobbyBlasterHUD::ShowLaunchGameButton()
@@ -55,10 +53,6 @@ void ALobbyBlasterHUD::ShowLaunchGameButton()
 	InputModeData.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
 	PlayerController->SetInputMode(InputModeData);
 	PlayerController->SetShowMouseCursor(true);
-
-
-
-	UE_LOG(LogTemp, Warning, TEXT("Visible"));
 }
 
 void ALobbyBlasterHUD::ToggleLaunchGameButton()
