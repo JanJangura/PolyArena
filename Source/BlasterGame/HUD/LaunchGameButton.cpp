@@ -32,8 +32,7 @@ void ULaunchGameButton::LaunchButtonClicked()
 		
 		if (LobbyGameMode) {
 			LobbyTearDown();
-			LobbyGameMode->ServerJumpToGame(LobbyGameMode->CurrentNumOfPlayers);
-			UE_LOG(LogTemp, Warning, TEXT("LaunchGameButtonClicked"));
+			LobbyGameMode->ServerTravelToGame();
 		}
 	}
 }
