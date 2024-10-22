@@ -164,6 +164,7 @@ void ABlasterCharacter::Tick(float DeltaTime)
 	RotateInPlace(DeltaTime);
 	HideCameraIfCharacterClose();
 	PollInit();
+
 }
 
 void ABlasterCharacter::RotateInPlace(float DeltaTime)
@@ -327,6 +328,7 @@ void ABlasterCharacter::Jump()
 	if (bDisableGameplay) return;
 
 	Super::Jump();
+
 }
 
 // When the E key is pressed, EquipButtonPressed() function will only call the EquipWeapon() function if we have authority. 
