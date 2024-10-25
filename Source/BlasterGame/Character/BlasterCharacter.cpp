@@ -61,6 +61,9 @@ ABlasterCharacter::ABlasterCharacter()
 	GetCharacterMovement()->JumpZVelocity = JumpHeight;
 	GetCharacterMovement()->GravityScale = GravitySetting;
 
+	// Default Weapon
+	DefaultWeaponClass = LoadObject<UClass>(nullptr, TEXT("/Game/BP_Shooter_Character/Blueprints/Weapon/BP_AssaultRifle.BP_AssaultRifle_C"));
+
 	// Blocking Camera Issue 
 	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);	// Capsule will now not block the camera.
@@ -129,6 +132,12 @@ void ABlasterCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
+
+	// Player Equips Default Weapon and update Ammo Hud.
+	//UE_LOG(LogTemp, Warning, TEXT("DefaultWeaponClass: %s"), DefaultWeaponClass != nullptr ? TEXT("True") : TEXT("False"));
+	SpawnDefaultWeapon();
+	UpdateHUDAmmo();
+
 	// Blocking Camera Issue 
 	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);	// Capsule will now not block the camera.
@@ -187,6 +196,23 @@ void ABlasterCharacter::RotateInPlace(float DeltaTime)
 	}
 }
 
+// This is how we'll Equip our Default Weapon
+void ABlasterCharacter::SpawnDefaultWeapon()
+{
+	ABlasterGameMode* BlasterGameMode = Cast<ABlasterGameMode>(UGameplayStatics::GetGameMode(this)); // If not on the server, it'll return null. 
+	UWorld* World = GetWorld();
+
+	// This checks to see if we're on the server and that we're on the Game Mode: BlasterGameMode, otherwise it'll return null. 
+	if (BlasterGameMode && World && !bElimmed && DefaultWeaponClass) { 
+		AWeapon* StartingWeapon = World->SpawnActor<AWeapon>(DefaultWeaponClass); // We'll spawn the Weapon.
+		StartingWeapon->bDestroyWeapon = true; // This is so we can Destroy our Default Weapon.
+
+		if (Combat) {
+			Combat->EquipWeapon(StartingWeapon); // This is how we'll Equip the Weapon.
+		}
+	}
+}
+
 // RepNotifier that Unreal Made for our Characters Movements
 void ABlasterCharacter::OnRep_ReplicatedMovement()
 {
@@ -199,7 +225,12 @@ void ABlasterCharacter::OnRep_ReplicatedMovement()
 void ABlasterCharacter::Elim()
 {
 	if (Combat && Combat->EquippedWeapon) {
-		Combat->EquippedWeapon->Dropped();
+		if (Combat->EquippedWeapon->bDestroyWeapon) {
+			Combat->EquippedWeapon->Destroy();
+		}
+		else {
+			Combat->EquippedWeapon->Dropped();
+		}
 	}
 
 	MulticastElim();
@@ -393,6 +424,19 @@ void ABlasterCharacter::UpdateHUDHealth()
 	
 	if (BlasterPlayerController) {
 		BlasterPlayerController->SetHUDHealth(Health, MaxHealth);
+	}
+}
+
+void ABlasterCharacter::UpdateHUDAmmo()
+{
+	BlasterPlayerController = BlasterPlayerController == nullptr ? Cast<ABlasterPlayerController>(Controller) : BlasterPlayerController;
+
+	if (BlasterPlayerController && Combat && Combat->EquippedWeapon) {
+		BlasterPlayerController->SetHUDCarriedAmmo(Combat->CarriedAmmo);
+		BlasterPlayerController->SetHUDWeaponAmmo(Combat->EquippedWeapon->GetAmmo());
+	}
+	else {
+		UE_LOG(LogTemp, Warning, TEXT("BlasterPlayerController && Combat && Combat->EquippedWeapon ALL FAILED!!"));
 	}
 }
 

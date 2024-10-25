@@ -51,6 +51,8 @@ public:
 	UPROPERTY(Replicated)
 	bool bDisableGameplay = false; // This is a Boolean that we'll use to turn off the Movement controls while in the Cooldown State, but we'll only allow access to look around.
 
+	void SpawnDefaultWeapon();
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -73,9 +75,10 @@ protected:
 
 	UFUNCTION()	// You will never get your callbacks called in response to a damage event if your receive damage function is not a UFUNCTION
 	void ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, class AController* InstigatorController, AActor* DamageCauser);
-	void UpdateHUDHealth();
 	void PollInit(); // As soon as our PlayerState is valid, we'll initialize our HUD using any relevant Data that exists on the PlayerState.
 	void RotateInPlace(float DelaTime);
+
+	void UpdateHUDHealth();
 
 private:
 	// Setting up our Camera System
@@ -172,6 +175,10 @@ private:
 	UPROPERTY()
 	class ABlasterPlayerState* BlasterPlayerState;
 
+	// Default Weapon
+	UPROPERTY(EditAnywhere, Category = "Weapon")
+	TSubclassOf<AWeapon> DefaultWeaponClass;
+
 public:	
 	/* Replication STEP 4. FORCEINLINE is a simple getter.
 	// We need a public setter for our "OverlappingWeapon" variable.
@@ -233,6 +240,8 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Health")
 	float HealthRegenInterval = 1.0f; // Time interval for health regeneration
+
+	void UpdateHUDAmmo();
 
 	FORCEINLINE bool IsElimmed() const { return bElimmed; }
 	FORCEINLINE float GetHealth() const { return Health; }

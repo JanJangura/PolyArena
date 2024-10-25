@@ -99,4 +99,8 @@ private:
 	float HUDMaxHealth;
 	float HUDScore;	// Eliminated
 	int32 HUDDefeats; // Deaths
+	float HUDCarriedAmmo;
+	bool bInitializeCarriedAmmo = false;
+	float HUDWeaponAmmo;
+	bool bInitializeWeaponAmmo = false;
 };
