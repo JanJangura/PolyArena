@@ -22,15 +22,21 @@ private:
 
 protected:
 	virtual void BeginPlay() override;
+	virtual void Tick(float DeltaTime) override;
 
 public:
 
-	UPROPERTY(EditAnywhere, Category = "Launch Game")
+	UPROPERTY(EditAnywhere, Category = "Widgets")
 	TSubclassOf<class UUserWidget> LaunchGameButtonClass;
 
+	UPROPERTY(EditAnywhere, Category = "Widgets")
+	TSubclassOf<class UUserWidget> LoadingClass;
+
 	class ULaunchGameButton* LaunchGameButton;
+	class ULoading* LoadingText;
 
 	void ToggleLaunchGameButton();
 	void HideLaunchGameButton();
 	void ShowLaunchGameButton();
+	void ShowLoadingText();
 };

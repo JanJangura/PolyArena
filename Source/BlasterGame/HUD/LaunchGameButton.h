@@ -27,5 +27,6 @@ private:
 	void LobbyTearDown();
 
 protected:
-	
+	UFUNCTION(NetMulticast, Reliable)
+	void ShowLoadingScreen(class ALobbyBlasterHUD* LobbyBlasterHUD);
 };

@@ -51,6 +51,12 @@ void ULaunchGameButton::LobbyTearDown()
 
 		if (LobbyBlasterHUD) {
 			LobbyBlasterHUD->HideLaunchGameButton();
+			LobbyBlasterHUD->ShowLoadingText();
 		}
 	}
+}
+
+void ULaunchGameButton::ShowLoadingScreen_Implementation(class ALobbyBlasterHUD* LobbyBlasterHUD)
+{
+	LobbyBlasterHUD->ShowLoadingText();
 }

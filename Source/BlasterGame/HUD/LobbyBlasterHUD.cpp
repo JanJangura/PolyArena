@@ -2,13 +2,19 @@
 
 
 #include "LobbyBlasterHUD.h"
+#include "Loading.h"
 #include "BlasterGame/HUD/LaunchGameButton.h"
 
 ALobbyBlasterHUD::ALobbyBlasterHUD() {
-	static ConstructorHelpers::FClassFinder<ULaunchGameButton> WidgetClass(TEXT("/Game/BP_Shooter_Character/Blueprints/HUD/WBP_LaunchGameButton"));
-	if (WidgetClass.Succeeded())
+	static ConstructorHelpers::FClassFinder<ULaunchGameButton> WidgetClassOne(TEXT("/Game/BP_Shooter_Character/Blueprints/HUD/WBP_LaunchGameButton"));
+	static ConstructorHelpers::FClassFinder<ULoading> WidgetClassTwo(TEXT("/Game/BP_Shooter_Character/Blueprints/HUD/WBP_Loading"));
+	if (WidgetClassOne.Succeeded())
 	{
-		LaunchGameButtonClass = WidgetClass.Class;
+		LaunchGameButtonClass = WidgetClassOne.Class;
+	}
+	if (WidgetClassTwo.Succeeded())
+	{
+		LoadingClass = WidgetClassTwo.Class;
 	}
 }
 
@@ -19,15 +25,25 @@ void ALobbyBlasterHUD::BeginPlay()
 	AddPauseUI();
 }
 
+void ALobbyBlasterHUD::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+	UE_LOG(LogTemp, Warning, TEXT("Loading is %s"), LoadingText != nullptr ? TEXT("Valid") : TEXT("Invalid"));
+}
+
 void ALobbyBlasterHUD::AddPauseUI()
 {
 	if (PlayerController) {
-		UE_LOG(LogTemp, Warning, TEXT("rEACHED"));
+
 		if (LaunchGameButtonClass) {
 			LaunchGameButton = CreateWidget<ULaunchGameButton>(PlayerController, LaunchGameButtonClass);
 			LaunchGameButton->AddToViewport();
 			LaunchGameButton->SetVisibility(ESlateVisibility::Hidden);
-			UE_LOG(LogTemp, Warning, TEXT("rEACHED"));
+		}
+		if (LoadingClass) {
+			LoadingText = CreateWidget<ULoading>(PlayerController, LoadingClass);
+			LoadingText->AddToViewport();
+			LoadingText->SetVisibility(ESlateVisibility::Hidden);
 		}
 		PauseUICreated = true;
 	}
@@ -36,7 +52,9 @@ void ALobbyBlasterHUD::AddPauseUI()
 
 void ALobbyBlasterHUD::HideLaunchGameButton()
 {
-	LaunchGameButton->SetVisibility(ESlateVisibility::Hidden);
+	if (LaunchGameButton) {
+		LaunchGameButton->SetVisibility(ESlateVisibility::Hidden);
+	}
 
 	FInputModeGameOnly InputModeData;
 	PlayerController->SetInputMode(InputModeData);
@@ -46,13 +64,23 @@ void ALobbyBlasterHUD::HideLaunchGameButton()
 
 void ALobbyBlasterHUD::ShowLaunchGameButton()
 {
-	LaunchGameButton->SetVisibility(ESlateVisibility::Visible);
+	if (LaunchGameButton) {
+		LaunchGameButton->SetVisibility(ESlateVisibility::Visible);
+	}
 
 	FInputModeGameAndUI InputModeData;
 	InputModeData.SetWidgetToFocus(LaunchGameButton->TakeWidget());
 	InputModeData.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
 	PlayerController->SetInputMode(InputModeData);
 	PlayerController->SetShowMouseCursor(true);
+}
+
+void ALobbyBlasterHUD::ShowLoadingText()
+{
+	if (LoadingText) {
+		LoadingText->SetVisibility(ESlateVisibility::Visible);
+		HideLaunchGameButton();
+	}
 }
 
 void ALobbyBlasterHUD::ToggleLaunchGameButton()
@@ -67,3 +95,4 @@ void ALobbyBlasterHUD::ToggleLaunchGameButton()
 		}
 	}
 }
+

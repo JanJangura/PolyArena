@@ -154,7 +154,6 @@ private:
 	void InitializeCarriedAmmo();
 
 public:	
-	
 
 		
 };
