@@ -28,5 +28,5 @@ private:
 
 protected:
 	UFUNCTION(NetMulticast, Reliable)
-	void ShowLoadingScreen(class ALobbyBlasterHUD* LobbyBlasterHUD);
+	void ShowLoadingScreen();
 };

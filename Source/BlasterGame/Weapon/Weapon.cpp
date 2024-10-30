@@ -155,7 +155,10 @@ void AWeapon::OnRep_Owner()
 		BlasterOwnerController = nullptr;
 	}
 	else {
-		SetHUDAmmo();
+		BlasterOwnerCharacter = BlasterOwnerCharacter == nullptr ? Cast<ABlasterCharacter>(Owner) : BlasterOwnerCharacter;
+		if (BlasterOwnerCharacter && BlasterOwnerCharacter->GetEquippedWeapon() && BlasterOwnerCharacter->GetEquippedWeapon() == this) {
+			SetHUDAmmo();
+		}
 	}
 }
 
@@ -171,6 +174,9 @@ void AWeapon::SetWeaponState(EWeaponState State)
 		WeaponMesh->SetSimulatePhysics(false);	// This is how we allow our Gun to fall to the ground.
 		WeaponMesh->SetEnableGravity(false);
 		WeaponMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		break;
+	case EWeaponState::EWS_EquippedSecondary:
+		OnEquippedSecondary();
 		break;
 	case EWeaponState::EWS_Dropped:
 		if (HasAuthority()) {	// Need to make sure that Spawning the AreaSphere is on the server and not on the client.
@@ -195,11 +201,23 @@ void AWeapon::OnRep_WeaponState()
 		WeaponMesh->SetSimulatePhysics(false);	// This is how we allow our Gun to fall to the ground.
 		WeaponMesh->SetEnableGravity(false);
 		WeaponMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	case EWeaponState::EWS_EquippedSecondary:
+		OnEquippedSecondary();
+		break;
 	case EWeaponState::EWS_Dropped:
 		WeaponMesh->SetSimulatePhysics(true);	// This is how we allow our Gun to fall to the ground.
 		WeaponMesh->SetEnableGravity(true);
 		WeaponMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	}
+}
+
+void AWeapon::OnEquippedSecondary()
+{
+	ShowPickupWidget(false); // Now that we picked up this weapon, we don't need to prompt the "Press E" widget anymore. We'll turn it off here.
+	AreaSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision); // Removing the Collision off of the weapon now on the server.
+	WeaponMesh->SetSimulatePhysics(false);	// This is how we allow our Gun to fall to the ground.
+	WeaponMesh->SetEnableGravity(false);
+	WeaponMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
 void AWeapon::ShowPickupWidget(bool bShowWidget)

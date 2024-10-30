@@ -121,6 +121,8 @@ void ABlasterPlayerController::OnPossess(APawn* InPawn)
 	if (BlasterCharacter) {
 		SetHUDHealth(BlasterCharacter->GetHealth(), BlasterCharacter->GetMaxHealth());
 		BlasterCharacter->UpdateHUDAmmo();
+		SetWeaponSelection(BlasterCharacter->GetPrimaryWeaponType()); 
+		UE_LOG(LogTemp, Warning, TEXT("WeaponType: %d"), static_cast<int>(BlasterCharacter->GetPrimaryWeaponType()));
 	}
 }
 
@@ -160,6 +162,34 @@ void ABlasterPlayerController::SetHUDCarriedAmmo(int32 Ammo)
 		bInitializeCarriedAmmo = true;
 		HUDCarriedAmmo = Ammo;
 	}
+}
+
+void ABlasterPlayerController::SetWeaponSelection(EWeaponType WeaponType)
+{
+	bool bHUDValid = BlasterHUD &&
+		BlasterHUD->CharacterOverlay &&
+		BlasterHUD->CharacterOverlay->WeaponSelection;
+
+	if (bHUDValid) {
+		FString WeaponText;
+
+		switch (WeaponType) {
+		case EWeaponType::EWT_AssaultRifle:
+			WeaponText = FString::Printf(TEXT("Assault Rifle"));
+			break;
+		case EWeaponType::EWT_Pistol:
+			WeaponText = FString::Printf(TEXT("Pistol"));
+			break;
+		case EWeaponType::EWT_None:
+			WeaponText = FString::Printf(TEXT("None"));
+			break;
+		default:
+			WeaponText = FString::Printf(TEXT("None"));
+		}
+		 
+		BlasterHUD->CharacterOverlay->WeaponSelection->SetText(FText::FromString(WeaponText));
+	}
+
 }
 
 void ABlasterPlayerController::SetHUDHealth(float Health, float MaxHealth)

@@ -37,6 +37,9 @@ void UCombatComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 
 	// This only matters for the owning client, so we need Condition and clarify that it only applies to the Owner. "DOREPLIFETIME_CONDITION" and "COND_OwnerOnly" is used here.
 	DOREPLIFETIME_CONDITION(UCombatComponent, CarriedAmmo, COND_OwnerOnly);
+
+	// Secondary Weapon Replication
+	DOREPLIFETIME(UCombatComponent, SecondaryWeapon);
 }
 
 // Called when the game starts
@@ -156,6 +159,22 @@ void UCombatComponent::OnRep_CarriedAmmo()
 void UCombatComponent::InitializeCarriedAmmo()
 {
 	CarriedAmmoMap.Emplace(EWeaponType::EWT_AssaultRifle, StartingARAmmo);
+	CarriedAmmoMap.Emplace(EWeaponType::EWT_Pistol, StartingPistolAmmo);
+}
+
+bool UCombatComponent::ShouldSwapWeapons()
+{
+	return (EquippedWeapon != nullptr && SecondaryWeapon != nullptr);
+}
+
+EWeaponType UCombatComponent::GetPrimaryWeaponType(AWeapon* Weapon)
+{
+	if (Weapon) {
+		return Weapon->GetWeaponType();
+	}
+	else {
+		return EWeaponType::EWT_None;
+	}
 }
 
 // *REMEMBER, RPC needs _Implementation added to the function.	
@@ -183,16 +202,69 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 	if (Character == nullptr || WeaponToEquip == nullptr) {	// Checking for validation
 		return;
 	}
+
+	if (EquippedWeapon != nullptr && SecondaryWeapon == nullptr) {
+		EquipSecondaryWeapon(WeaponToEquip);
+	}
+	else {
+		EquipPrimaryWeapon(WeaponToEquip);
+	}
+
+	Character->GetCharacterMovement()->bOrientRotationToMovement = false;
+	Character->bUseControllerRotationYaw = true;
+	// RPC can be called both ways, so we could make an RPC to be called from the server and executed on a client, but we can use variable replication instead.
+}
+
+void UCombatComponent::SwapWeapons()
+{
+	AWeapon* TempWeapon = EquippedWeapon;
+	EquippedWeapon = SecondaryWeapon;
+	SecondaryWeapon = TempWeapon;
+
+	EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped);
+
+	const USkeletalMeshSocket* HandSocket = Character->GetMesh()->GetSocketByName(FName("RightHandSocket"));	// We'll define a HandSocket variable of type USkeletalMeshSocket.
+	// Then, we'll retrieve our RightHandSocket that made and defined.
+	if (HandSocket) {
+		HandSocket->AttachActor(EquippedWeapon, Character->GetMesh());	// In the HandSocket that we created to hold our weapon, we'll attach our "EquippedWeapon" reference.	
+		// AttachActor requires the Actor that attaches to the socket and the skeletal mesh component associated with the socket.
+	}
+
+	EquippedWeapon->SetHUDAmmo();
+	PrimaryWeaponType = GetPrimaryWeaponType(EquippedWeapon);
+
+	//UE_LOG(LogTemp, Warning, TEXT("WeaponType: %d"), static_cast<int>(PrimaryWeaponType));
+
+	// Carried Ammo is set here.
+	if (CarriedAmmoMap.Contains(EquippedWeapon->GetWeaponType())) {
+		CarriedAmmo = CarriedAmmoMap[EquippedWeapon->GetWeaponType()];
+	}
+
+	Controller = Controller == nullptr ? Cast<ABlasterPlayerController>(Character->Controller) : Controller;
+	if (Controller) {
+		Controller->SetHUDCarriedAmmo(CarriedAmmo);
+	}
+
+	SecondaryWeapon->SetWeaponState(EWeaponState::EWS_EquippedSecondary);
+	AttachActorToBackpack(SecondaryWeapon);
+}
+
+void UCombatComponent::EquipPrimaryWeapon(AWeapon* WeaponToEquip)
+{
 	if (EquippedWeapon) {
 		EquippedWeapon->Dropped();
 	}
 
 	EquippedWeapon = WeaponToEquip;	// Setting our Equipped Weapon instance to this "WeaponToEquip" class reference.
+	PrimaryWeapon = EquippedWeapon;
 	EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped);	// This sets our WeaponState to "Equipped".
 
+	PrimaryWeaponType = GetPrimaryWeaponType(EquippedWeapon);
+	//UE_LOG(LogTemp, Warning, TEXT("WeaponType: %d"), static_cast<int>(PrimaryWeaponType));
+
 	const USkeletalMeshSocket* HandSocket = Character->GetMesh()->GetSocketByName(FName("RightHandSocket"));	// We'll define a HandSocket variable of type USkeletalMeshSocket.
-																												// Then, we'll retrieve our RightHandSocket that made and defined.
-	if (HandSocket) {	
+	// Then, we'll retrieve our RightHandSocket that made and defined.
+	if (HandSocket) {
 		HandSocket->AttachActor(EquippedWeapon, Character->GetMesh());	// In the HandSocket that we created to hold our weapon, we'll attach our "EquippedWeapon" reference.	
 		// AttachActor requires the Actor that attaches to the socket and the skeletal mesh component associated with the socket.
 	}
@@ -211,10 +283,24 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 	if (Controller) {
 		Controller->SetHUDCarriedAmmo(CarriedAmmo);
 	}
+}
 
-	Character->GetCharacterMovement()->bOrientRotationToMovement = false;
-	Character->bUseControllerRotationYaw = true;
-	// RPC can be called both ways, so we could make an RPC to be called from the server and executed on a client, but we can use variable replication instead.
+void UCombatComponent::EquipSecondaryWeapon(AWeapon* WeaponToEquip)
+{
+	SecondaryWeapon = WeaponToEquip;
+	SecondaryWeapon->SetWeaponState(EWeaponState::EWS_EquippedSecondary);
+	AttachActorToBackpack(WeaponToEquip);
+	SecondaryWeapon->SetOwner(Character);
+}
+
+void UCombatComponent::AttachActorToBackpack(AActor* ActortoAttach)
+{
+	if (Character == nullptr || Character->GetMesh() == nullptr || ActortoAttach == nullptr || EquippedWeapon == nullptr) return;
+
+	const USkeletalMeshSocket* BackpackSocket = Character->GetMesh()->GetSocketByName(FName("BackpackSocket"));
+	if (BackpackSocket) {
+		BackpackSocket->AttachActor(ActortoAttach, Character->GetMesh());
+	}
 }
 
 void UCombatComponent::ServerAddAmmo_Implementation(EWeaponType WeaponType, int32 AmmoAmount)
@@ -254,6 +340,15 @@ void UCombatComponent::OnRep_EquippedWeapon()
 		}
 		Character->GetCharacterMovement()->bOrientRotationToMovement = false;
 		Character->bUseControllerRotationYaw = true;
+		EquippedWeapon->SetHUDAmmo();
+	}
+}
+
+void UCombatComponent::OnRep_SecondaryWeapon()
+{
+	if (SecondaryWeapon && Character) {
+		SecondaryWeapon->SetWeaponState(EWeaponState::EWS_EquippedSecondary);
+		AttachActorToBackpack(SecondaryWeapon);
 	}
 }
 

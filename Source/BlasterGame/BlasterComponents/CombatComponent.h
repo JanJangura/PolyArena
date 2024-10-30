@@ -30,6 +30,8 @@ public:
 	// Within this EquipWeapon, we need a Weapon to equip, we can forward a class instance of AWeapon class.
 	void EquipWeapon(class AWeapon* WeaponToEquip);	
 
+	void SwapWeapons();
+
 	void PickupAmmo(EWeaponType WeaponType, int32 AmmoAmount);
 
 	void FireButtonPressed(bool bPressed);
@@ -46,6 +48,9 @@ protected:
 
 	UFUNCTION()
 	void OnRep_EquippedWeapon();
+
+	UFUNCTION()
+	void OnRep_SecondaryWeapon();
 
 	void Fire();
 
@@ -68,6 +73,12 @@ protected:
 	UFUNCTION(Server, Reliable)
 	void ServerAddAmmo(EWeaponType WeaponType, int32 AmmoAmount);
 
+	void EquipPrimaryWeapon(AWeapon* WeaponToEquip);
+	AWeapon* PrimaryWeapon;
+	void EquipSecondaryWeapon(AWeapon* WeaponToEquip);
+
+	void AttachActorToBackpack(AActor* ActortoAttach);
+
 private:
 	// We need this instance because we'll be referring back and forth. This also stops us from continously casting to our Character.
 	UPROPERTY()
@@ -82,6 +93,9 @@ private:
 	// This is the variable for the weapon in which the Blaster Character currently has equipped.
 	UPROPERTY(ReplicatedUsing = OnRep_EquippedWeapon)	// We need to add this "Replicated" key term to indicate that this is Replicated across all clients. Otherwise we're only setting it on the Server.
 	AWeapon* EquippedWeapon;
+
+	UPROPERTY(ReplicatedUsing = OnRep_SecondaryWeapon)
+	AWeapon* SecondaryWeapon;
 
 	UPROPERTY(Replicated)	// This is so all clients can see whomever is aiming.
 	bool bAiming;
@@ -151,9 +165,16 @@ private:
 	UPROPERTY(EditAnywhere)
 	int32 StartingARAmmo = 30;
 
+	UPROPERTY(EditAnywhere)
+	int32 StartingPistolAmmo = 30;
+
 	void InitializeCarriedAmmo();
 
-public:	
+	EWeaponType PrimaryWeaponType;
 
-		
+	EWeaponType GetPrimaryWeaponType(AWeapon* Weapon);
+
+public:	
+	bool ShouldSwapWeapons();
+	FORCEINLINE EWeaponType GetPrimaryWeapon(){ return PrimaryWeaponType; }
 };

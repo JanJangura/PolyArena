@@ -27,4 +27,8 @@ public:
 	int32 CurrentNumOfPlayers;
 
 	void ServerTravelToGame();
+
+private:
+	FTimerHandle LaunchGameTimerHandle;
+	void LaunchGame();
 };

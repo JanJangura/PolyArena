@@ -62,7 +62,7 @@ ABlasterCharacter::ABlasterCharacter()
 	GetCharacterMovement()->GravityScale = GravitySetting;
 
 	// Default Weapon
-	DefaultWeaponClass = LoadObject<UClass>(nullptr, TEXT("/Game/BP_Shooter_Character/Blueprints/Weapon/BP_AssaultRifle.BP_AssaultRifle_C"));
+	DefaultWeaponClass = LoadObject<UClass>(nullptr, TEXT("/Game/BP_Shooter_Character/Blueprints/Weapon/BP_Pistol.BP_Pistol_C"));
 
 	// Blocking Camera Issue 
 	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
@@ -78,6 +78,9 @@ ABlasterCharacter::ABlasterCharacter()
 	NetUpdateFrequency = 66.f;
 	MinNetUpdateFrequency = 33.f;
 	
+	// Default WeaponType
+	PrimaryWeaponType = EWeaponType::EWT_Pistol;
+
 	// Initializes the FireMontage for us because it doesnt work in blueprints.
 	static ConstructorHelpers::FObjectFinder<UAnimMontage> FireMontageAsset(TEXT("AnimMontage'/Game/BP_Shooter_Character/Animation/FireWeapon.FireWeapon'"));
 	static ConstructorHelpers::FObjectFinder<UAnimMontage> HitReactMontageAsset(TEXT("AnimMontage'/Game/BP_Shooter_Character/Animation/HitReact.HitReact'"));
@@ -132,10 +135,13 @@ void ABlasterCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-
 	// Player Equips Default Weapon and update Ammo Hud.
 	//UE_LOG(LogTemp, Warning, TEXT("DefaultWeaponClass: %s"), DefaultWeaponClass != nullptr ? TEXT("True") : TEXT("False"));
 	SpawnDefaultWeapon();
+	if (Combat && Combat->PrimaryWeapon) {
+		PrimaryWeaponType = Combat->GetPrimaryWeapon();
+		UpdateWeaponSelection(PrimaryWeaponType);
+	}
 	UpdateHUDAmmo();
 
 	// Blocking Camera Issue 
@@ -173,7 +179,6 @@ void ABlasterCharacter::Tick(float DeltaTime)
 	RotateInPlace(DeltaTime);
 	HideCameraIfCharacterClose();
 	PollInit();
-
 }
 
 void ABlasterCharacter::RotateInPlace(float DeltaTime)
@@ -224,14 +229,7 @@ void ABlasterCharacter::OnRep_ReplicatedMovement()
 // This is the Server that we'll call from the GameMode, then on the server we'll call MulticastElim() because that's including Clients and Server, but we only want the Server which is here.
 void ABlasterCharacter::Elim()
 {
-	if (Combat && Combat->EquippedWeapon) {
-		if (Combat->EquippedWeapon->bDestroyWeapon) {
-			Combat->EquippedWeapon->Destroy();
-		}
-		else {
-			Combat->EquippedWeapon->Dropped();
-		}
-	}
+	DropOrDestroyWeapons();
 
 	MulticastElim();
 
@@ -271,6 +269,30 @@ void ABlasterCharacter::ElimTimerFinished()
 	ABlasterGameMode* BlasterGameMode = GetWorld()->GetAuthGameMode<ABlasterGameMode>();
 	if (BlasterGameMode) {
 		BlasterGameMode->RequestRespawn(this, Controller);
+	}
+}
+
+void ABlasterCharacter::DropOrDestroyWeapons()
+{
+	if (Combat) {
+		if (Combat->EquippedWeapon) {
+			DropOrDestroyWeapon(Combat->EquippedWeapon);
+		}
+		if (Combat->SecondaryWeapon) {
+			DropOrDestroyWeapon(Combat->SecondaryWeapon);
+		}
+	}
+}
+
+void ABlasterCharacter::DropOrDestroyWeapon(AWeapon* Weapon)
+{
+	if (Weapon == nullptr) return;
+
+	if (Weapon->bDestroyWeapon) {
+		Weapon->Destroy();
+	}
+	else {
+		Weapon->Dropped();
 	}
 }
 
@@ -369,12 +391,16 @@ void ABlasterCharacter::EquipButtonPressed()
 
 	// Keep in mind when pressing "E" is done on both Client and Server, but things like equpping Weapon should only be done on the Server. 
 	if (Combat) {	
+
+		ServerEquippedButtonPressed();
+		/*
 		if (HasAuthority()) { // Only the server is allowed to call the weapon, "HasAuthority" checks if it's on the server.
 			Combat->EquipWeapon(OverlappingWeapon);
 		}
 		else {	// Now if we press the E key that's not on the server, then we know that we're on the client. Here, we need to send the RPC.
 			ServerEquippedButtonPressed(); // We also don't need the "_Implementation" key word here, this is only for us when defining the function.
 		}
+		*/
 
 		// Remote Procedure Calls (RPC) are functions that we can call on one machine and have them executed on another machine. So we can call RPC from the client, 
 		// and have that function executed on the server. We'll use this by creating an RPC that we can call from a client and execute on the server to allow a client 
@@ -435,8 +461,26 @@ void ABlasterCharacter::UpdateHUDAmmo()
 		BlasterPlayerController->SetHUDCarriedAmmo(Combat->CarriedAmmo);
 		BlasterPlayerController->SetHUDWeaponAmmo(Combat->EquippedWeapon->GetAmmo());
 	}
+}
+
+void ABlasterCharacter::UpdateWeaponSelection(EWeaponType WeaponType)
+{
+	BlasterPlayerController = BlasterPlayerController == nullptr ? Cast<ABlasterPlayerController>(Controller) : BlasterPlayerController;
+
+	if (BlasterPlayerController && Combat && Combat->PrimaryWeapon) {
+		BlasterPlayerController->SetWeaponSelection(WeaponType);
+	}
+}
+
+EWeaponType ABlasterCharacter::GetPrimaryWeaponType()
+{
+	if (Combat && Combat->PrimaryWeapon) {
+		PrimaryWeaponType = Combat->GetPrimaryWeapon();
+
+		return PrimaryWeaponType;
+	}
 	else {
-		UE_LOG(LogTemp, Warning, TEXT("BlasterPlayerController && Combat && Combat->EquippedWeapon ALL FAILED!!"));
+		return EWeaponType::EWT_None;
 	}
 }
 
@@ -694,7 +738,19 @@ void ABlasterCharacter::FireButtonReleased()
 void ABlasterCharacter::ServerEquippedButtonPressed_Implementation()	
 {
 	if (Combat) {	// There's no need to check for authority because we know that a Server RPC will only be executed on the server.
-		Combat->EquipWeapon(OverlappingWeapon);
+		if (OverlappingWeapon) {
+			Combat->EquipWeapon(OverlappingWeapon);
+		}
+		else {
+			if (Combat->ShouldSwapWeapons()) {
+				Combat->SwapWeapons();
+
+				PrimaryWeaponType = Combat->GetPrimaryWeapon();
+				UpdateWeaponSelection(PrimaryWeaponType);
+				//UE_LOG(LogTemp, Warning, TEXT("WeaponType: %d"), static_cast<int>(PrimaryWeaponType));
+			}
+		}
+
 	}
 }
 

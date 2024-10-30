@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
+#include "BlasterGame/Weapon/WeaponTypes.h"
 #include "BlasterPlayerController.generated.h"
 
 /**
@@ -33,6 +34,7 @@ public:
 	void HandleMatchHasStarted();
 	void HandleCooldown();
 	void CastBlasterHUD();
+	void SetWeaponSelection(EWeaponType WeaponType);
 
 protected:
 	virtual void BeginPlay() override;

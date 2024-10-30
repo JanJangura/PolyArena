@@ -28,7 +28,14 @@ void ALobbyBlasterHUD::BeginPlay()
 void ALobbyBlasterHUD::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	UE_LOG(LogTemp, Warning, TEXT("Loading is %s"), LoadingText != nullptr ? TEXT("Valid") : TEXT("Invalid"));
+	/*if (PlayerController) {
+		if (PlayerController->HasAuthority()) {
+			UE_LOG(LogTemp, Warning, TEXT("Server Loading is %s"), LoadingText != nullptr ? TEXT("Valid") : TEXT("Invalid"));
+		}
+		else {
+			UE_LOG(LogTemp, Warning, TEXT("Client Loading is %s"), LoadingText != nullptr ? TEXT("Valid") : TEXT("Invalid"));
+		}
+	}*/
 }
 
 void ALobbyBlasterHUD::AddPauseUI()
@@ -78,6 +85,7 @@ void ALobbyBlasterHUD::ShowLaunchGameButton()
 void ALobbyBlasterHUD::ShowLoadingText()
 {
 	if (LoadingText) {
+		UE_LOG(LogTemp, Warning, TEXT("LOADING CALLED!"));
 		LoadingText->SetVisibility(ESlateVisibility::Visible);
 		HideLaunchGameButton();
 	}

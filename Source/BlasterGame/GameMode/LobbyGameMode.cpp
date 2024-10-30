@@ -5,6 +5,8 @@
  
 #include "LobbyGameMode.h"
 #include "GameFramework/GameStateBase.h"
+#include "Kismet/GameplayStatics.h"
+#include "TimerManager.h"
 #include "BlasterGame/HUD/BlasterHUD.h"
 
 void ALobbyGameMode::PostLogin(APlayerController* NewPlayer)
@@ -40,12 +42,23 @@ void ALobbyGameMode::ServerTravelToGame()
 	UWorld* World = GetWorld();
 
 	if (World) {
+
+		World->GetTimerManager().SetTimer(LaunchGameTimerHandle, this, &ALobbyGameMode::LaunchGame, 5.0f);
 		// We want to travel Seamlessly to the Game Level. So we'll use the boolean variable called "bUseSeamlessTravel" that exists on the GameMode class and set that to true.
-		bUseSeamlessTravel = true;
+	//	bUseSeamlessTravel = true;
 
 		// ServerTravel() takes in an address to travel to. The server only ever exists on the GameMode, so when we call this function, we can travel to the level we want to. 
 	// Then all connected clients will travel to that level. In parameters, ServerTravel() takes an FString, then we can use the syntax "?" to add additional options to 
 	// the address. In this case, the option we need is "listen" because we want to dedicate this BlasterMap to be opened as a listen server for clients to connect to. 
+		//World->ServerTravel(FString("/Game/Scenes/BlasterMap?listen"));
+	}
+}
+
+void ALobbyGameMode::LaunchGame()
+{
+	UWorld* World = GetWorld();
+	if (World) {
+		bUseSeamlessTravel = true;
 		World->ServerTravel(FString("/Game/Scenes/BlasterMap?listen"));
 	}
 }

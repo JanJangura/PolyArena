@@ -3,6 +3,7 @@
 
 #include "LaunchGameButton.h"
 #include "Components/Button.h"
+#include "Engine/World.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/PlayerController.h"
 #include "BlasterGame/GameMode/LobbyGameMode.h"
@@ -41,22 +42,26 @@ void ULaunchGameButton::LobbyTearDown()
 {
 	RemoveFromParent(); // To Remove Widget
 
-	APlayerController* PlayerController = GetOwningPlayer(); //This is how we get our first player controller. 
-
-	if (PlayerController) {
-
-		//ABlasterPlayerController* BlasterPlayerController = Cast<ABlasterPlayerController>(PlayerController);
-		
-		class ALobbyBlasterHUD* LobbyBlasterHUD = Cast<ALobbyBlasterHUD>(PlayerController->GetHUD());
-
-		if (LobbyBlasterHUD) {
-			LobbyBlasterHUD->HideLaunchGameButton();
-			LobbyBlasterHUD->ShowLoadingText();
-		}
-	}
+	ShowLoadingScreen();
 }
 
-void ULaunchGameButton::ShowLoadingScreen_Implementation(class ALobbyBlasterHUD* LobbyBlasterHUD)
+void ULaunchGameButton::ShowLoadingScreen_Implementation()
 {
-	LobbyBlasterHUD->ShowLoadingText();
+	UWorld* World = GetWorld();
+
+	if (World) {
+		APlayerController* PlayerController = World->GetFirstPlayerController(); //This is how we get our first player controller. 
+
+		if (PlayerController) {
+			//ABlasterPlayerController* BlasterPlayerController = Cast<ABlasterPlayerController>(PlayerController);
+
+			UE_LOG(LogTemp, Warning, TEXT("ShowLoadingScreen called on"));
+			class ALobbyBlasterHUD* LobbyBlasterHUD = Cast<ALobbyBlasterHUD>(PlayerController->GetHUD());
+
+			if (LobbyBlasterHUD) {
+				LobbyBlasterHUD->HideLaunchGameButton();
+				LobbyBlasterHUD->ShowLoadingText();
+			}
+		}
+	}
 }

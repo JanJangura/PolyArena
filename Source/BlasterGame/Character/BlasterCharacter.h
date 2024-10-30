@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "Net/UnrealNetwork.h"
 #include "BlasterGame/Interfaces/InteractWithCrosshairsInterface.h"
+#include "BlasterGame/Weapon/WeaponTypes.h"
 #include "Blueprint/UserWidget.h"
 #include "BlasterGame/BlasterTypes/TurningInPlace.h"
 #include "BlasterCharacter.generated.h"
@@ -79,6 +80,8 @@ protected:
 	void RotateInPlace(float DelaTime);
 
 	void UpdateHUDHealth();
+	void DropOrDestroyWeapon(AWeapon* Weapon);
+	void DropOrDestroyWeapons();
 
 private:
 	// Setting up our Camera System
@@ -242,10 +245,14 @@ public:
 	float HealthRegenInterval = 1.0f; // Time interval for health regeneration
 
 	void UpdateHUDAmmo();
+	void UpdateWeaponSelection(EWeaponType WeaponType);
 
 	FORCEINLINE bool IsElimmed() const { return bElimmed; }
 	FORCEINLINE float GetHealth() const { return Health; }
 	FORCEINLINE float GetMaxHealth() const { return MaxHealth; }
 	FORCEINLINE UCombatComponent* GetCombat() const { return Combat; }
 	FORCEINLINE bool GetDisableGameplay() const { return bDisableGameplay; }
+
+	EWeaponType PrimaryWeaponType;
+	FORCEINLINE EWeaponType GetPrimaryWeaponType();
 };
