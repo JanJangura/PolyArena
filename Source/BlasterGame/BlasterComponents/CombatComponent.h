@@ -170,9 +170,6 @@ private:
 
 	void InitializeCarriedAmmo();
 
-	EWeaponType PrimaryWeaponType;
-
 public:	
 	bool ShouldSwapWeapons();
-	FORCEINLINE EWeaponType GetPrimaryWeaponType();
 };

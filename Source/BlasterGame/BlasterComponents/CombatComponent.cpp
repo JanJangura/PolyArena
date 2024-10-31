@@ -167,16 +167,6 @@ bool UCombatComponent::ShouldSwapWeapons()
 	return (EquippedWeapon != nullptr && SecondaryWeapon != nullptr);
 }
 
-EWeaponType UCombatComponent::GetPrimaryWeaponType()
-{
-	if (EquippedWeapon) {
-		return EquippedWeapon->GetWeaponType();
-	}
-	else {
-		return EWeaponType::EWT_None;
-	}
-}
-
 // *REMEMBER, RPC needs _Implementation added to the function.	
 void UCombatComponent::ServerFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
 {
@@ -219,6 +209,7 @@ void UCombatComponent::SwapWeapons()
 {
 	AWeapon* TempWeapon = EquippedWeapon;
 	EquippedWeapon = SecondaryWeapon;
+	PrimaryWeapon = EquippedWeapon;
 	SecondaryWeapon = TempWeapon;
 
 	EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped);
@@ -232,8 +223,6 @@ void UCombatComponent::SwapWeapons()
 
 	EquippedWeapon->SetHUDAmmo();
 
-	//UE_LOG(LogTemp, Warning, TEXT("WeaponType: %d"), static_cast<int>(PrimaryWeaponType));
-
 	// Carried Ammo is set here.
 	if (CarriedAmmoMap.Contains(EquippedWeapon->GetWeaponType())) {
 		CarriedAmmo = CarriedAmmoMap[EquippedWeapon->GetWeaponType()];
@@ -242,7 +231,6 @@ void UCombatComponent::SwapWeapons()
 	Controller = Controller == nullptr ? Cast<ABlasterPlayerController>(Character->Controller) : Controller;
 	if (Controller) {
 		Controller->SetHUDCarriedAmmo(CarriedAmmo);
-		Controller->SetWeaponSelection(EquippedWeapon->GetWeaponType());
 	}
 
 	SecondaryWeapon->SetWeaponState(EWeaponState::EWS_EquippedSecondary);
@@ -258,8 +246,6 @@ void UCombatComponent::EquipPrimaryWeapon(AWeapon* WeaponToEquip)
 	EquippedWeapon = WeaponToEquip;	// Setting our Equipped Weapon instance to this "WeaponToEquip" class reference.
 	PrimaryWeapon = EquippedWeapon;
 	EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped);	// This sets our WeaponState to "Equipped".
-
-	//UE_LOG(LogTemp, Warning, TEXT("WeaponType: %d"), static_cast<int>(PrimaryWeaponType));
 
 	const USkeletalMeshSocket* HandSocket = Character->GetMesh()->GetSocketByName(FName("RightHandSocket"));	// We'll define a HandSocket variable of type USkeletalMeshSocket.
 	// Then, we'll retrieve our RightHandSocket that made and defined.
@@ -281,7 +267,6 @@ void UCombatComponent::EquipPrimaryWeapon(AWeapon* WeaponToEquip)
 	Controller = Controller == nullptr ? Cast<ABlasterPlayerController>(Character->Controller) : Controller;
 	if (Controller) {
 		Controller->SetHUDCarriedAmmo(CarriedAmmo);
-		Controller->SetWeaponSelection(EquippedWeapon->GetWeaponType());
 	}
 }
 

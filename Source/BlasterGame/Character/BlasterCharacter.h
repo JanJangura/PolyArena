@@ -182,6 +182,8 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Weapon")
 	TSubclassOf<AWeapon> DefaultWeaponClass;
 
+	void UpdateWeaponIcon();
+
 public:	
 	/* Replication STEP 4. FORCEINLINE is a simple getter.
 	// We need a public setter for our "OverlappingWeapon" variable.
@@ -245,13 +247,11 @@ public:
 	float HealthRegenInterval = 1.0f; // Time interval for health regeneration
 
 	void UpdateHUDAmmo();
-	void UpdateWeaponSelection();
 
 	FORCEINLINE bool IsElimmed() const { return bElimmed; }
 	FORCEINLINE float GetHealth() const { return Health; }
 	FORCEINLINE float GetMaxHealth() const { return MaxHealth; }
 	FORCEINLINE UCombatComponent* GetCombat() const { return Combat; }
 	FORCEINLINE bool GetDisableGameplay() const { return bDisableGameplay; }
-
-	FORCEINLINE EWeaponType GetPrimaryWeaponType();
+	FORCEINLINE EWeaponType GetWeaponType() const;
 };

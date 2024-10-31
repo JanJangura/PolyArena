@@ -136,17 +136,6 @@ void AWeapon::SetHUDAmmo()
 	}
 }
 
-void AWeapon::SetHUDWeaponState()
-{
-	BlasterOwnerCharacter = BlasterOwnerCharacter == nullptr ? Cast<ABlasterCharacter>(GetOwner()) : BlasterOwnerCharacter;
-	if (BlasterOwnerCharacter) {
-		BlasterOwnerController = BlasterOwnerController == nullptr ? Cast<ABlasterPlayerController>(BlasterOwnerCharacter->Controller) : BlasterOwnerController;
-		if (BlasterOwnerController) {
-			BlasterOwnerController->SetWeaponSelection(GetWeaponType());
-		}
-	}
-}
-
 void AWeapon::SpendRound()
 {
 	--Ammo;

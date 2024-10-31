@@ -75,6 +75,7 @@ void ABlasterPlayerController::PollInit()
 				SetHUDDefeats(HUDDefeats);
 				//if (bInitializeCarriedAmmo) SetHUDCarriedAmmo(HUDCarriedAmmo);
 				if (bInitializeWeaponAmmo) SetHUDWeaponAmmo(HUDWeaponAmmo);
+				if (bInitializeWeaponIcon && Character) UpdateWeaponIcon(Character->GetWeaponType());
 			}
 		}
 	}
@@ -166,41 +167,6 @@ void ABlasterPlayerController::SetHUDCarriedAmmo(int32 Ammo)
 		bInitializeCarriedAmmo = true;
 		HUDCarriedAmmo = Ammo;
 	}
-}
-
-void ABlasterPlayerController::SetWeaponSelection(EWeaponType WeaponType)
-{
-	bool bHUDValid = BlasterHUD &&
-		BlasterHUD->CharacterOverlay &&
-		BlasterHUD->CharacterOverlay->WeaponSelectionText;
-
-	if (!bHUDValid) { 
-		if (!BlasterHUD) { UE_LOG(LogTemp, Error, TEXT("BlasterHUD is null")); }
-		else if (!BlasterHUD->CharacterOverlay) { UE_LOG(LogTemp, Error, TEXT("CharacterOverlay is null")); }
-		else { UE_LOG(LogTemp, Error, TEXT("WeaponSelectionText is null")); }
-
-		return;
-	}
-
-	FString WeaponText;
-
-	switch (WeaponType) {
-	case EWeaponType::EWT_AssaultRifle:
-		WeaponText = "Assault Rifle";
-		UE_LOG(LogTemp, Warning, TEXT("Assault Rifle"));
-		break;
-	case EWeaponType::EWT_Pistol:
-		WeaponText = "Pistol";
-		UE_LOG(LogTemp, Warning, TEXT("Pistol"));
-		break;
-	case EWeaponType::EWT_None:
-		WeaponText = FString::Printf(TEXT("None"));
-		break;
-	default:
-		WeaponText = FString::Printf(TEXT("None"));
-	}
-
-	BlasterHUD->CharacterOverlay->WeaponSelectionText->SetText(FText::FromString(WeaponText));
 }
 
 void ABlasterPlayerController::SetHUDHealth(float Health, float MaxHealth)
@@ -403,6 +369,32 @@ void ABlasterPlayerController::OnRep_MatchState()
 	}
 	else if (MatchState == MatchState::Cooldown) {
 		HandleCooldown();
+	}
+}
+
+void ABlasterPlayerController::UpdateWeaponIcon(EWeaponType WeaponType)
+{
+	if (BlasterHUD && BlasterHUD->CharacterOverlay && BlasterHUD->CharacterOverlay->WeaponSelectionText)
+	{
+		FString WeaponText;
+		switch (WeaponType)
+		{
+		case EWeaponType::EWT_AssaultRifle:
+			WeaponText = "Assault Rifle";
+			break;
+		case EWeaponType::EWT_Pistol:
+			WeaponText = "Pistol";
+			break;
+		case EWeaponType::EWT_None:
+		default:
+			WeaponText = "None";
+			break;
+		}
+
+		BlasterHUD->CharacterOverlay->WeaponSelectionText->SetText(FText::FromString(WeaponText));
+	}
+	else {
+		bInitializeWeaponIcon = true;
 	}
 }
 

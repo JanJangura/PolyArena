@@ -135,6 +135,9 @@ void ABlasterCharacter::BeginPlay()
 	// Player Equips Default Weapon and update Ammo Hud.
 	//UE_LOG(LogTemp, Warning, TEXT("DefaultWeaponClass: %s"), DefaultWeaponClass != nullptr ? TEXT("True") : TEXT("False"));
 	SpawnDefaultWeapon();
+	if (Combat && Combat->PrimaryWeapon) {
+		UpdateWeaponIcon();
+	}
 	UpdateHUDAmmo();
 
 	// Blocking Camera Issue 
@@ -456,19 +459,11 @@ void ABlasterCharacter::UpdateHUDAmmo()
 	}
 }
 
-void ABlasterCharacter::UpdateWeaponSelection()
+EWeaponType ABlasterCharacter::GetWeaponType() const
 {
-	BlasterPlayerController = BlasterPlayerController == nullptr ? Cast<ABlasterPlayerController>(Controller) : BlasterPlayerController;
-
-	if (BlasterPlayerController && Combat && Combat->PrimaryWeapon) {
-		BlasterPlayerController->SetWeaponSelection(Combat->GetPrimaryWeaponType());
-	}
-}
-
-EWeaponType ABlasterCharacter::GetPrimaryWeaponType()
-{
-	if (Combat && Combat->EquippedWeapon) {		
-		return Combat->GetPrimaryWeaponType();
+	if (Combat && Combat->PrimaryWeapon) {
+		//UE_LOG(LogTemp, Warning, TEXT("WeaponType: %d"), static_cast<int>(Combat->EquippedWeapon->GetWeaponType()));
+		return Combat->PrimaryWeapon->GetWeaponType();
 	}
 	else {
 		return EWeaponType::EWT_None;
@@ -652,6 +647,32 @@ void ABlasterCharacter::RegenerateHealth()
 	}
 }
 
+void ABlasterCharacter::UpdateWeaponIcon()
+{
+	if (!Controller)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Controller is null!"));
+		return;
+	}
+	if (IsLocallyControlled() && Combat && Combat->PrimaryWeapon) {
+
+		ABlasterPlayerController* BlasterController = Cast<ABlasterPlayerController>(Controller);
+		if (BlasterController && Combat->PrimaryWeapon) {
+			BlasterController->UpdateWeaponIcon(Combat->PrimaryWeapon->GetWeaponType());
+
+			if (HasAuthority()) {
+				UE_LOG(LogTemp, Warning, TEXT("Server WeaponType: %d"), static_cast<int>(Combat->PrimaryWeapon->GetWeaponType()));
+			}
+			else {
+				UE_LOG(LogTemp, Warning, TEXT("Client WeaponType: %d"), static_cast<int>(Combat->PrimaryWeapon->GetWeaponType()));
+			}
+		}
+	}
+	else {
+		UE_LOG(LogTemp, Warning, TEXT("Client  Character->IsLocallyControlled is invalid"));
+	}
+}
+
 void ABlasterCharacter::SpawnAmmoPacks()
 {
 	if (!HasAuthority()) { return; }
@@ -735,6 +756,7 @@ void ABlasterCharacter::ServerEquippedButtonPressed_Implementation()
 		else {
 			if (Combat->ShouldSwapWeapons()) {
 				Combat->SwapWeapons();
+				UpdateWeaponIcon();
 				//UE_LOG(LogTemp, Warning, TEXT("WeaponType: %d"), static_cast<int>(PrimaryWeaponType));
 			}
 		}
