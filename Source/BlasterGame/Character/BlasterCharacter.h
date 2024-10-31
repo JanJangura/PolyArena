@@ -182,9 +182,8 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Weapon")
 	TSubclassOf<AWeapon> DefaultWeaponClass;
 
-	void UpdateWeaponIcon();
-
 public:	
+	void UpdateWeaponIcon();
 	/* Replication STEP 4. FORCEINLINE is a simple getter.
 	// We need a public setter for our "OverlappingWeapon" variable.
 	// We'll need a FORCEINLINE Macro and this will be void. It will take in AWeapon ptr and we'll set our replicating variable "OverlappingWeapon = Weapon".

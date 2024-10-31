@@ -135,17 +135,9 @@ void ABlasterCharacter::BeginPlay()
 	// Player Equips Default Weapon and update Ammo Hud.
 	//UE_LOG(LogTemp, Warning, TEXT("DefaultWeaponClass: %s"), DefaultWeaponClass != nullptr ? TEXT("True") : TEXT("False"));
 	SpawnDefaultWeapon();
-	if (Combat && Combat->PrimaryWeapon) {
-		UpdateWeaponIcon();
-	}
-	UpdateHUDAmmo();
 
-	// Blocking Camera Issue 
-	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
-	GetCapsuleComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);	// Capsule will now not block the camera.
-	GetMesh()->SetCollisionObjectType(ECC_SkeletalMesh); // Defaulting our Character to this Custom Collision that we created.
-	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);	// Mesh will now not block the camera.
-	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
+	UpdateWeaponIcon();
+	UpdateHUDAmmo();
 
 	if (HasAuthority()) {
 		OnTakeAnyDamage.AddDynamic(this, &ABlasterCharacter::ReceiveDamage);	// This is called because its linked with ApplyDamage on the Authority Character.
@@ -388,35 +380,19 @@ void ABlasterCharacter::EquipButtonPressed()
 	// Keep in mind when pressing "E" is done on both Client and Server, but things like equpping Weapon should only be done on the Server. 
 	if (Combat) {
 		ServerEquippedButtonPressed();
-		if (HasAuthority()) {
-			UpdateWeaponIcon();
-		}
-		else {
-			if (OverlappingWeapon) {
-				Combat->EquipWeapon(OverlappingWeapon);
-				UpdateWeaponIcon();
-			}
-			else {
-				if (Combat->ShouldSwapWeapons()) {
-					Combat->SwapWeapons();
-					UpdateWeaponIcon();
-					//UE_LOG(LogTemp, Warning, TEXT("WeaponType: %d"), static_cast<int>(PrimaryWeaponType));
-				}
-			}
-		}
-		
-		/*
-		if (HasAuthority()) { // Only the server is allowed to call the weapon, "HasAuthority" checks if it's on the server.
-			Combat->EquipWeapon(OverlappingWeapon);
-		}
-		else {	// Now if we press the E key that's not on the server, then we know that we're on the client. Here, we need to send the RPC.
-			ServerEquippedButtonPressed(); // We also don't need the "_Implementation" key word here, this is only for us when defining the function.
-		}
-		*/
-
-		// Remote Procedure Calls (RPC) are functions that we can call on one machine and have them executed on another machine. So we can call RPC from the client, 
-		// and have that function executed on the server. We'll use this by creating an RPC that we can call from a client and execute on the server to allow a client 
-		// to pick a weapon.
+		//if (!HasAuthority()) {
+		//	if (OverlappingWeapon) {
+		//		Combat->EquipWeapon(OverlappingWeapon);
+		//		UpdateWeaponIcon();
+		//	}
+		//	else {
+		//		if (Combat->ShouldSwapWeapons()) {
+		//			Combat->SwapWeapons();
+		//			UpdateWeaponIcon();
+		//			//UE_LOG(LogTemp, Warning, TEXT("WeaponType: %d"), static_cast<int>(PrimaryWeaponType));
+		//		}
+		//	}
+		//}
 	}
 }
 
@@ -455,10 +431,6 @@ void ABlasterCharacter::OnRep_Health()
 void ABlasterCharacter::UpdateHUDHealth()
 {
 	BlasterPlayerController = BlasterPlayerController == nullptr ? Cast<ABlasterPlayerController>(Controller) : BlasterPlayerController;
-
-	if (HasAuthority()) {
-		//UE_LOG(LogTemp, Warning, TEXT("BlasterPlayerController: %s"), BlasterPlayerController != nullptr ? TEXT("PlayController Valid") : TEXT("PlayerController is Not Valid"));
-	}
 	
 	if (BlasterPlayerController) {
 		BlasterPlayerController->SetHUDHealth(Health, MaxHealth);
@@ -472,6 +444,15 @@ void ABlasterCharacter::UpdateHUDAmmo()
 	if (BlasterPlayerController && Combat && Combat->EquippedWeapon) {
 		BlasterPlayerController->SetHUDCarriedAmmo(Combat->CarriedAmmo);
 		BlasterPlayerController->SetHUDWeaponAmmo(Combat->EquippedWeapon->GetAmmo());
+	}
+}
+
+void ABlasterCharacter::UpdateWeaponIcon()
+{
+	BlasterPlayerController = BlasterPlayerController == nullptr ? Cast<ABlasterPlayerController>(Controller) : BlasterPlayerController;
+
+	if (BlasterPlayerController && Combat && Combat->EquippedWeapon) {
+		BlasterPlayerController->SetWeaponIcon(Combat->EquippedWeapon->GetWeaponType());
 	}
 }
 
@@ -663,45 +644,6 @@ void ABlasterCharacter::RegenerateHealth()
 	}
 }
 
-void ABlasterCharacter::UpdateWeaponIcon()
-{
-	if (!Controller)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Controller is null!"));
-		return;
-	}
-
-	if (IsLocallyControlled() && Combat && Combat->EquippedWeapon) {
-
-		UE_LOG(LogTemp, Warning, TEXT("Client WeaponType: %d"), static_cast<int>(Combat->EquippedWeapon->GetWeaponType()));
-
-		ABlasterPlayerController* BlasterController = Cast<ABlasterPlayerController>(Controller);
-		if (BlasterController && Combat->EquippedWeapon) {
-
-			BlasterController->UpdateWeaponIcon(Combat->EquippedWeapon->GetWeaponType());
-
-			if (!HasAuthority()) {
-				UE_LOG(LogTemp, Warning, TEXT("Server WeaponType: %d"), static_cast<int>(Combat->EquippedWeapon->GetWeaponType()));
-			}
-			else {
-				UE_LOG(LogTemp, Warning, TEXT("Client WeaponType: %d"), static_cast<int>(Combat->EquippedWeapon->GetWeaponType()));
-			}
-		}
-	}
-	else {
-		if (!IsLocallyControlled()) {
-			UE_LOG(LogTemp, Warning, TEXT("Client Character->IsLocallyControlled is invalid"));
-		}
-		if (!Combat) {
-			UE_LOG(LogTemp, Warning, TEXT("Client Character->Combat is invalid"));
-		}
-		else if (!Combat->EquippedWeapon) {
-			UE_LOG(LogTemp, Warning, TEXT("Client Character->Combat->EquippedWeapon is invalid"));
-		}
-		UE_LOG(LogTemp, Warning, TEXT("Client Character->Combat->EquippedWeapon is invalid"));
-	}
-}
-
 void ABlasterCharacter::SpawnAmmoPacks()
 {
 	if (!HasAuthority()) { return; }
@@ -781,10 +723,12 @@ void ABlasterCharacter::ServerEquippedButtonPressed_Implementation()
 	if (Combat) {	// There's no need to check for authority because we know that a Server RPC will only be executed on the server.
 		if (OverlappingWeapon) {
 			Combat->EquipWeapon(OverlappingWeapon);
+			UpdateWeaponIcon();
 		}
 		else {
 			if (Combat->ShouldSwapWeapons()) {
 				Combat->SwapWeapons();
+				UpdateWeaponIcon();
 				//UE_LOG(LogTemp, Warning, TEXT("WeaponType: %d"), static_cast<int>(PrimaryWeaponType));
 			}
 		}

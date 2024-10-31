@@ -35,14 +35,8 @@ void ABlasterPlayerController::BeginPlay()
 
 	ServerCheckMatchState();
 
-	if (BlasterHUD && HasAuthority())
-	{
-		UE_LOG(LogTemp, Warning, TEXT("BlasterHUD successfully created on BeginPlay"));
-	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("BlasterHUD is nullptr on BeginPlay"));
-	}
+	FTimerHandle PollInitTimerHandle;
+	GetWorldTimerManager().SetTimer(PollInitTimerHandle, this, &ABlasterPlayerController::PollInit, 0.2f, true);
 }
 
 void ABlasterPlayerController::Tick(float DeltaTime)
@@ -52,8 +46,6 @@ void ABlasterPlayerController::Tick(float DeltaTime)
 	SetHUDTime();
 	
 	CheckTimeSynch(DeltaTime);
-
-	PollInit();
 
 	//UE_LOG(LogTemp, Warning, TEXT("MatchState InProgress: %s"), MatchState == MatchState::InProgress ? TEXT("TRUE") : TEXT("FALSE"));
 }
@@ -65,17 +57,26 @@ void ABlasterPlayerController::CastBlasterHUD()
 
 void ABlasterPlayerController::PollInit()
 {
-	if (CharacterOverlay == nullptr) {
-		if (BlasterHUD && BlasterHUD->CharacterOverlay) {
+	if (CharacterOverlay == nullptr && BlasterHUD && BlasterHUD->CharacterOverlay) {
+		
+		CharacterOverlay = BlasterHUD->CharacterOverlay;
 
-			CharacterOverlay = BlasterHUD->CharacterOverlay;
-			if (CharacterOverlay) {
-				SetHUDHealth(HUDHealth, HUDMaxHealth);
-				SetHUDScore(HUDScore);
-				SetHUDDefeats(HUDDefeats);
-				//if (bInitializeCarriedAmmo) SetHUDCarriedAmmo(HUDCarriedAmmo);
-				if (bInitializeWeaponAmmo) SetHUDWeaponAmmo(HUDWeaponAmmo);
-				if (bInitializeWeaponIcon && Character) UpdateWeaponIcon(Character->GetWeaponType());
+		if (CharacterOverlay) {
+
+			SetHUDHealth(HUDHealth, HUDMaxHealth);
+			SetHUDScore(HUDScore);
+			SetHUDDefeats(HUDDefeats);
+			//if (bInitializeCarriedAmmo) SetHUDCarriedAmmo(HUDCarriedAmmo);
+			if (bInitializeWeaponAmmo) SetHUDWeaponAmmo(HUDWeaponAmmo);
+			if (bInitializeWeaponIcon) {
+				if (BlasterHUD && BlasterHUD->HasAuthority()) {
+					SetWeaponIcon(PrimaryWeaponType);
+					UE_LOG(LogTemp, Warning, TEXT("SERVER: POLL INIT IS TRUE"));
+				}
+				else {
+					SetWeaponIcon(PrimaryWeaponType);
+					UE_LOG(LogTemp, Warning, TEXT("CLIENT: POLL INIT IS TRUE"));
+				}
 			}
 		}
 	}
@@ -124,6 +125,7 @@ void ABlasterPlayerController::OnPossess(APawn* InPawn)
 	if (BlasterCharacter) {
 		SetHUDHealth(BlasterCharacter->GetHealth(), BlasterCharacter->GetMaxHealth());
 		BlasterCharacter->UpdateHUDAmmo();
+		BlasterCharacter->UpdateWeaponIcon();
 	}
 }
 
@@ -188,6 +190,48 @@ void ABlasterPlayerController::SetHUDHealth(float Health, float MaxHealth)
 		bInitializeCharacterOverlay = true;
 		HUDHealth = Health;
 		HUDMaxHealth = MaxHealth;
+	}
+}
+
+void ABlasterPlayerController::SetWeaponIcon(EWeaponType WeaponType)
+{
+	bool bHUDValid = BlasterHUD && 
+		BlasterHUD->CharacterOverlay && 
+		BlasterHUD->CharacterOverlay->WeaponSelectionText;
+
+	if (bHUDValid)
+	{
+		FString WeaponText;
+		switch (WeaponType)
+		{
+		case EWeaponType::EWT_AssaultRifle:
+			WeaponText = "Assault Rifle";
+			break;
+		case EWeaponType::EWT_Pistol:
+			WeaponText = "Pistol";
+			break;
+		case EWeaponType::EWT_None:
+		default:
+			WeaponText = "None";
+			break;
+		}
+
+		BlasterHUD->CharacterOverlay->WeaponSelectionText->SetText(FText::FromString(WeaponText));
+	}
+	else {
+		
+		if (BlasterHUD) {
+			if (BlasterHUD->HasAuthority()) {
+				bInitializeWeaponIcon = true;
+				PrimaryWeaponType = WeaponType;
+				UE_LOG(LogTemp, Warning, TEXT("SERVER: bInitializeWeaponIcon is %s"), bInitializeWeaponIcon ? TEXT("true") : TEXT("false"));
+			}
+			else {
+				bInitializeWeaponIcon = true;
+				PrimaryWeaponType = WeaponType;
+				UE_LOG(LogTemp, Warning, TEXT("CLIENT: bInitializeWeaponIcon is %s"), bInitializeWeaponIcon ? TEXT("true") : TEXT("false"));
+			}
+		}
 	}
 }
 
@@ -311,14 +355,6 @@ void ABlasterPlayerController::SetHUDAnnouncementCountdown(float CountdownTime)
 		FString CountdownText = FString::Printf(TEXT("%02d:%02d"), Minutes, Seconds);
 		BlasterHUD->Announcement->WarmupTime->SetText(FText::FromStringView(CountdownText));
 	}
-	else {
-		if (HasAuthority()) {
-			UE_LOG(LogTemp, Warning, TEXT("Server bHUD is NOT Valid"));
-		}
-		else { 
-			UE_LOG(LogTemp, Warning, TEXT("Client bHUD is NOT Valid"));
-		}
-	}
 }
 
 float ABlasterPlayerController::GetServerTime()
@@ -369,32 +405,6 @@ void ABlasterPlayerController::OnRep_MatchState()
 	}
 	else if (MatchState == MatchState::Cooldown) {
 		HandleCooldown();
-	}
-}
-
-void ABlasterPlayerController::UpdateWeaponIcon(EWeaponType WeaponType)
-{
-	if (BlasterHUD && BlasterHUD->CharacterOverlay && BlasterHUD->CharacterOverlay->WeaponSelectionText)
-	{
-		FString WeaponText;
-		switch (WeaponType)
-		{
-		case EWeaponType::EWT_AssaultRifle:
-			WeaponText = "Assault Rifle";
-			break;
-		case EWeaponType::EWT_Pistol:
-			WeaponText = "Pistol";
-			break;
-		case EWeaponType::EWT_None:
-		default:
-			WeaponText = "None";
-			break;
-		}
-
-		BlasterHUD->CharacterOverlay->WeaponSelectionText->SetText(FText::FromString(WeaponText));
-	}
-	else {
-		bInitializeWeaponIcon = true;
 	}
 }
 

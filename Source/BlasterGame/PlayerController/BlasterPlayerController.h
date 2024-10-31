@@ -34,7 +34,7 @@ public:
 	void HandleMatchHasStarted();
 	void HandleCooldown();
 	void CastBlasterHUD();
-	void UpdateWeaponIcon(EWeaponType WeaponType);
+	void SetWeaponIcon(EWeaponType WeaponType);
 
 protected:
 	virtual void BeginPlay() override;
@@ -106,4 +106,6 @@ private:
 	float HUDWeaponAmmo;
 	bool bInitializeWeaponAmmo = false;
 	bool bInitializeWeaponIcon = false;
+
+	EWeaponType PrimaryWeaponType;
 };
