@@ -167,10 +167,10 @@ bool UCombatComponent::ShouldSwapWeapons()
 	return (EquippedWeapon != nullptr && SecondaryWeapon != nullptr);
 }
 
-EWeaponType UCombatComponent::GetPrimaryWeaponType(AWeapon* Weapon)
+EWeaponType UCombatComponent::GetPrimaryWeaponType()
 {
-	if (Weapon) {
-		return Weapon->GetWeaponType();
+	if (EquippedWeapon) {
+		return EquippedWeapon->GetWeaponType();
 	}
 	else {
 		return EWeaponType::EWT_None;
@@ -231,7 +231,6 @@ void UCombatComponent::SwapWeapons()
 	}
 
 	EquippedWeapon->SetHUDAmmo();
-	PrimaryWeaponType = GetPrimaryWeaponType(EquippedWeapon);
 
 	//UE_LOG(LogTemp, Warning, TEXT("WeaponType: %d"), static_cast<int>(PrimaryWeaponType));
 
@@ -243,6 +242,7 @@ void UCombatComponent::SwapWeapons()
 	Controller = Controller == nullptr ? Cast<ABlasterPlayerController>(Character->Controller) : Controller;
 	if (Controller) {
 		Controller->SetHUDCarriedAmmo(CarriedAmmo);
+		Controller->SetWeaponSelection(EquippedWeapon->GetWeaponType());
 	}
 
 	SecondaryWeapon->SetWeaponState(EWeaponState::EWS_EquippedSecondary);
@@ -259,7 +259,6 @@ void UCombatComponent::EquipPrimaryWeapon(AWeapon* WeaponToEquip)
 	PrimaryWeapon = EquippedWeapon;
 	EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped);	// This sets our WeaponState to "Equipped".
 
-	PrimaryWeaponType = GetPrimaryWeaponType(EquippedWeapon);
 	//UE_LOG(LogTemp, Warning, TEXT("WeaponType: %d"), static_cast<int>(PrimaryWeaponType));
 
 	const USkeletalMeshSocket* HandSocket = Character->GetMesh()->GetSocketByName(FName("RightHandSocket"));	// We'll define a HandSocket variable of type USkeletalMeshSocket.
@@ -282,6 +281,7 @@ void UCombatComponent::EquipPrimaryWeapon(AWeapon* WeaponToEquip)
 	Controller = Controller == nullptr ? Cast<ABlasterPlayerController>(Character->Controller) : Controller;
 	if (Controller) {
 		Controller->SetHUDCarriedAmmo(CarriedAmmo);
+		Controller->SetWeaponSelection(EquippedWeapon->GetWeaponType());
 	}
 }
 

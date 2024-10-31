@@ -172,9 +172,7 @@ private:
 
 	EWeaponType PrimaryWeaponType;
 
-	EWeaponType GetPrimaryWeaponType(AWeapon* Weapon);
-
 public:	
 	bool ShouldSwapWeapons();
-	FORCEINLINE EWeaponType GetPrimaryWeapon(){ return PrimaryWeaponType; }
+	FORCEINLINE EWeaponType GetPrimaryWeaponType();
 };

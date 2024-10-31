@@ -77,9 +77,6 @@ ABlasterCharacter::ABlasterCharacter()
 	// Setting the Net Frequency to a Default Value
 	NetUpdateFrequency = 66.f;
 	MinNetUpdateFrequency = 33.f;
-	
-	// Default WeaponType
-	PrimaryWeaponType = EWeaponType::EWT_Pistol;
 
 	// Initializes the FireMontage for us because it doesnt work in blueprints.
 	static ConstructorHelpers::FObjectFinder<UAnimMontage> FireMontageAsset(TEXT("AnimMontage'/Game/BP_Shooter_Character/Animation/FireWeapon.FireWeapon'"));
@@ -138,10 +135,6 @@ void ABlasterCharacter::BeginPlay()
 	// Player Equips Default Weapon and update Ammo Hud.
 	//UE_LOG(LogTemp, Warning, TEXT("DefaultWeaponClass: %s"), DefaultWeaponClass != nullptr ? TEXT("True") : TEXT("False"));
 	SpawnDefaultWeapon();
-	if (Combat && Combat->PrimaryWeapon) {
-		PrimaryWeaponType = Combat->GetPrimaryWeapon();
-		UpdateWeaponSelection(PrimaryWeaponType);
-	}
 	UpdateHUDAmmo();
 
 	// Blocking Camera Issue 
@@ -463,21 +456,19 @@ void ABlasterCharacter::UpdateHUDAmmo()
 	}
 }
 
-void ABlasterCharacter::UpdateWeaponSelection(EWeaponType WeaponType)
+void ABlasterCharacter::UpdateWeaponSelection()
 {
 	BlasterPlayerController = BlasterPlayerController == nullptr ? Cast<ABlasterPlayerController>(Controller) : BlasterPlayerController;
 
 	if (BlasterPlayerController && Combat && Combat->PrimaryWeapon) {
-		BlasterPlayerController->SetWeaponSelection(WeaponType);
+		BlasterPlayerController->SetWeaponSelection(Combat->GetPrimaryWeaponType());
 	}
 }
 
 EWeaponType ABlasterCharacter::GetPrimaryWeaponType()
 {
-	if (Combat && Combat->PrimaryWeapon) {
-		PrimaryWeaponType = Combat->GetPrimaryWeapon();
-
-		return PrimaryWeaponType;
+	if (Combat && Combat->EquippedWeapon) {		
+		return Combat->GetPrimaryWeaponType();
 	}
 	else {
 		return EWeaponType::EWT_None;
@@ -744,9 +735,6 @@ void ABlasterCharacter::ServerEquippedButtonPressed_Implementation()
 		else {
 			if (Combat->ShouldSwapWeapons()) {
 				Combat->SwapWeapons();
-
-				PrimaryWeaponType = Combat->GetPrimaryWeapon();
-				UpdateWeaponSelection(PrimaryWeaponType);
 				//UE_LOG(LogTemp, Warning, TEXT("WeaponType: %d"), static_cast<int>(PrimaryWeaponType));
 			}
 		}

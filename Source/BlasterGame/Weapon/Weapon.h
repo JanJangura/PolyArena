@@ -42,6 +42,9 @@ public:
 	// Function for setting our HUD so we can reuse it over and over.
 	void SetHUDAmmo();
 
+	// This updates the Weapon State on the HUD.
+	void SetHUDWeaponState();
+
 	// Overriding OnRep_Owner
 	virtual void OnRep_Owner() override;
 
@@ -158,6 +161,8 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	EWeaponType WeaponType;
+
+	
 
 public:	
 	// Handles Dropping the Weapon

@@ -245,7 +245,7 @@ public:
 	float HealthRegenInterval = 1.0f; // Time interval for health regeneration
 
 	void UpdateHUDAmmo();
-	void UpdateWeaponSelection(EWeaponType WeaponType);
+	void UpdateWeaponSelection();
 
 	FORCEINLINE bool IsElimmed() const { return bElimmed; }
 	FORCEINLINE float GetHealth() const { return Health; }
@@ -253,6 +253,5 @@ public:
 	FORCEINLINE UCombatComponent* GetCombat() const { return Combat; }
 	FORCEINLINE bool GetDisableGameplay() const { return bDisableGameplay; }
 
-	EWeaponType PrimaryWeaponType;
 	FORCEINLINE EWeaponType GetPrimaryWeaponType();
 };

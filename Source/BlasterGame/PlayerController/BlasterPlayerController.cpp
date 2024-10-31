@@ -116,13 +116,13 @@ void ABlasterPlayerController::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
 
+	CastBlasterHUD();
+
 	ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(InPawn);
 
 	if (BlasterCharacter) {
 		SetHUDHealth(BlasterCharacter->GetHealth(), BlasterCharacter->GetMaxHealth());
 		BlasterCharacter->UpdateHUDAmmo();
-		SetWeaponSelection(BlasterCharacter->GetPrimaryWeaponType()); 
-		UE_LOG(LogTemp, Warning, TEXT("WeaponType: %d"), static_cast<int>(BlasterCharacter->GetPrimaryWeaponType()));
 	}
 }
 
@@ -153,9 +153,13 @@ void ABlasterPlayerController::SetHUDCarriedAmmo(int32 Ammo)
 		BlasterHUD->CharacterOverlay &&
 		BlasterHUD->CharacterOverlay->CarriedAmmoAmount;
 
+	if (!bHUDValid) {
+		return;
+	}
+
 	if (bHUDValid) {
-		//FString AmmoText = FString::Printf(TEXT("%d"), Ammo);
-		FString AmmoText = FString::Printf(TEXT("INFINITE"));
+		FString AmmoText = FString::Printf(TEXT("%d"), Ammo);
+		//FString AmmoText = FString::Printf(TEXT("INFINITE"));
 		BlasterHUD->CharacterOverlay->CarriedAmmoAmount->SetText(FText::FromString(AmmoText));
 	}
 	else {
@@ -168,28 +172,35 @@ void ABlasterPlayerController::SetWeaponSelection(EWeaponType WeaponType)
 {
 	bool bHUDValid = BlasterHUD &&
 		BlasterHUD->CharacterOverlay &&
-		BlasterHUD->CharacterOverlay->WeaponSelection;
+		BlasterHUD->CharacterOverlay->WeaponSelectionText;
 
-	if (bHUDValid) {
-		FString WeaponText;
+	if (!bHUDValid) { 
+		if (!BlasterHUD) { UE_LOG(LogTemp, Error, TEXT("BlasterHUD is null")); }
+		else if (!BlasterHUD->CharacterOverlay) { UE_LOG(LogTemp, Error, TEXT("CharacterOverlay is null")); }
+		else { UE_LOG(LogTemp, Error, TEXT("WeaponSelectionText is null")); }
 
-		switch (WeaponType) {
-		case EWeaponType::EWT_AssaultRifle:
-			WeaponText = FString::Printf(TEXT("Assault Rifle"));
-			break;
-		case EWeaponType::EWT_Pistol:
-			WeaponText = FString::Printf(TEXT("Pistol"));
-			break;
-		case EWeaponType::EWT_None:
-			WeaponText = FString::Printf(TEXT("None"));
-			break;
-		default:
-			WeaponText = FString::Printf(TEXT("None"));
-		}
-		 
-		BlasterHUD->CharacterOverlay->WeaponSelection->SetText(FText::FromString(WeaponText));
+		return;
 	}
 
+	FString WeaponText;
+
+	switch (WeaponType) {
+	case EWeaponType::EWT_AssaultRifle:
+		WeaponText = "Assault Rifle";
+		UE_LOG(LogTemp, Warning, TEXT("Assault Rifle"));
+		break;
+	case EWeaponType::EWT_Pistol:
+		WeaponText = "Pistol";
+		UE_LOG(LogTemp, Warning, TEXT("Pistol"));
+		break;
+	case EWeaponType::EWT_None:
+		WeaponText = FString::Printf(TEXT("None"));
+		break;
+	default:
+		WeaponText = FString::Printf(TEXT("None"));
+	}
+
+	BlasterHUD->CharacterOverlay->WeaponSelectionText->SetText(FText::FromString(WeaponText));
 }
 
 void ABlasterPlayerController::SetHUDHealth(float Health, float MaxHealth)
