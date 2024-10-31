@@ -386,9 +386,25 @@ void ABlasterCharacter::EquipButtonPressed()
 	if (bDisableGameplay) return;
 
 	// Keep in mind when pressing "E" is done on both Client and Server, but things like equpping Weapon should only be done on the Server. 
-	if (Combat) {	
-
+	if (Combat) {
 		ServerEquippedButtonPressed();
+		if (HasAuthority()) {
+			UpdateWeaponIcon();
+		}
+		else {
+			if (OverlappingWeapon) {
+				Combat->EquipWeapon(OverlappingWeapon);
+				UpdateWeaponIcon();
+			}
+			else {
+				if (Combat->ShouldSwapWeapons()) {
+					Combat->SwapWeapons();
+					UpdateWeaponIcon();
+					//UE_LOG(LogTemp, Warning, TEXT("WeaponType: %d"), static_cast<int>(PrimaryWeaponType));
+				}
+			}
+		}
+		
 		/*
 		if (HasAuthority()) { // Only the server is allowed to call the weapon, "HasAuthority" checks if it's on the server.
 			Combat->EquipWeapon(OverlappingWeapon);
@@ -654,22 +670,35 @@ void ABlasterCharacter::UpdateWeaponIcon()
 		UE_LOG(LogTemp, Warning, TEXT("Controller is null!"));
 		return;
 	}
-	if (IsLocallyControlled() && Combat && Combat->PrimaryWeapon) {
+
+	if (IsLocallyControlled() && Combat && Combat->EquippedWeapon) {
+
+		UE_LOG(LogTemp, Warning, TEXT("Client WeaponType: %d"), static_cast<int>(Combat->EquippedWeapon->GetWeaponType()));
 
 		ABlasterPlayerController* BlasterController = Cast<ABlasterPlayerController>(Controller);
-		if (BlasterController && Combat->PrimaryWeapon) {
-			BlasterController->UpdateWeaponIcon(Combat->PrimaryWeapon->GetWeaponType());
+		if (BlasterController && Combat->EquippedWeapon) {
 
-			if (HasAuthority()) {
-				UE_LOG(LogTemp, Warning, TEXT("Server WeaponType: %d"), static_cast<int>(Combat->PrimaryWeapon->GetWeaponType()));
+			BlasterController->UpdateWeaponIcon(Combat->EquippedWeapon->GetWeaponType());
+
+			if (!HasAuthority()) {
+				UE_LOG(LogTemp, Warning, TEXT("Server WeaponType: %d"), static_cast<int>(Combat->EquippedWeapon->GetWeaponType()));
 			}
 			else {
-				UE_LOG(LogTemp, Warning, TEXT("Client WeaponType: %d"), static_cast<int>(Combat->PrimaryWeapon->GetWeaponType()));
+				UE_LOG(LogTemp, Warning, TEXT("Client WeaponType: %d"), static_cast<int>(Combat->EquippedWeapon->GetWeaponType()));
 			}
 		}
 	}
 	else {
-		UE_LOG(LogTemp, Warning, TEXT("Client  Character->IsLocallyControlled is invalid"));
+		if (!IsLocallyControlled()) {
+			UE_LOG(LogTemp, Warning, TEXT("Client Character->IsLocallyControlled is invalid"));
+		}
+		if (!Combat) {
+			UE_LOG(LogTemp, Warning, TEXT("Client Character->Combat is invalid"));
+		}
+		else if (!Combat->EquippedWeapon) {
+			UE_LOG(LogTemp, Warning, TEXT("Client Character->Combat->EquippedWeapon is invalid"));
+		}
+		UE_LOG(LogTemp, Warning, TEXT("Client Character->Combat->EquippedWeapon is invalid"));
 	}
 }
 
@@ -756,7 +785,6 @@ void ABlasterCharacter::ServerEquippedButtonPressed_Implementation()
 		else {
 			if (Combat->ShouldSwapWeapons()) {
 				Combat->SwapWeapons();
-				UpdateWeaponIcon();
 				//UE_LOG(LogTemp, Warning, TEXT("WeaponType: %d"), static_cast<int>(PrimaryWeaponType));
 			}
 		}
