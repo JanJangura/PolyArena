@@ -136,7 +136,12 @@ void ABlasterCharacter::BeginPlay()
 	//UE_LOG(LogTemp, Warning, TEXT("DefaultWeaponClass: %s"), DefaultWeaponClass != nullptr ? TEXT("True") : TEXT("False"));
 	SpawnDefaultWeapon();
 
-	UpdateWeaponIcon();
+	// This updates our WeaponSlotIcon
+	if (IsLocallyControlled()) {
+		FTimerHandle UpdateWeaponSlotTimer;
+		GetWorldTimerManager().SetTimer(UpdateWeaponSlotTimer, this, &ABlasterCharacter::UpdateWeaponIcon, 0.2f, false);
+	}	
+
 	UpdateHUDAmmo();
 
 	if (HasAuthority()) {
@@ -380,19 +385,19 @@ void ABlasterCharacter::EquipButtonPressed()
 	// Keep in mind when pressing "E" is done on both Client and Server, but things like equpping Weapon should only be done on the Server. 
 	if (Combat) {
 		ServerEquippedButtonPressed();
-		//if (!HasAuthority()) {
-		//	if (OverlappingWeapon) {
-		//		Combat->EquipWeapon(OverlappingWeapon);
-		//		UpdateWeaponIcon();
-		//	}
-		//	else {
-		//		if (Combat->ShouldSwapWeapons()) {
-		//			Combat->SwapWeapons();
-		//			UpdateWeaponIcon();
-		//			//UE_LOG(LogTemp, Warning, TEXT("WeaponType: %d"), static_cast<int>(PrimaryWeaponType));
-		//		}
-		//	}
-		//}
+		if (!HasAuthority() && IsLocallyControlled()) {
+			if (OverlappingWeapon) {
+				Combat->EquipWeapon(OverlappingWeapon);
+				UpdateWeaponIcon();
+			}
+			else {
+				if (Combat->ShouldSwapWeapons()) {
+					Combat->SwapWeapons();
+					UpdateWeaponIcon();
+					//UE_LOG(LogTemp, Warning, TEXT("WeaponType: %d"), static_cast<int>(PrimaryWeaponType));
+				}
+			}
+		}
 	}
 }
 
@@ -729,7 +734,6 @@ void ABlasterCharacter::ServerEquippedButtonPressed_Implementation()
 			if (Combat->ShouldSwapWeapons()) {
 				Combat->SwapWeapons();
 				UpdateWeaponIcon();
-				//UE_LOG(LogTemp, Warning, TEXT("WeaponType: %d"), static_cast<int>(PrimaryWeaponType));
 			}
 		}
 

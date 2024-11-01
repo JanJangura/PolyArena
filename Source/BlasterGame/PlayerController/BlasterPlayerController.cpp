@@ -34,9 +34,6 @@ void ABlasterPlayerController::BeginPlay()
 	CastBlasterHUD();
 
 	ServerCheckMatchState();
-
-	FTimerHandle PollInitTimerHandle;
-	GetWorldTimerManager().SetTimer(PollInitTimerHandle, this, &ABlasterPlayerController::PollInit, 0.2f, true);
 }
 
 void ABlasterPlayerController::Tick(float DeltaTime)
@@ -46,8 +43,7 @@ void ABlasterPlayerController::Tick(float DeltaTime)
 	SetHUDTime();
 	
 	CheckTimeSynch(DeltaTime);
-
-	//UE_LOG(LogTemp, Warning, TEXT("MatchState InProgress: %s"), MatchState == MatchState::InProgress ? TEXT("TRUE") : TEXT("FALSE"));
+	PollInit();
 }
 
 void ABlasterPlayerController::CastBlasterHUD()
@@ -219,18 +215,19 @@ void ABlasterPlayerController::SetWeaponIcon(EWeaponType WeaponType)
 		BlasterHUD->CharacterOverlay->WeaponSelectionText->SetText(FText::FromString(WeaponText));
 	}
 	else {
-		
+		bInitializeWeaponIcon = true;
 		if (BlasterHUD) {
 			if (BlasterHUD->HasAuthority()) {
-				bInitializeWeaponIcon = true;
 				PrimaryWeaponType = WeaponType;
 				UE_LOG(LogTemp, Warning, TEXT("SERVER: bInitializeWeaponIcon is %s"), bInitializeWeaponIcon ? TEXT("true") : TEXT("false"));
 			}
 			else {
-				bInitializeWeaponIcon = true;
 				PrimaryWeaponType = WeaponType;
 				UE_LOG(LogTemp, Warning, TEXT("CLIENT: bInitializeWeaponIcon is %s"), bInitializeWeaponIcon ? TEXT("true") : TEXT("false"));
 			}
+		}
+		else {
+			UE_LOG(LogTemp, Warning, TEXT("CLIENT: BlasterHUD is %s"), BlasterHUD ? TEXT("true") : TEXT("false"));
 		}
 	}
 }
