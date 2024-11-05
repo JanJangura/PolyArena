@@ -21,6 +21,15 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void MenuSetup(int32 NumberOfPublicConnections = 4, FString TypeOfMatch = FString(TEXT("FreeForAll")), FString LobbyPath = FString(TEXT("/Game/ThirdPerson/Maps/Lobby?listen"))); // We've set default values to these passed in parameters. 
 
+	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))	// This means that the button Widget on our blueprint will be linked to our button variable in C++.
+	class UButton* Host_Button;
+
+	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
+	UButton* Join_Button;
+
+	UFUNCTION(BlueprintCallable)
+	void HostButtonClicked();
+
 protected:
 	virtual bool Initialize() override; // This function is what the Menu Class Inherits. 
 	virtual void NativeDestruct(); // Menu Class also inherits this function. This gets called when the level is removed 
@@ -42,15 +51,6 @@ protected:
 	void OnStartSession(bool bWasSucessful);
 
 private:
-
-	UPROPERTY(meta = (BindWidget))	// This means that the button Widget on our blueprint will be linked to our button variable in C++.
-	class UButton* Host_Button;
-
-	UPROPERTY(meta = (BindWidget))
-	UButton* Join_Button;
-
-	UFUNCTION()
-	void HostButtonClicked();
 
 	UFUNCTION()
 	void JoinButtonClicked();

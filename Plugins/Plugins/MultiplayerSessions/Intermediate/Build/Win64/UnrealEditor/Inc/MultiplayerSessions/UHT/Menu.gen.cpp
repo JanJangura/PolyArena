@@ -27,7 +27,7 @@ struct Z_Construct_UFunction_UMenu_HostButtonClicked_Statics
 #endif // WITH_METADATA
 	static const UECodeGen_Private::FFunctionParams FuncParams;
 };
-const UECodeGen_Private::FFunctionParams Z_Construct_UFunction_UMenu_HostButtonClicked_Statics::FuncParams = { (UObject*(*)())Z_Construct_UClass_UMenu, nullptr, "HostButtonClicked", nullptr, nullptr, nullptr, 0, 0, RF_Public|RF_Transient|RF_MarkAsNative, (EFunctionFlags)0x00040401, 0, 0, METADATA_PARAMS(UE_ARRAY_COUNT(Z_Construct_UFunction_UMenu_HostButtonClicked_Statics::Function_MetaDataParams), Z_Construct_UFunction_UMenu_HostButtonClicked_Statics::Function_MetaDataParams) };
+const UECodeGen_Private::FFunctionParams Z_Construct_UFunction_UMenu_HostButtonClicked_Statics::FuncParams = { (UObject*(*)())Z_Construct_UClass_UMenu, nullptr, "HostButtonClicked", nullptr, nullptr, nullptr, 0, 0, RF_Public|RF_Transient|RF_MarkAsNative, (EFunctionFlags)0x04020401, 0, 0, METADATA_PARAMS(UE_ARRAY_COUNT(Z_Construct_UFunction_UMenu_HostButtonClicked_Statics::Function_MetaDataParams), Z_Construct_UFunction_UMenu_HostButtonClicked_Statics::Function_MetaDataParams) };
 UFunction* Z_Construct_UFunction_UMenu_HostButtonClicked()
 {
 	static UFunction* ReturnFunction = nullptr;
@@ -308,17 +308,19 @@ struct Z_Construct_UClass_UMenu_Statics
 	};
 	static constexpr UECodeGen_Private::FMetaDataPairParam NewProp_Host_Button_MetaData[] = {
 		{ "BindWidget", "" },
+		{ "Category", "Menu" },
 #if !UE_BUILD_SHIPPING
-		{ "Comment", "// This means that the button Widget on our blueprint will be linked to our button variable in C++.\n" },
+		{ "Comment", "// We've set default values to these passed in parameters. \n// This means that the button Widget on our blueprint will be linked to our button variable in C++.\n" },
 #endif
 		{ "EditInline", "true" },
 		{ "ModuleRelativePath", "Public/Menu.h" },
 #if !UE_BUILD_SHIPPING
-		{ "ToolTip", "This means that the button Widget on our blueprint will be linked to our button variable in C++." },
+		{ "ToolTip", "We've set default values to these passed in parameters.\nThis means that the button Widget on our blueprint will be linked to our button variable in C++." },
 #endif
 	};
 	static constexpr UECodeGen_Private::FMetaDataPairParam NewProp_Join_Button_MetaData[] = {
 		{ "BindWidget", "" },
+		{ "Category", "Menu" },
 		{ "EditInline", "true" },
 		{ "ModuleRelativePath", "Public/Menu.h" },
 	};
@@ -328,7 +330,7 @@ struct Z_Construct_UClass_UMenu_Statics
 	static const UECodeGen_Private::FPropertyParamsBase* const PropPointers[];
 	static UObject* (*const DependentSingletons[])();
 	static constexpr FClassFunctionLinkInfo FuncInfo[] = {
-		{ &Z_Construct_UFunction_UMenu_HostButtonClicked, "HostButtonClicked" }, // 128811646
+		{ &Z_Construct_UFunction_UMenu_HostButtonClicked, "HostButtonClicked" }, // 3776737500
 		{ &Z_Construct_UFunction_UMenu_JoinButtonClicked, "JoinButtonClicked" }, // 3398739101
 		{ &Z_Construct_UFunction_UMenu_MenuSetup, "MenuSetup" }, // 1364303894
 		{ &Z_Construct_UFunction_UMenu_OnCreateSession, "OnCreateSession" }, // 3813687764
@@ -341,8 +343,8 @@ struct Z_Construct_UClass_UMenu_Statics
 	};
 	static const UECodeGen_Private::FClassParams ClassParams;
 };
-const UECodeGen_Private::FObjectPropertyParams Z_Construct_UClass_UMenu_Statics::NewProp_Host_Button = { "Host_Button", nullptr, (EPropertyFlags)0x0040000000080008, UECodeGen_Private::EPropertyGenFlags::Object, RF_Public|RF_Transient|RF_MarkAsNative, nullptr, nullptr, 1, STRUCT_OFFSET(UMenu, Host_Button), Z_Construct_UClass_UButton_NoRegister, METADATA_PARAMS(UE_ARRAY_COUNT(NewProp_Host_Button_MetaData), NewProp_Host_Button_MetaData) };
-const UECodeGen_Private::FObjectPropertyParams Z_Construct_UClass_UMenu_Statics::NewProp_Join_Button = { "Join_Button", nullptr, (EPropertyFlags)0x0040000000080008, UECodeGen_Private::EPropertyGenFlags::Object, RF_Public|RF_Transient|RF_MarkAsNative, nullptr, nullptr, 1, STRUCT_OFFSET(UMenu, Join_Button), Z_Construct_UClass_UButton_NoRegister, METADATA_PARAMS(UE_ARRAY_COUNT(NewProp_Join_Button_MetaData), NewProp_Join_Button_MetaData) };
+const UECodeGen_Private::FObjectPropertyParams Z_Construct_UClass_UMenu_Statics::NewProp_Host_Button = { "Host_Button", nullptr, (EPropertyFlags)0x001000000008000c, UECodeGen_Private::EPropertyGenFlags::Object, RF_Public|RF_Transient|RF_MarkAsNative, nullptr, nullptr, 1, STRUCT_OFFSET(UMenu, Host_Button), Z_Construct_UClass_UButton_NoRegister, METADATA_PARAMS(UE_ARRAY_COUNT(NewProp_Host_Button_MetaData), NewProp_Host_Button_MetaData) };
+const UECodeGen_Private::FObjectPropertyParams Z_Construct_UClass_UMenu_Statics::NewProp_Join_Button = { "Join_Button", nullptr, (EPropertyFlags)0x001000000008000c, UECodeGen_Private::EPropertyGenFlags::Object, RF_Public|RF_Transient|RF_MarkAsNative, nullptr, nullptr, 1, STRUCT_OFFSET(UMenu, Join_Button), Z_Construct_UClass_UButton_NoRegister, METADATA_PARAMS(UE_ARRAY_COUNT(NewProp_Join_Button_MetaData), NewProp_Join_Button_MetaData) };
 const UECodeGen_Private::FPropertyParamsBase* const Z_Construct_UClass_UMenu_Statics::PropPointers[] = {
 	(const UECodeGen_Private::FPropertyParamsBase*)&Z_Construct_UClass_UMenu_Statics::NewProp_Host_Button,
 	(const UECodeGen_Private::FPropertyParamsBase*)&Z_Construct_UClass_UMenu_Statics::NewProp_Join_Button,
@@ -386,14 +388,14 @@ UMenu::~UMenu() {}
 // End Class UMenu
 
 // Begin Registration
-struct Z_CompiledInDeferFile_FID_MultiplayerCourse_BlasterGame_Plugins_Plugins_MultiplayerSessions_Source_MultiplayerSessions_Public_Menu_h_Statics
+struct Z_CompiledInDeferFile_FID_Users_AlexM_Documents_GitHub_PolyArena_Plugins_Plugins_MultiplayerSessions_Source_MultiplayerSessions_Public_Menu_h_Statics
 {
 	static constexpr FClassRegisterCompiledInInfo ClassInfo[] = {
-		{ Z_Construct_UClass_UMenu, UMenu::StaticClass, TEXT("UMenu"), &Z_Registration_Info_UClass_UMenu, CONSTRUCT_RELOAD_VERSION_INFO(FClassReloadVersionInfo, sizeof(UMenu), 3801491589U) },
+		{ Z_Construct_UClass_UMenu, UMenu::StaticClass, TEXT("UMenu"), &Z_Registration_Info_UClass_UMenu, CONSTRUCT_RELOAD_VERSION_INFO(FClassReloadVersionInfo, sizeof(UMenu), 2150250502U) },
 	};
 };
-static FRegisterCompiledInInfo Z_CompiledInDeferFile_FID_MultiplayerCourse_BlasterGame_Plugins_Plugins_MultiplayerSessions_Source_MultiplayerSessions_Public_Menu_h_2866073877(TEXT("/Script/MultiplayerSessions"),
-	Z_CompiledInDeferFile_FID_MultiplayerCourse_BlasterGame_Plugins_Plugins_MultiplayerSessions_Source_MultiplayerSessions_Public_Menu_h_Statics::ClassInfo, UE_ARRAY_COUNT(Z_CompiledInDeferFile_FID_MultiplayerCourse_BlasterGame_Plugins_Plugins_MultiplayerSessions_Source_MultiplayerSessions_Public_Menu_h_Statics::ClassInfo),
+static FRegisterCompiledInInfo Z_CompiledInDeferFile_FID_Users_AlexM_Documents_GitHub_PolyArena_Plugins_Plugins_MultiplayerSessions_Source_MultiplayerSessions_Public_Menu_h_3216720465(TEXT("/Script/MultiplayerSessions"),
+	Z_CompiledInDeferFile_FID_Users_AlexM_Documents_GitHub_PolyArena_Plugins_Plugins_MultiplayerSessions_Source_MultiplayerSessions_Public_Menu_h_Statics::ClassInfo, UE_ARRAY_COUNT(Z_CompiledInDeferFile_FID_Users_AlexM_Documents_GitHub_PolyArena_Plugins_Plugins_MultiplayerSessions_Source_MultiplayerSessions_Public_Menu_h_Statics::ClassInfo),
 	nullptr, 0,
 	nullptr, 0);
 // End Registration
