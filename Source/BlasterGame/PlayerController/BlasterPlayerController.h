@@ -37,6 +37,7 @@ public:
 	void SetWeaponIcon(EWeaponType WeaponType);
 
 protected:
+	virtual void SetupInputComponent() override; // Allows us to create Custom Input Bindings.
 	virtual void BeginPlay() override;
 	void SetHUDTime();
 
@@ -68,9 +69,20 @@ protected:
 	UFUNCTION(Client, Reliable)	// This will handle informing the Client of the Match State when they join. 
 	void ClientJoinMidGame(FName StateOfMatch, float Warmup, float Match, float Cooldown, float StartingTime);
 
+	void ShowReturnToMainMenu();
+
 private:
 	UPROPERTY()
 	class ABlasterHUD* BlasterHUD;
+
+	// ******* Return to MainMenu *******
+	UPROPERTY(EditAnywhere, Category = HUD)
+	TSubclassOf<class UUserWidget> ReturnToMainMenuWidget;
+
+	UPROPERTY()
+	class UReturnToMainMenu* ReturnToMainMenu;
+
+	bool bReturnToMainMenuOpen = false;
 
 	UPROPERTY()
 	class ABlasterGameMode* BlasterGameMode;

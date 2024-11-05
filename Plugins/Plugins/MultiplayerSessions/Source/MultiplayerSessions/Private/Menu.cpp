@@ -101,7 +101,7 @@ void UMenu::OnCreateSession(bool bWasSuccessful)
 		}
 		Host_Button->SetIsEnabled(true);
 	}
-}
+} 
 
 // Callback for our Custom OnFindSession Delegate
 void UMenu::OnFindSessions(const TArray<FOnlineSessionSearchResult>& SessionResults, bool bWasSuccessful)

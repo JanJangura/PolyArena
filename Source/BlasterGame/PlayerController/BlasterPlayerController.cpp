@@ -18,12 +18,23 @@
 #include "Kismet/GameplayStatics.h"
 #include "BlasterGame/GameState/BlasterGameState.h"
 #include "BlasterGame/PlayerState/BlasterPlayerState.h"
+#include "BlasterGame/HUD/ReturnToMainMenu.h"
 
 void ABlasterPlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(ABlasterPlayerController, MatchState);
+}
+
+void ABlasterPlayerController::SetupInputComponent()
+{
+	Super::SetupInputComponent();
+
+	if (InputComponent == nullptr) return; // This variable is a UInputComponent variable inherited by the PlayerController. 
+
+	// This is how we set up our binding Action.
+	InputComponent->BindAction("Quit", IE_Pressed, this, &ABlasterPlayerController::ShowReturnToMainMenu);
 }
 
 void ABlasterPlayerController::BeginPlay()
@@ -64,16 +75,24 @@ void ABlasterPlayerController::PollInit()
 			SetHUDDefeats(HUDDefeats);
 			//if (bInitializeCarriedAmmo) SetHUDCarriedAmmo(HUDCarriedAmmo);
 			if (bInitializeWeaponAmmo) SetHUDWeaponAmmo(HUDWeaponAmmo);
-			if (bInitializeWeaponIcon) {
-				if (BlasterHUD && BlasterHUD->HasAuthority()) {
-					SetWeaponIcon(PrimaryWeaponType);
-					UE_LOG(LogTemp, Warning, TEXT("SERVER: POLL INIT IS TRUE"));
-				}
-				else {
-					SetWeaponIcon(PrimaryWeaponType);
-					UE_LOG(LogTemp, Warning, TEXT("CLIENT: POLL INIT IS TRUE"));
-				}
-			}
+			if (bInitializeWeaponIcon) SetWeaponIcon(PrimaryWeaponType);
+		}
+	}
+}
+// Show the Return To Main Menu Widget
+void ABlasterPlayerController::ShowReturnToMainMenu()
+{
+	if (ReturnToMainMenuWidget == nullptr) return;
+	if (ReturnToMainMenu == nullptr) {
+		ReturnToMainMenu = CreateWidget<UReturnToMainMenu>(this, ReturnToMainMenuWidget);
+	}
+	if (ReturnToMainMenu) {
+		bReturnToMainMenuOpen = !bReturnToMainMenuOpen;
+		if (bReturnToMainMenuOpen) {
+			ReturnToMainMenu->MenuSetup();
+		}
+		else {
+			ReturnToMainMenu->MenuTearDown();
 		}
 	}
 }
