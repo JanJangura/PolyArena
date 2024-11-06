@@ -30,6 +30,14 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void HostButtonClicked();
 
+	UFUNCTION(BlueprintCallable)
+	void GetHostInformation(int32 NumberOfPublicConnections, FString CurrentMatchType, FName TempSessionName);
+
+	void OnFindSessions(const TArray<FOnlineSessionSearchResult>& SessionResults, bool bWasSuccessful);
+
+	UPROPERTY(meta = (BindWidget))
+	class UScrollBox* SessionsScrollBox;
+
 protected:
 	virtual bool Initialize() override; // This function is what the Menu Class Inherits. 
 	virtual void NativeDestruct(); // Menu Class also inherits this function. This gets called when the level is removed 
@@ -42,7 +50,6 @@ protected:
 	UFUNCTION()
 	void OnCreateSession(bool bWasSuccessful);
 
-	void OnFindSessions(const TArray<FOnlineSessionSearchResult>& SessionResults, bool bWasSuccessful);
 	void OnJoinSession(EOnJoinSessionCompleteResult::Type Result);
 
 	UFUNCTION()
@@ -65,4 +72,5 @@ private:
 	int32 NumPublicConnections{10};
 	FString MatchType{TEXT("FreeForAll")};
 	FString PathToLobby{ TEXT("") };
+	FName SessionName;
 };

@@ -4,6 +4,8 @@
 #include "Menu.h"
 #include "OnlineSessionSettings.h"
 #include "Interfaces/OnlineSessionInterface.h"
+#include "Components/ScrollBox.h"
+#include "SessionEntryWidget.h"
 
 void UMenu::MenuSetup(int32 NumberOfPublicConnections, FString TypeOfMatch, FString LobbyPath)
 {
@@ -14,7 +16,7 @@ void UMenu::MenuSetup(int32 NumberOfPublicConnections, FString TypeOfMatch, FStr
 
 	AddToViewport(); // This adds the Widget that we created into our Player's Viewport.
 	SetVisibility(ESlateVisibility::Visible); // This sets the visibility of our Widget Menu buttons so Players can see them. This is an enum value. 
-	bIsFocusable = true; // This means that the widget can recieve keyboard input, which allows players to interact with the UI elements. 
+	this->SetIsFocusable(true); // This means that the widget can recieve keyboard input, which allows players to interact with the UI elements. 
 
 	UWorld* World = GetWorld(); // We'll create a World of type UWorld, then the function GetWorld() allows us to retrieve current game world instances. 
 	if (World) {
@@ -106,12 +108,33 @@ void UMenu::OnCreateSession(bool bWasSuccessful)
 // Callback for our Custom OnFindSession Delegate
 void UMenu::OnFindSessions(const TArray<FOnlineSessionSearchResult>& SessionResults, bool bWasSuccessful)
 {
-	if (MultiplayerSessionsSubsystem == nullptr) {
+	if (MultiplayerSessionsSubsystem == nullptr || !bWasSuccessful || SessionResults.Num() == 0) {
 		return;
 	}
 
+	/*
+	if (SessionsScrollBox) {
+		SessionsScrollBox->ClearChildren();
+
+		for (auto Result : SessionResults) {
+
+			USessionEntryWidget* SessionWidget = CreateWidget<USessionEntryWidget>(this, USessionEntryWidget::StaticClass());
+
+			if (SessionWidget) {
+
+				SessionWidget->Setup(Result);
+
+				//SessionWidget->OnSessionJoinRequested.BindObject(this, &UMenu::OnSessionJoinRequested);
+
+				SessionsScrollBox->AddChild(SessionWidget);
+			}
+		}
+	}
+	*/
+
 	// Loop through Session Results
 	for (auto Result : SessionResults) {
+
 		// We'll declare a FString Local Variable.
 		FString SettingsValue;
 
@@ -126,6 +149,7 @@ void UMenu::OnFindSessions(const TArray<FOnlineSessionSearchResult>& SessionResu
 			return;
 		}
 	}
+
 	if (!bWasSuccessful || SessionResults.Num() == 0) {
 		Join_Button->SetIsEnabled(true);
 	}
@@ -174,8 +198,8 @@ void UMenu::OnStartSession(bool bWasSucessful)
 void UMenu::HostButtonClicked()
 {
 	Host_Button->SetIsEnabled(false);
-	if (MultiplayerSessionsSubsystem) { // This checks if the Multiplayer Subsession is there.
-		MultiplayerSessionsSubsystem->CreateSession(NumPublicConnections, MatchType);	
+	if (MultiplayerSessionsSubsystem) { // This checks if the Multiplayer Subsession is there.	
+		MultiplayerSessionsSubsystem->CreateSession(NumPublicConnections, MatchType, SessionName);
 	}
 }
 
@@ -183,8 +207,15 @@ void UMenu::JoinButtonClicked()
 {
 	Join_Button->SetIsEnabled(false);
 	if (MultiplayerSessionsSubsystem) {
-		MultiplayerSessionsSubsystem->FindSessions(10000); // We'll access our Custom Subsystem to access our FindSession Function.
+		MultiplayerSessionsSubsystem->FindSessions(100); // We'll access our Custom Subsystem to access our FindSession Function.
 	}
+}
+
+void UMenu::GetHostInformation(int32 NumberOfPublicConnections, FString CurrentMatchType, FName TempSessionName)
+{
+	NumPublicConnections = NumberOfPublicConnections;
+	MatchType = CurrentMatchType;
+	SessionName = TempSessionName;
 }
 
 void UMenu::MenuTearDown() 

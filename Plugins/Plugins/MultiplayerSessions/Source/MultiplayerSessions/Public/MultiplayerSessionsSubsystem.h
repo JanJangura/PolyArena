@@ -43,7 +43,7 @@ public:
 
 	///////////* MENU FUNCTIONALITIES */////////
 	// To handle Session Functionality, the Menu Class will call these functions.
-	void CreateSession(int32 NumPublicConnections, FString MatchType);
+	void CreateSession(int32 NumPublicConnections, FString MatchType, FName SessionName);
 	void FindSessions(int32 MaxSearchResults);
 	void JoinSession(const FOnlineSessionSearchResult& SessionResult);
 	void DestroySession();
@@ -96,4 +96,5 @@ private:
 	bool bCreateSessionOnDestroy{ false };
 	int32 LastNumPublicConnections;
 	FString LastMatchType;
+	FName LastSessionName;
 };

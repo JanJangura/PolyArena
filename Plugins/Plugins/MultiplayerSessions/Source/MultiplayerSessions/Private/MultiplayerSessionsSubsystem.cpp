@@ -24,7 +24,7 @@ UMultiplayerSessionsSubsystem::UMultiplayerSessionsSubsystem():
 /////////////////////////////////////////////////////
 ///////////////* MENU FUNCTIONALITIES */////////////
 /////////////////////////////////////////////////////
-void UMultiplayerSessionsSubsystem::CreateSession(int32 NumPublicConnections, FString MatchType)
+void UMultiplayerSessionsSubsystem::CreateSession(int32 NumPublicConnections, FString MatchType, FName SessionName)
 {
 	if (!SessionInterface.IsValid()) {
 		return;
@@ -35,6 +35,7 @@ void UMultiplayerSessionsSubsystem::CreateSession(int32 NumPublicConnections, FS
 		bCreateSessionOnDestroy = true;
 		LastNumPublicConnections = NumPublicConnections;
 		LastMatchType = MatchType;
+		LastSessionName = SessionName;
 
 		DestroySession();
 	}
@@ -49,9 +50,10 @@ void UMultiplayerSessionsSubsystem::CreateSession(int32 NumPublicConnections, FS
 	LastSessionSettings->bAllowJoinViaPresence = true;
 	LastSessionSettings->bShouldAdvertise = true;
 	LastSessionSettings->bUsesPresence = true;
-	LastSessionSettings->Set(FName("MatchType"), MatchType, EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
 	LastSessionSettings->bUseLobbiesIfAvailable = true;
 	LastSessionSettings->BuildUniqueId = 1; // This allows us to have multiple users launching and hosting their own builds, which also allows other players to join them.
+	LastSessionSettings->Set(FName("MatchType"), MatchType, EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
+	LastSessionSettings->Set(FName("SessionName"), SessionName.ToString(), EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
 
 	const ULocalPlayer* LocalPlayer = GetWorld()->GetFirstLocalPlayerFromController();
 	
@@ -185,7 +187,7 @@ void UMultiplayerSessionsSubsystem::OnDestroySessionComplete(FName SessionName, 
 	}
 	if (bWasSuccessful && bCreateSessionOnDestroy) {
 		bCreateSessionOnDestroy = false;
-		CreateSession(LastNumPublicConnections, LastMatchType);
+		CreateSession(LastNumPublicConnections, LastMatchType, LastSessionName);
 	}
 	MultiplayerOnDestroySessionComplete.Broadcast(bWasSuccessful);
 }

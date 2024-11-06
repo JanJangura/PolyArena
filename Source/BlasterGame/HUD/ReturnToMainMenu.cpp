@@ -11,7 +11,7 @@ void UReturnToMainMenu::MenuSetup()
 {
 	AddToViewport();
 	SetVisibility(ESlateVisibility::Visible);
-	bIsFocusable = true; // Boolean that focuses on the Widget.
+	this->SetIsFocusable(true); // Boolean that focuses on the Widget.
 
 	UWorld* World = GetWorld();
 	if (World) {
