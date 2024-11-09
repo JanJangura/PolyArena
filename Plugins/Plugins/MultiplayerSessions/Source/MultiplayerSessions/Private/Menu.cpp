@@ -59,7 +59,7 @@ bool UMenu::Initialize() // This function Initializes immediately after the game
 	if (Join_Button) {
 		Join_Button->OnClicked.AddDynamic(this, &UMenu::JoinButtonClicked);
 	}
-	
+
 	return true;
 }
 
@@ -108,33 +108,33 @@ void UMenu::OnCreateSession(bool bWasSuccessful)
 // Callback for our Custom OnFindSession Delegate
 void UMenu::OnFindSessions(const TArray<FOnlineSessionSearchResult>& SessionResults, bool bWasSuccessful)
 {
-	if (MultiplayerSessionsSubsystem == nullptr || !bWasSuccessful || SessionResults.Num() == 0) {
+	if (MultiplayerSessionsSubsystem == nullptr || !bWasSuccessful || SessionResults.Num() <= 0) {
+		Find_Button->SetIsEnabled(true);
+		//Join_Button->SetIsEnabled(true);
 		return;
 	}
 
+	CurrentSessionLength = SessionResults.Num();
+	UE_LOG(LogTemp, Warning, TEXT("SessionResults: %d"), CurrentSessionLength);
+
+	for (auto Result : SessionResults) {
+		UE_LOG(LogTemp, Warning, TEXT("Session found: %s"), *Result.GetSessionIdStr());
+	}
+
 	/*
-	if (SessionsScrollBox) {
-		SessionsScrollBox->ClearChildren();
-
-		for (auto Result : SessionResults) {
-
-			USessionEntryWidget* SessionWidget = CreateWidget<USessionEntryWidget>(this, USessionEntryWidget::StaticClass());
-
-			if (SessionWidget) {
-
-				SessionWidget->Setup(Result);
-
-				//SessionWidget->OnSessionJoinRequested.BindObject(this, &UMenu::OnSessionJoinRequested);
-
-				SessionsScrollBox->AddChild(SessionWidget);
-			}
-		}
+	if (bWasSuccessful || SessionResults.Num() > 0) {
+		CurrentSessionLength = SessionResults.Num();
+		UE_LOG(LogTemp, Warning, TEXT("SessionResults: %d"), CurrentSessionLength);
+	}
+	else {
+		Find_Button->SetIsEnabled(true);
 	}
 	*/
 
+	/*
 	// Loop through Session Results
 	for (auto Result : SessionResults) {
-
+		UE_LOG(LogTemp, Warning, TEXT("SessionResults: %d"), CurrentSessionLength);
 		// We'll declare a FString Local Variable.
 		FString SettingsValue;
 
@@ -150,11 +150,11 @@ void UMenu::OnFindSessions(const TArray<FOnlineSessionSearchResult>& SessionResu
 		}
 	}
 
-	if (!bWasSuccessful || SessionResults.Num() == 0) {
+	if (!bWasSuccessful || SessionResults.Num() <= 0) {
 		Join_Button->SetIsEnabled(true);
 	}
+	*/
 }
-
 // Callback for our Custom OnJoinSession Delegate
 void UMenu::OnJoinSession(EOnJoinSessionCompleteResult::Type Result)
 {
@@ -170,7 +170,7 @@ void UMenu::OnJoinSession(EOnJoinSessionCompleteResult::Type Result)
 		IOnlineSessionPtr SessionInterface = Subsystem->GetSessionInterface();
 
 		if (SessionInterface.IsValid()) { 
-			FString Address; // This is Address Variable we made of type Fstring
+			FString Address; // This is Address Variable we made of type Fstring.
 			SessionInterface->GetResolvedConnectString(NAME_GameSession, Address); // This returns the platform specific connection information (Address) for joining the match.
 
 			APlayerController* PlayerController = GetGameInstance()->GetFirstLocalPlayerController(); // We need to get the Player Controller from the Game Instance.
@@ -205,9 +205,19 @@ void UMenu::HostButtonClicked()
 
 void UMenu::JoinButtonClicked()
 {
+	
 	Join_Button->SetIsEnabled(false);
 	if (MultiplayerSessionsSubsystem) {
-		MultiplayerSessionsSubsystem->FindSessions(100); // We'll access our Custom Subsystem to access our FindSession Function.
+		MultiplayerSessionsSubsystem->FindSessions(10000); // We'll access our Custom Subsystem to access our FindSession Function.
+	}
+	
+}
+
+void UMenu::FindButtonClicked()
+{
+	Find_Button->SetIsEnabled(false);
+	if (MultiplayerSessionsSubsystem) {
+		MultiplayerSessionsSubsystem->FindSessions(10000); // We'll access our Custom Subsystem to access our FindSession Function.
 	}
 }
 

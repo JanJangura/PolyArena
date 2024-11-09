@@ -27,6 +27,9 @@ public:
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
 	UButton* Join_Button;
 
+	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
+	UButton* Find_Button;
+
 	UFUNCTION(BlueprintCallable)
 	void HostButtonClicked();
 
@@ -37,6 +40,12 @@ public:
 
 	UPROPERTY(meta = (BindWidget))
 	class UScrollBox* SessionsScrollBox;
+
+	UPROPERTY(BlueprintReadWrite)
+	int32 CurrentSessionLength{ 0 };
+
+	UFUNCTION(BlueprintCallable)
+	void FindButtonClicked();
 
 protected:
 	virtual bool Initialize() override; // This function is what the Menu Class Inherits. 

@@ -31,4 +31,7 @@ public:
 private:
 	FTimerHandle LaunchGameTimerHandle;
 	void LaunchGame();
+
+	class UGameInstance* GameInstance;
+	class UMultiplayerSessionsSubsystem* Subsystem;
 };

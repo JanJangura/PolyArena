@@ -19,6 +19,7 @@ PRAGMA_DISABLE_DEPRECATION_WARNINGS
 	DECLARE_FUNCTION(execOnStartSession); \
 	DECLARE_FUNCTION(execOnDestroySession); \
 	DECLARE_FUNCTION(execOnCreateSession); \
+	DECLARE_FUNCTION(execFindButtonClicked); \
 	DECLARE_FUNCTION(execGetHostInformation); \
 	DECLARE_FUNCTION(execHostButtonClicked); \
 	DECLARE_FUNCTION(execMenuSetup);

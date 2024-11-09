@@ -17,10 +17,10 @@ class MULTIPLAYERSESSIONS_API USessionEntryWidget : public UUserWidget
 	GENERATED_BODY()
 	
 public:
-	UPROPERTY(meta = (BindWidget))
+	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
 	class UTextBlock* SessionNameText;
 
-	UPROPERTY(meta = (BindWidget))
+	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
 	class UButton* JoinSessionButton;
 
 	// Store the session data to use when the join button is clicked
@@ -30,4 +30,10 @@ public:
 
 	UFUNCTION()
 	void OnJoinSessionButtonClicked();
+
+	void TestingSetup(int32 PlaceHolder);
+
+protected:
+
+	virtual bool Initialize() override;
 };

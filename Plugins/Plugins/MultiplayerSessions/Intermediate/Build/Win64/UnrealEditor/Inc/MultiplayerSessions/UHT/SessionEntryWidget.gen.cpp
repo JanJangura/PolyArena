@@ -73,11 +73,13 @@ struct Z_Construct_UClass_USessionEntryWidget_Statics
 	};
 	static constexpr UECodeGen_Private::FMetaDataPairParam NewProp_SessionNameText_MetaData[] = {
 		{ "BindWidget", "" },
+		{ "Category", "SessionEntryWidget" },
 		{ "EditInline", "true" },
 		{ "ModuleRelativePath", "Public/SessionEntryWidget.h" },
 	};
 	static constexpr UECodeGen_Private::FMetaDataPairParam NewProp_JoinSessionButton_MetaData[] = {
 		{ "BindWidget", "" },
+		{ "Category", "SessionEntryWidget" },
 		{ "EditInline", "true" },
 		{ "ModuleRelativePath", "Public/SessionEntryWidget.h" },
 	};
@@ -95,8 +97,8 @@ struct Z_Construct_UClass_USessionEntryWidget_Statics
 	};
 	static const UECodeGen_Private::FClassParams ClassParams;
 };
-const UECodeGen_Private::FObjectPropertyParams Z_Construct_UClass_USessionEntryWidget_Statics::NewProp_SessionNameText = { "SessionNameText", nullptr, (EPropertyFlags)0x0010000000080008, UECodeGen_Private::EPropertyGenFlags::Object, RF_Public|RF_Transient|RF_MarkAsNative, nullptr, nullptr, 1, STRUCT_OFFSET(USessionEntryWidget, SessionNameText), Z_Construct_UClass_UTextBlock_NoRegister, METADATA_PARAMS(UE_ARRAY_COUNT(NewProp_SessionNameText_MetaData), NewProp_SessionNameText_MetaData) };
-const UECodeGen_Private::FObjectPropertyParams Z_Construct_UClass_USessionEntryWidget_Statics::NewProp_JoinSessionButton = { "JoinSessionButton", nullptr, (EPropertyFlags)0x0010000000080008, UECodeGen_Private::EPropertyGenFlags::Object, RF_Public|RF_Transient|RF_MarkAsNative, nullptr, nullptr, 1, STRUCT_OFFSET(USessionEntryWidget, JoinSessionButton), Z_Construct_UClass_UButton_NoRegister, METADATA_PARAMS(UE_ARRAY_COUNT(NewProp_JoinSessionButton_MetaData), NewProp_JoinSessionButton_MetaData) };
+const UECodeGen_Private::FObjectPropertyParams Z_Construct_UClass_USessionEntryWidget_Statics::NewProp_SessionNameText = { "SessionNameText", nullptr, (EPropertyFlags)0x001000000008000c, UECodeGen_Private::EPropertyGenFlags::Object, RF_Public|RF_Transient|RF_MarkAsNative, nullptr, nullptr, 1, STRUCT_OFFSET(USessionEntryWidget, SessionNameText), Z_Construct_UClass_UTextBlock_NoRegister, METADATA_PARAMS(UE_ARRAY_COUNT(NewProp_SessionNameText_MetaData), NewProp_SessionNameText_MetaData) };
+const UECodeGen_Private::FObjectPropertyParams Z_Construct_UClass_USessionEntryWidget_Statics::NewProp_JoinSessionButton = { "JoinSessionButton", nullptr, (EPropertyFlags)0x001000000008000c, UECodeGen_Private::EPropertyGenFlags::Object, RF_Public|RF_Transient|RF_MarkAsNative, nullptr, nullptr, 1, STRUCT_OFFSET(USessionEntryWidget, JoinSessionButton), Z_Construct_UClass_UButton_NoRegister, METADATA_PARAMS(UE_ARRAY_COUNT(NewProp_JoinSessionButton_MetaData), NewProp_JoinSessionButton_MetaData) };
 const UECodeGen_Private::FPropertyParamsBase* const Z_Construct_UClass_USessionEntryWidget_Statics::PropPointers[] = {
 	(const UECodeGen_Private::FPropertyParamsBase*)&Z_Construct_UClass_USessionEntryWidget_Statics::NewProp_SessionNameText,
 	(const UECodeGen_Private::FPropertyParamsBase*)&Z_Construct_UClass_USessionEntryWidget_Statics::NewProp_JoinSessionButton,
@@ -143,10 +145,10 @@ USessionEntryWidget::~USessionEntryWidget() {}
 struct Z_CompiledInDeferFile_FID_MultiplayerCourse_BlasterGame_Plugins_Plugins_MultiplayerSessions_Source_MultiplayerSessions_Public_SessionEntryWidget_h_Statics
 {
 	static constexpr FClassRegisterCompiledInInfo ClassInfo[] = {
-		{ Z_Construct_UClass_USessionEntryWidget, USessionEntryWidget::StaticClass, TEXT("USessionEntryWidget"), &Z_Registration_Info_UClass_USessionEntryWidget, CONSTRUCT_RELOAD_VERSION_INFO(FClassReloadVersionInfo, sizeof(USessionEntryWidget), 1100812858U) },
+		{ Z_Construct_UClass_USessionEntryWidget, USessionEntryWidget::StaticClass, TEXT("USessionEntryWidget"), &Z_Registration_Info_UClass_USessionEntryWidget, CONSTRUCT_RELOAD_VERSION_INFO(FClassReloadVersionInfo, sizeof(USessionEntryWidget), 400992164U) },
 	};
 };
-static FRegisterCompiledInInfo Z_CompiledInDeferFile_FID_MultiplayerCourse_BlasterGame_Plugins_Plugins_MultiplayerSessions_Source_MultiplayerSessions_Public_SessionEntryWidget_h_2130395647(TEXT("/Script/MultiplayerSessions"),
+static FRegisterCompiledInInfo Z_CompiledInDeferFile_FID_MultiplayerCourse_BlasterGame_Plugins_Plugins_MultiplayerSessions_Source_MultiplayerSessions_Public_SessionEntryWidget_h_3686247251(TEXT("/Script/MultiplayerSessions"),
 	Z_CompiledInDeferFile_FID_MultiplayerCourse_BlasterGame_Plugins_Plugins_MultiplayerSessions_Source_MultiplayerSessions_Public_SessionEntryWidget_h_Statics::ClassInfo, UE_ARRAY_COUNT(Z_CompiledInDeferFile_FID_MultiplayerCourse_BlasterGame_Plugins_Plugins_MultiplayerSessions_Source_MultiplayerSessions_Public_SessionEntryWidget_h_Statics::ClassInfo),
 	nullptr, 0,
 	nullptr, 0);

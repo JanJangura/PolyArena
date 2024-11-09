@@ -8,6 +8,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "TimerManager.h"
 #include "BlasterGame/HUD/BlasterHUD.h"
+#include "MultiplayerSessionsSubsystem.h"
 
 void ALobbyGameMode::PostLogin(APlayerController* NewPlayer)
 {
@@ -17,16 +18,21 @@ void ALobbyGameMode::PostLogin(APlayerController* NewPlayer)
 	if (GameState) {
 		CurrentNumOfPlayers = GameState->PlayerArray.Num();
 
-		if (CurrentNumOfPlayers == MaxPlayers) {
-			ServerJumpToGame(MaxPlayers);
+		GameInstance = GetGameInstance();
+		if (GameInstance) {
+			Subsystem = GameInstance->GetSubsystem<UMultiplayerSessionsSubsystem>();
+			check(Subsystem);
+
+			MaxPlayers = Subsystem->DesiredNumPublicConnections;
+			if (CurrentNumOfPlayers == MaxPlayers) {
+				LaunchGame();
+			}
 		}
 	}
 }
 
 void ALobbyGameMode::ServerJumpToGame(int32 TotalMaxPlayers)
 {
-	MaxPlayers = TotalMaxPlayers;
-
 	// GameState is a class. The GameMode has a variable called Game State which is a TObjectPtr<AGameStateBase>. This ptr provides access tracking, which
 	// means you can actually detect when the object is being used. This PlayerArray contains a player state for each player who's joined the game and it being a TArray,
 	// it has a Num() function that returns the number of elements within the array as an int32.
@@ -59,6 +65,14 @@ void ALobbyGameMode::LaunchGame()
 	UWorld* World = GetWorld();
 	if (World) {
 		bUseSeamlessTravel = true;
-		World->ServerTravel(FString("/Game/Scenes/BlasterMap?listen"));
+
+		FString MatchType = Subsystem->DesiredMatchType;
+		
+		if (MatchType == "FreeForAll") {
+			World->ServerTravel(FString("/Game/Scenes/BlasterMap?listen"));
+		}
+		else {
+			World->ServerTravel(FString("/Game/Scenes/BlasterMap?listen"));
+		}
 	}
 }

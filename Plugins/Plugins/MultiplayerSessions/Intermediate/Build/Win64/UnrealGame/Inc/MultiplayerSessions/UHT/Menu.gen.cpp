@@ -18,6 +18,35 @@ UMG_API UClass* Z_Construct_UClass_UUserWidget();
 UPackage* Z_Construct_UPackage__Script_MultiplayerSessions();
 // End Cross Module References
 
+// Begin Class UMenu Function FindButtonClicked
+struct Z_Construct_UFunction_UMenu_FindButtonClicked_Statics
+{
+#if WITH_METADATA
+	static constexpr UECodeGen_Private::FMetaDataPairParam Function_MetaDataParams[] = {
+		{ "ModuleRelativePath", "Public/Menu.h" },
+	};
+#endif // WITH_METADATA
+	static const UECodeGen_Private::FFunctionParams FuncParams;
+};
+const UECodeGen_Private::FFunctionParams Z_Construct_UFunction_UMenu_FindButtonClicked_Statics::FuncParams = { (UObject*(*)())Z_Construct_UClass_UMenu, nullptr, "FindButtonClicked", nullptr, nullptr, nullptr, 0, 0, RF_Public|RF_Transient|RF_MarkAsNative, (EFunctionFlags)0x04020401, 0, 0, METADATA_PARAMS(UE_ARRAY_COUNT(Z_Construct_UFunction_UMenu_FindButtonClicked_Statics::Function_MetaDataParams), Z_Construct_UFunction_UMenu_FindButtonClicked_Statics::Function_MetaDataParams) };
+UFunction* Z_Construct_UFunction_UMenu_FindButtonClicked()
+{
+	static UFunction* ReturnFunction = nullptr;
+	if (!ReturnFunction)
+	{
+		UECodeGen_Private::ConstructUFunction(&ReturnFunction, Z_Construct_UFunction_UMenu_FindButtonClicked_Statics::FuncParams);
+	}
+	return ReturnFunction;
+}
+DEFINE_FUNCTION(UMenu::execFindButtonClicked)
+{
+	P_FINISH;
+	P_NATIVE_BEGIN;
+	P_THIS->FindButtonClicked();
+	P_NATIVE_END;
+}
+// End Class UMenu Function FindButtonClicked
+
 // Begin Class UMenu Function GetHostInformation
 struct Z_Construct_UFunction_UMenu_GetHostInformation_Statics
 {
@@ -335,6 +364,7 @@ void UMenu::StaticRegisterNativesUMenu()
 {
 	UClass* Class = UMenu::StaticClass();
 	static const FNameNativePtrPair Funcs[] = {
+		{ "FindButtonClicked", &UMenu::execFindButtonClicked },
 		{ "GetHostInformation", &UMenu::execGetHostInformation },
 		{ "HostButtonClicked", &UMenu::execHostButtonClicked },
 		{ "JoinButtonClicked", &UMenu::execJoinButtonClicked },
@@ -378,18 +408,31 @@ struct Z_Construct_UClass_UMenu_Statics
 		{ "EditInline", "true" },
 		{ "ModuleRelativePath", "Public/Menu.h" },
 	};
+	static constexpr UECodeGen_Private::FMetaDataPairParam NewProp_Find_Button_MetaData[] = {
+		{ "BindWidget", "" },
+		{ "Category", "Menu" },
+		{ "EditInline", "true" },
+		{ "ModuleRelativePath", "Public/Menu.h" },
+	};
 	static constexpr UECodeGen_Private::FMetaDataPairParam NewProp_SessionsScrollBox_MetaData[] = {
 		{ "BindWidget", "" },
 		{ "EditInline", "true" },
 		{ "ModuleRelativePath", "Public/Menu.h" },
 	};
+	static constexpr UECodeGen_Private::FMetaDataPairParam NewProp_CurrentSessionLength_MetaData[] = {
+		{ "Category", "Menu" },
+		{ "ModuleRelativePath", "Public/Menu.h" },
+	};
 #endif // WITH_METADATA
 	static const UECodeGen_Private::FObjectPropertyParams NewProp_Host_Button;
 	static const UECodeGen_Private::FObjectPropertyParams NewProp_Join_Button;
+	static const UECodeGen_Private::FObjectPropertyParams NewProp_Find_Button;
 	static const UECodeGen_Private::FObjectPropertyParams NewProp_SessionsScrollBox;
+	static const UECodeGen_Private::FIntPropertyParams NewProp_CurrentSessionLength;
 	static const UECodeGen_Private::FPropertyParamsBase* const PropPointers[];
 	static UObject* (*const DependentSingletons[])();
 	static constexpr FClassFunctionLinkInfo FuncInfo[] = {
+		{ &Z_Construct_UFunction_UMenu_FindButtonClicked, "FindButtonClicked" }, // 2413919946
 		{ &Z_Construct_UFunction_UMenu_GetHostInformation, "GetHostInformation" }, // 1857738323
 		{ &Z_Construct_UFunction_UMenu_HostButtonClicked, "HostButtonClicked" }, // 3776737500
 		{ &Z_Construct_UFunction_UMenu_JoinButtonClicked, "JoinButtonClicked" }, // 3398739101
@@ -406,11 +449,15 @@ struct Z_Construct_UClass_UMenu_Statics
 };
 const UECodeGen_Private::FObjectPropertyParams Z_Construct_UClass_UMenu_Statics::NewProp_Host_Button = { "Host_Button", nullptr, (EPropertyFlags)0x001000000008000c, UECodeGen_Private::EPropertyGenFlags::Object, RF_Public|RF_Transient|RF_MarkAsNative, nullptr, nullptr, 1, STRUCT_OFFSET(UMenu, Host_Button), Z_Construct_UClass_UButton_NoRegister, METADATA_PARAMS(UE_ARRAY_COUNT(NewProp_Host_Button_MetaData), NewProp_Host_Button_MetaData) };
 const UECodeGen_Private::FObjectPropertyParams Z_Construct_UClass_UMenu_Statics::NewProp_Join_Button = { "Join_Button", nullptr, (EPropertyFlags)0x001000000008000c, UECodeGen_Private::EPropertyGenFlags::Object, RF_Public|RF_Transient|RF_MarkAsNative, nullptr, nullptr, 1, STRUCT_OFFSET(UMenu, Join_Button), Z_Construct_UClass_UButton_NoRegister, METADATA_PARAMS(UE_ARRAY_COUNT(NewProp_Join_Button_MetaData), NewProp_Join_Button_MetaData) };
+const UECodeGen_Private::FObjectPropertyParams Z_Construct_UClass_UMenu_Statics::NewProp_Find_Button = { "Find_Button", nullptr, (EPropertyFlags)0x001000000008000c, UECodeGen_Private::EPropertyGenFlags::Object, RF_Public|RF_Transient|RF_MarkAsNative, nullptr, nullptr, 1, STRUCT_OFFSET(UMenu, Find_Button), Z_Construct_UClass_UButton_NoRegister, METADATA_PARAMS(UE_ARRAY_COUNT(NewProp_Find_Button_MetaData), NewProp_Find_Button_MetaData) };
 const UECodeGen_Private::FObjectPropertyParams Z_Construct_UClass_UMenu_Statics::NewProp_SessionsScrollBox = { "SessionsScrollBox", nullptr, (EPropertyFlags)0x0010000000080008, UECodeGen_Private::EPropertyGenFlags::Object, RF_Public|RF_Transient|RF_MarkAsNative, nullptr, nullptr, 1, STRUCT_OFFSET(UMenu, SessionsScrollBox), Z_Construct_UClass_UScrollBox_NoRegister, METADATA_PARAMS(UE_ARRAY_COUNT(NewProp_SessionsScrollBox_MetaData), NewProp_SessionsScrollBox_MetaData) };
+const UECodeGen_Private::FIntPropertyParams Z_Construct_UClass_UMenu_Statics::NewProp_CurrentSessionLength = { "CurrentSessionLength", nullptr, (EPropertyFlags)0x0010000000000004, UECodeGen_Private::EPropertyGenFlags::Int, RF_Public|RF_Transient|RF_MarkAsNative, nullptr, nullptr, 1, STRUCT_OFFSET(UMenu, CurrentSessionLength), METADATA_PARAMS(UE_ARRAY_COUNT(NewProp_CurrentSessionLength_MetaData), NewProp_CurrentSessionLength_MetaData) };
 const UECodeGen_Private::FPropertyParamsBase* const Z_Construct_UClass_UMenu_Statics::PropPointers[] = {
 	(const UECodeGen_Private::FPropertyParamsBase*)&Z_Construct_UClass_UMenu_Statics::NewProp_Host_Button,
 	(const UECodeGen_Private::FPropertyParamsBase*)&Z_Construct_UClass_UMenu_Statics::NewProp_Join_Button,
+	(const UECodeGen_Private::FPropertyParamsBase*)&Z_Construct_UClass_UMenu_Statics::NewProp_Find_Button,
 	(const UECodeGen_Private::FPropertyParamsBase*)&Z_Construct_UClass_UMenu_Statics::NewProp_SessionsScrollBox,
+	(const UECodeGen_Private::FPropertyParamsBase*)&Z_Construct_UClass_UMenu_Statics::NewProp_CurrentSessionLength,
 };
 static_assert(UE_ARRAY_COUNT(Z_Construct_UClass_UMenu_Statics::PropPointers) < 2048);
 UObject* (*const Z_Construct_UClass_UMenu_Statics::DependentSingletons[])() = {
@@ -454,10 +501,10 @@ UMenu::~UMenu() {}
 struct Z_CompiledInDeferFile_FID_MultiplayerCourse_BlasterGame_Plugins_Plugins_MultiplayerSessions_Source_MultiplayerSessions_Public_Menu_h_Statics
 {
 	static constexpr FClassRegisterCompiledInInfo ClassInfo[] = {
-		{ Z_Construct_UClass_UMenu, UMenu::StaticClass, TEXT("UMenu"), &Z_Registration_Info_UClass_UMenu, CONSTRUCT_RELOAD_VERSION_INFO(FClassReloadVersionInfo, sizeof(UMenu), 1804608510U) },
+		{ Z_Construct_UClass_UMenu, UMenu::StaticClass, TEXT("UMenu"), &Z_Registration_Info_UClass_UMenu, CONSTRUCT_RELOAD_VERSION_INFO(FClassReloadVersionInfo, sizeof(UMenu), 585070549U) },
 	};
 };
-static FRegisterCompiledInInfo Z_CompiledInDeferFile_FID_MultiplayerCourse_BlasterGame_Plugins_Plugins_MultiplayerSessions_Source_MultiplayerSessions_Public_Menu_h_2837395832(TEXT("/Script/MultiplayerSessions"),
+static FRegisterCompiledInInfo Z_CompiledInDeferFile_FID_MultiplayerCourse_BlasterGame_Plugins_Plugins_MultiplayerSessions_Source_MultiplayerSessions_Public_Menu_h_4104678510(TEXT("/Script/MultiplayerSessions"),
 	Z_CompiledInDeferFile_FID_MultiplayerCourse_BlasterGame_Plugins_Plugins_MultiplayerSessions_Source_MultiplayerSessions_Public_Menu_h_Statics::ClassInfo, UE_ARRAY_COUNT(Z_CompiledInDeferFile_FID_MultiplayerCourse_BlasterGame_Plugins_Plugins_MultiplayerSessions_Source_MultiplayerSessions_Public_Menu_h_Statics::ClassInfo),
 	nullptr, 0,
 	nullptr, 0);
