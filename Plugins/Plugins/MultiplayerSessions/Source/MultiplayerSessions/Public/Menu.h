@@ -45,7 +45,16 @@ public:
 	int32 CurrentSessionLength{ 0 };
 
 	UFUNCTION(BlueprintCallable)
-	void FindButtonClicked();
+	void Refresh();
+
+	UPROPERTY(BlueprintReadOnly)
+	TArray<FString> GetSessionID;
+
+	UPROPERTY(BlueprintReadOnly)
+	TArray<FString> GetSessionUser;
+
+	UPROPERTY(BlueprintReadOnly)
+	bool bSessionsFound;
 
 protected:
 	virtual bool Initialize() override; // This function is what the Menu Class Inherits. 
@@ -65,6 +74,9 @@ protected:
 	void OnDestroySession(bool bWasSuccessful);
 	UFUNCTION()
 	void OnStartSession(bool bWasSucessful);
+
+	UFUNCTION(BlueprintCallable)
+	void OnCreateSessionEntryWidget();
 
 private:
 

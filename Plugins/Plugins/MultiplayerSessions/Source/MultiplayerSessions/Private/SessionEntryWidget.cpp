@@ -19,7 +19,7 @@ void USessionEntryWidget::OnJoinSessionButtonClicked()
 	UE_LOG(LogTemp, Warning, TEXT("Join Button Working"));
 }
 
-void USessionEntryWidget::TestingSetup(int32 PlaceHolder)
+void USessionEntryWidget::TestingSetup(FString GetSessionID, FString GetSessionUser)
 {
 	AddToViewport();
 	SetVisibility(ESlateVisibility::Visible);
@@ -27,8 +27,8 @@ void USessionEntryWidget::TestingSetup(int32 PlaceHolder)
 
 	if (SessionNameText && JoinSessionButton) {
 		UE_LOG(LogTemp, Warning, TEXT("WORKING"));
-		SessionNameText->SetText(FText::FromString(FString::FromInt(PlaceHolder)));
 		JoinSessionButton->OnClicked.AddDynamic(this, &USessionEntryWidget::OnJoinSessionButtonClicked);
+		SessionNameText->SetText(FText::FromString(GetSessionUser));
 	}
 	else {
 		UE_LOG(LogTemp, Warning, TEXT("NOT WORKING"));

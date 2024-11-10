@@ -15,6 +15,7 @@ PRAGMA_DISABLE_DEPRECATION_WARNINGS
 #define MULTIPLAYERSESSIONS_SessionEntryWidget_generated_h
 
 #define FID_MultiplayerCourse_BlasterGame_Plugins_Plugins_MultiplayerSessions_Source_MultiplayerSessions_Public_SessionEntryWidget_h_17_RPC_WRAPPERS_NO_PURE_DECLS \
+	DECLARE_FUNCTION(execTestingSetup); \
 	DECLARE_FUNCTION(execOnJoinSessionButtonClicked);
 
 

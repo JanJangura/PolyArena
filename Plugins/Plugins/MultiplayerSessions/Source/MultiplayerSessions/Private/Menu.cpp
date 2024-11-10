@@ -46,6 +46,13 @@ void UMenu::MenuSetup(int32 NumberOfPublicConnections, FString TypeOfMatch, FStr
 	}
 }
 
+void UMenu::Refresh()
+{
+	if (MultiplayerSessionsSubsystem) {
+		MultiplayerSessionsSubsystem->FindSessions(10000); // We'll access our Custom Subsystem to access our FindSession Function.
+	}
+}
+
 bool UMenu::Initialize() // This function Initializes immediately after the game is built.
 {
 	if (!Super::Initialize()) {
@@ -109,19 +116,29 @@ void UMenu::OnCreateSession(bool bWasSuccessful)
 void UMenu::OnFindSessions(const TArray<FOnlineSessionSearchResult>& SessionResults, bool bWasSuccessful)
 {
 	if (MultiplayerSessionsSubsystem == nullptr || !bWasSuccessful || SessionResults.Num() <= 0) {
-		Find_Button->SetIsEnabled(true);
-		//Join_Button->SetIsEnabled(true);
+		// Find_Button->SetIsEnabled(true);
+		Join_Button->SetIsEnabled(true);
 		return;
 	}
 
 	CurrentSessionLength = SessionResults.Num();
+
 	UE_LOG(LogTemp, Warning, TEXT("SessionResults: %d"), CurrentSessionLength);
 
-	for (auto Result : SessionResults) {
-		UE_LOG(LogTemp, Warning, TEXT("Session found: %s"), *Result.GetSessionIdStr());
+	if (CurrentSessionLength > 0 && bWasSuccessful) {
+		Find_Button->SetIsEnabled(true);
+		bSessionsFound = bWasSuccessful;
+
+		GetSessionID.SetNum(CurrentSessionLength);
+		GetSessionUser.SetNum(CurrentSessionLength);
+
+		for (int32 i = 0; i < CurrentSessionLength; i++) {
+			SessionResults[i].Session.SessionSettings.Get(FName("MatchType"), GetSessionID[i]);
+			SessionResults[i].Session.SessionSettings.Get(FName("SessionName"), GetSessionUser[i]);
+		}
 	}
 
-	/*
+	/* Old Codes
 	if (bWasSuccessful || SessionResults.Num() > 0) {
 		CurrentSessionLength = SessionResults.Num();
 		UE_LOG(LogTemp, Warning, TEXT("SessionResults: %d"), CurrentSessionLength);
@@ -131,7 +148,7 @@ void UMenu::OnFindSessions(const TArray<FOnlineSessionSearchResult>& SessionResu
 	}
 	*/
 
-	/*
+	/* Old Codes
 	// Loop through Session Results
 	for (auto Result : SessionResults) {
 		UE_LOG(LogTemp, Warning, TEXT("SessionResults: %d"), CurrentSessionLength);
@@ -195,6 +212,10 @@ void UMenu::OnStartSession(bool bWasSucessful)
 {
 }
 
+void UMenu::OnCreateSessionEntryWidget()
+{
+}
+
 void UMenu::HostButtonClicked()
 {
 	Host_Button->SetIsEnabled(false);
@@ -205,20 +226,7 @@ void UMenu::HostButtonClicked()
 
 void UMenu::JoinButtonClicked()
 {
-	
 	Join_Button->SetIsEnabled(false);
-	if (MultiplayerSessionsSubsystem) {
-		MultiplayerSessionsSubsystem->FindSessions(10000); // We'll access our Custom Subsystem to access our FindSession Function.
-	}
-	
-}
-
-void UMenu::FindButtonClicked()
-{
-	Find_Button->SetIsEnabled(false);
-	if (MultiplayerSessionsSubsystem) {
-		MultiplayerSessionsSubsystem->FindSessions(10000); // We'll access our Custom Subsystem to access our FindSession Function.
-	}
 }
 
 void UMenu::GetHostInformation(int32 NumberOfPublicConnections, FString CurrentMatchType, FName TempSessionName)

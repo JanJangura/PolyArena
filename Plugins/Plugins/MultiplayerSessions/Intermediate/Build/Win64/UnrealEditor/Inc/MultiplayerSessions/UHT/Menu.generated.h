@@ -16,10 +16,11 @@ PRAGMA_DISABLE_DEPRECATION_WARNINGS
 
 #define FID_MultiplayerCourse_BlasterGame_Plugins_Plugins_MultiplayerSessions_Source_MultiplayerSessions_Public_Menu_h_18_RPC_WRAPPERS_NO_PURE_DECLS \
 	DECLARE_FUNCTION(execJoinButtonClicked); \
+	DECLARE_FUNCTION(execOnCreateSessionEntryWidget); \
 	DECLARE_FUNCTION(execOnStartSession); \
 	DECLARE_FUNCTION(execOnDestroySession); \
 	DECLARE_FUNCTION(execOnCreateSession); \
-	DECLARE_FUNCTION(execFindButtonClicked); \
+	DECLARE_FUNCTION(execRefresh); \
 	DECLARE_FUNCTION(execGetHostInformation); \
 	DECLARE_FUNCTION(execHostButtonClicked); \
 	DECLARE_FUNCTION(execMenuSetup);

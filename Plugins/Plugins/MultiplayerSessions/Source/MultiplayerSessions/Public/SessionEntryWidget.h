@@ -31,7 +31,8 @@ public:
 	UFUNCTION()
 	void OnJoinSessionButtonClicked();
 
-	void TestingSetup(int32 PlaceHolder);
+	UFUNCTION(BlueprintCallable)
+	void TestingSetup(FString GetSessionID, FString GetSessionUser);
 
 protected:
 

@@ -47,12 +47,60 @@ DEFINE_FUNCTION(USessionEntryWidget::execOnJoinSessionButtonClicked)
 }
 // End Class USessionEntryWidget Function OnJoinSessionButtonClicked
 
+// Begin Class USessionEntryWidget Function TestingSetup
+struct Z_Construct_UFunction_USessionEntryWidget_TestingSetup_Statics
+{
+	struct SessionEntryWidget_eventTestingSetup_Parms
+	{
+		FString GetSessionID;
+		FString GetSessionUser;
+	};
+#if WITH_METADATA
+	static constexpr UECodeGen_Private::FMetaDataPairParam Function_MetaDataParams[] = {
+		{ "ModuleRelativePath", "Public/SessionEntryWidget.h" },
+	};
+#endif // WITH_METADATA
+	static const UECodeGen_Private::FStrPropertyParams NewProp_GetSessionID;
+	static const UECodeGen_Private::FStrPropertyParams NewProp_GetSessionUser;
+	static const UECodeGen_Private::FPropertyParamsBase* const PropPointers[];
+	static const UECodeGen_Private::FFunctionParams FuncParams;
+};
+const UECodeGen_Private::FStrPropertyParams Z_Construct_UFunction_USessionEntryWidget_TestingSetup_Statics::NewProp_GetSessionID = { "GetSessionID", nullptr, (EPropertyFlags)0x0010000000000080, UECodeGen_Private::EPropertyGenFlags::Str, RF_Public|RF_Transient|RF_MarkAsNative, nullptr, nullptr, 1, STRUCT_OFFSET(SessionEntryWidget_eventTestingSetup_Parms, GetSessionID), METADATA_PARAMS(0, nullptr) };
+const UECodeGen_Private::FStrPropertyParams Z_Construct_UFunction_USessionEntryWidget_TestingSetup_Statics::NewProp_GetSessionUser = { "GetSessionUser", nullptr, (EPropertyFlags)0x0010000000000080, UECodeGen_Private::EPropertyGenFlags::Str, RF_Public|RF_Transient|RF_MarkAsNative, nullptr, nullptr, 1, STRUCT_OFFSET(SessionEntryWidget_eventTestingSetup_Parms, GetSessionUser), METADATA_PARAMS(0, nullptr) };
+const UECodeGen_Private::FPropertyParamsBase* const Z_Construct_UFunction_USessionEntryWidget_TestingSetup_Statics::PropPointers[] = {
+	(const UECodeGen_Private::FPropertyParamsBase*)&Z_Construct_UFunction_USessionEntryWidget_TestingSetup_Statics::NewProp_GetSessionID,
+	(const UECodeGen_Private::FPropertyParamsBase*)&Z_Construct_UFunction_USessionEntryWidget_TestingSetup_Statics::NewProp_GetSessionUser,
+};
+static_assert(UE_ARRAY_COUNT(Z_Construct_UFunction_USessionEntryWidget_TestingSetup_Statics::PropPointers) < 2048);
+const UECodeGen_Private::FFunctionParams Z_Construct_UFunction_USessionEntryWidget_TestingSetup_Statics::FuncParams = { (UObject*(*)())Z_Construct_UClass_USessionEntryWidget, nullptr, "TestingSetup", nullptr, nullptr, Z_Construct_UFunction_USessionEntryWidget_TestingSetup_Statics::PropPointers, UE_ARRAY_COUNT(Z_Construct_UFunction_USessionEntryWidget_TestingSetup_Statics::PropPointers), sizeof(Z_Construct_UFunction_USessionEntryWidget_TestingSetup_Statics::SessionEntryWidget_eventTestingSetup_Parms), RF_Public|RF_Transient|RF_MarkAsNative, (EFunctionFlags)0x04020401, 0, 0, METADATA_PARAMS(UE_ARRAY_COUNT(Z_Construct_UFunction_USessionEntryWidget_TestingSetup_Statics::Function_MetaDataParams), Z_Construct_UFunction_USessionEntryWidget_TestingSetup_Statics::Function_MetaDataParams) };
+static_assert(sizeof(Z_Construct_UFunction_USessionEntryWidget_TestingSetup_Statics::SessionEntryWidget_eventTestingSetup_Parms) < MAX_uint16);
+UFunction* Z_Construct_UFunction_USessionEntryWidget_TestingSetup()
+{
+	static UFunction* ReturnFunction = nullptr;
+	if (!ReturnFunction)
+	{
+		UECodeGen_Private::ConstructUFunction(&ReturnFunction, Z_Construct_UFunction_USessionEntryWidget_TestingSetup_Statics::FuncParams);
+	}
+	return ReturnFunction;
+}
+DEFINE_FUNCTION(USessionEntryWidget::execTestingSetup)
+{
+	P_GET_PROPERTY(FStrProperty,Z_Param_GetSessionID);
+	P_GET_PROPERTY(FStrProperty,Z_Param_GetSessionUser);
+	P_FINISH;
+	P_NATIVE_BEGIN;
+	P_THIS->TestingSetup(Z_Param_GetSessionID,Z_Param_GetSessionUser);
+	P_NATIVE_END;
+}
+// End Class USessionEntryWidget Function TestingSetup
+
 // Begin Class USessionEntryWidget
 void USessionEntryWidget::StaticRegisterNativesUSessionEntryWidget()
 {
 	UClass* Class = USessionEntryWidget::StaticClass();
 	static const FNameNativePtrPair Funcs[] = {
 		{ "OnJoinSessionButtonClicked", &USessionEntryWidget::execOnJoinSessionButtonClicked },
+		{ "TestingSetup", &USessionEntryWidget::execTestingSetup },
 	};
 	FNativeFunctionRegistrar::RegisterFunctions(Class, Funcs, UE_ARRAY_COUNT(Funcs));
 }
@@ -90,6 +138,7 @@ struct Z_Construct_UClass_USessionEntryWidget_Statics
 	static UObject* (*const DependentSingletons[])();
 	static constexpr FClassFunctionLinkInfo FuncInfo[] = {
 		{ &Z_Construct_UFunction_USessionEntryWidget_OnJoinSessionButtonClicked, "OnJoinSessionButtonClicked" }, // 2724374371
+		{ &Z_Construct_UFunction_USessionEntryWidget_TestingSetup, "TestingSetup" }, // 1911844560
 	};
 	static_assert(UE_ARRAY_COUNT(FuncInfo) < 2048);
 	static constexpr FCppClassTypeInfoStatic StaticCppClassTypeInfo = {
@@ -145,10 +194,10 @@ USessionEntryWidget::~USessionEntryWidget() {}
 struct Z_CompiledInDeferFile_FID_MultiplayerCourse_BlasterGame_Plugins_Plugins_MultiplayerSessions_Source_MultiplayerSessions_Public_SessionEntryWidget_h_Statics
 {
 	static constexpr FClassRegisterCompiledInInfo ClassInfo[] = {
-		{ Z_Construct_UClass_USessionEntryWidget, USessionEntryWidget::StaticClass, TEXT("USessionEntryWidget"), &Z_Registration_Info_UClass_USessionEntryWidget, CONSTRUCT_RELOAD_VERSION_INFO(FClassReloadVersionInfo, sizeof(USessionEntryWidget), 400992164U) },
+		{ Z_Construct_UClass_USessionEntryWidget, USessionEntryWidget::StaticClass, TEXT("USessionEntryWidget"), &Z_Registration_Info_UClass_USessionEntryWidget, CONSTRUCT_RELOAD_VERSION_INFO(FClassReloadVersionInfo, sizeof(USessionEntryWidget), 3944455196U) },
 	};
 };
-static FRegisterCompiledInInfo Z_CompiledInDeferFile_FID_MultiplayerCourse_BlasterGame_Plugins_Plugins_MultiplayerSessions_Source_MultiplayerSessions_Public_SessionEntryWidget_h_3686247251(TEXT("/Script/MultiplayerSessions"),
+static FRegisterCompiledInInfo Z_CompiledInDeferFile_FID_MultiplayerCourse_BlasterGame_Plugins_Plugins_MultiplayerSessions_Source_MultiplayerSessions_Public_SessionEntryWidget_h_4145414027(TEXT("/Script/MultiplayerSessions"),
 	Z_CompiledInDeferFile_FID_MultiplayerCourse_BlasterGame_Plugins_Plugins_MultiplayerSessions_Source_MultiplayerSessions_Public_SessionEntryWidget_h_Statics::ClassInfo, UE_ARRAY_COUNT(Z_CompiledInDeferFile_FID_MultiplayerCourse_BlasterGame_Plugins_Plugins_MultiplayerSessions_Source_MultiplayerSessions_Public_SessionEntryWidget_h_Statics::ClassInfo),
 	nullptr, 0,
 	nullptr, 0);
