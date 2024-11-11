@@ -25,7 +25,7 @@ void EmptyLinkFunctionForGeneratedCodeMultiplayerSessions_init() {}
 				SingletonFuncArray,
 				UE_ARRAY_COUNT(SingletonFuncArray),
 				PKG_CompiledIn | 0x00000000,
-				0xE548EAB3,
+				0xAE3D1B6E,
 				0x38ABE8B2,
 				METADATA_PARAMS(0, nullptr)
 			};
@@ -33,5 +33,5 @@ void EmptyLinkFunctionForGeneratedCodeMultiplayerSessions_init() {}
 		}
 		return Z_Registration_Info_UPackage__Script_MultiplayerSessions.OuterSingleton;
 	}
-	static FRegisterCompiledInInfo Z_CompiledInDeferPackage_UPackage__Script_MultiplayerSessions(Z_Construct_UPackage__Script_MultiplayerSessions, TEXT("/Script/MultiplayerSessions"), Z_Registration_Info_UPackage__Script_MultiplayerSessions, CONSTRUCT_RELOAD_VERSION_INFO(FPackageReloadVersionInfo, 0xE548EAB3, 0x38ABE8B2));
+	static FRegisterCompiledInInfo Z_CompiledInDeferPackage_UPackage__Script_MultiplayerSessions(Z_Construct_UPackage__Script_MultiplayerSessions, TEXT("/Script/MultiplayerSessions"), Z_Registration_Info_UPackage__Script_MultiplayerSessions, CONSTRUCT_RELOAD_VERSION_INFO(FPackageReloadVersionInfo, 0xAE3D1B6E, 0x38ABE8B2));
 PRAGMA_ENABLE_DEPRECATION_WARNINGS

@@ -4,6 +4,7 @@
 #include "SessionEntryWidget.h"
 #include "Components/TextBlock.h"
 #include "Components/Button.h"
+#include "Menu.h"
 
 void USessionEntryWidget::Setup(const FOnlineSessionSearchResult& Result)
 {
@@ -16,19 +17,30 @@ void USessionEntryWidget::Setup(const FOnlineSessionSearchResult& Result)
 
 void USessionEntryWidget::OnJoinSessionButtonClicked()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Join Button Working"));
+	if (MenuRef && MenuRef->MultiplayerSessionsSubsystem && JoinSessionButton) {
+		JoinSessionButton->SetIsEnabled(false);
+		MenuRef->MultiplayerSessionsSubsystem->JoinSession(MenuRef->CurrentSessionResults[SessionIndexRef]);
+	}
+	else {
+		JoinSessionButton->SetIsEnabled(true);
+	}
 }
 
-void USessionEntryWidget::TestingSetup(FString GetSessionID, FString GetSessionUser)
+void USessionEntryWidget::SessionSetup(FString GetSessionID, FString GetSessionUser, FString GetMaxPlayers, int32 SessionIndex, UMenu* Menu)
 {
+	MenuRef = Menu;
+	SessionIndexRef = SessionIndex;
+	GetSessionName = GetSessionUser;
+
 	AddToViewport();
 	SetVisibility(ESlateVisibility::Visible);
 	this->SetIsFocusable(true);
 
-	if (SessionNameText && JoinSessionButton) {
+	if (SessionNameText && JoinSessionButton && SessionMatchType && SessionPlayers) {
 		UE_LOG(LogTemp, Warning, TEXT("WORKING"));
-		JoinSessionButton->OnClicked.AddDynamic(this, &USessionEntryWidget::OnJoinSessionButtonClicked);
 		SessionNameText->SetText(FText::FromString(GetSessionUser));
+		SessionMatchType->SetText(FText::FromString(GetSessionID));
+		SessionPlayers->SetText(FText::FromString(GetMaxPlayers));
 	}
 	else {
 		UE_LOG(LogTemp, Warning, TEXT("NOT WORKING"));

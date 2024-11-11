@@ -58,6 +58,7 @@ void UMultiplayerSessionsSubsystem::CreateSession(int32 NumPublicConnections, FS
 	LastSessionSettings->BuildUniqueId = 1; // This allows us to have multiple users launching and hosting their own builds, which also allows other players to join them.
 	LastSessionSettings->Set(FName("MatchType"), MatchType, EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
 	LastSessionSettings->Set(FName("SessionName"), SessionName.ToString(), EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
+	LastSessionSettings->Set(FName("MaxPlayers"), FString::FromInt(NumPublicConnections), EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
 
 	const ULocalPlayer* LocalPlayer = GetWorld()->GetFirstLocalPlayerFromController();
 	

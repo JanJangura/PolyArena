@@ -38,9 +38,6 @@ public:
 
 	void OnFindSessions(const TArray<FOnlineSessionSearchResult>& SessionResults, bool bWasSuccessful);
 
-	UPROPERTY(meta = (BindWidget))
-	class UScrollBox* SessionsScrollBox;
-
 	UPROPERTY(BlueprintReadWrite)
 	int32 CurrentSessionLength{ 0 };
 
@@ -54,7 +51,15 @@ public:
 	TArray<FString> GetSessionUser;
 
 	UPROPERTY(BlueprintReadOnly)
+	TArray<FString> CurrentMaxPlayers;
+
+	UPROPERTY(BlueprintReadWrite)
 	bool bSessionsFound;
+
+	TArray<FOnlineSessionSearchResult> CurrentSessionResults;
+
+	// The subsystem designed to handle all online session functionality.
+	class UMultiplayerSessionsSubsystem* MultiplayerSessionsSubsystem;
 
 protected:
 	virtual bool Initialize() override; // This function is what the Menu Class Inherits. 
@@ -85,9 +90,6 @@ private:
 
 	// This functions allows us to take the Menu Settings Down.
 	void MenuTearDown();
-
-	// The subsystem designed to handle all online session functionality.
-	class UMultiplayerSessionsSubsystem* MultiplayerSessionsSubsystem;
 
 	// Match Settings
 	int32 NumPublicConnections{10};

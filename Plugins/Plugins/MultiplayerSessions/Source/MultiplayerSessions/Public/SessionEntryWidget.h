@@ -21,6 +21,12 @@ public:
 	class UTextBlock* SessionNameText;
 
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
+	class UTextBlock* SessionMatchType;
+
+	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
+	class UTextBlock* SessionPlayers;
+
+	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
 	class UButton* JoinSessionButton;
 
 	// Store the session data to use when the join button is clicked
@@ -31,8 +37,16 @@ public:
 	UFUNCTION()
 	void OnJoinSessionButtonClicked();
 
+	UPROPERTY(BlueprintReadOnly)
+	FString GetSessionName;
+
 	UFUNCTION(BlueprintCallable)
-	void TestingSetup(FString GetSessionID, FString GetSessionUser);
+	void SessionSetup(FString GetSessionID, FString GetSessionUser, FString GetMaxPlayers, int32 SessionIndex, class UMenu* Menu);
+
+	UPROPERTY(BlueprintReadOnly)
+	UMenu* MenuRef;
+
+	int SessionIndexRef;
 
 protected:
 

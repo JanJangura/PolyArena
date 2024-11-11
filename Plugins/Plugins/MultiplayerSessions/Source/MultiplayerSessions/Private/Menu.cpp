@@ -116,8 +116,6 @@ void UMenu::OnCreateSession(bool bWasSuccessful)
 void UMenu::OnFindSessions(const TArray<FOnlineSessionSearchResult>& SessionResults, bool bWasSuccessful)
 {
 	if (MultiplayerSessionsSubsystem == nullptr || !bWasSuccessful || SessionResults.Num() <= 0) {
-		// Find_Button->SetIsEnabled(true);
-		Join_Button->SetIsEnabled(true);
 		return;
 	}
 
@@ -131,10 +129,14 @@ void UMenu::OnFindSessions(const TArray<FOnlineSessionSearchResult>& SessionResu
 
 		GetSessionID.SetNum(CurrentSessionLength);
 		GetSessionUser.SetNum(CurrentSessionLength);
+		CurrentMaxPlayers.SetNum(CurrentSessionLength);
+		CurrentSessionResults.SetNum(CurrentSessionLength);
 
 		for (int32 i = 0; i < CurrentSessionLength; i++) {
 			SessionResults[i].Session.SessionSettings.Get(FName("MatchType"), GetSessionID[i]);
 			SessionResults[i].Session.SessionSettings.Get(FName("SessionName"), GetSessionUser[i]);
+			SessionResults[i].Session.SessionSettings.Get(FName("MaxPlayers"), CurrentMaxPlayers[i]);
+			CurrentSessionResults[i] = SessionResults[i];
 		}
 	}
 
@@ -197,9 +199,6 @@ void UMenu::OnJoinSession(EOnJoinSessionCompleteResult::Type Result)
 			}
 		}
 	}
-	if (Result != EOnJoinSessionCompleteResult::Success) {
-		Join_Button->SetIsEnabled(true);
-	}
 }
 
 // Callback for our Custom OnDestroySession Delegate
@@ -226,7 +225,7 @@ void UMenu::HostButtonClicked()
 
 void UMenu::JoinButtonClicked()
 {
-	Join_Button->SetIsEnabled(false);
+	
 }
 
 void UMenu::GetHostInformation(int32 NumberOfPublicConnections, FString CurrentMatchType, FName TempSessionName)
