@@ -463,9 +463,9 @@ void ABlasterCharacter::UpdateWeaponIcon()
 
 EWeaponType ABlasterCharacter::GetWeaponType() const
 {
-	if (Combat && Combat->PrimaryWeapon) {
+	if (Combat && Combat->EquippedWeapon) {
 		//UE_LOG(LogTemp, Warning, TEXT("WeaponType: %d"), static_cast<int>(Combat->EquippedWeapon->GetWeaponType()));
-		return Combat->PrimaryWeapon->GetWeaponType();
+		return Combat->EquippedWeapon->GetWeaponType();
 	}
 	else {
 		return EWeaponType::EWT_None;

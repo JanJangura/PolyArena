@@ -222,8 +222,20 @@ void ABlasterPlayerController::SetWeaponIcon(EWeaponType WeaponType)
 		case EWeaponType::EWT_AssaultRifle:
 			WeaponText = "Assault Rifle";
 			break;
+		case EWeaponType::EWT_GrenadeLauncher:
+			WeaponText = "GrenadeLauncher";
+			break;
+		case EWeaponType::EWT_SniperRifle:
+			WeaponText = "SniperRifle";
+			break;
 		case EWeaponType::EWT_Pistol:
 			WeaponText = "Pistol";
+			break;
+		case EWeaponType::EWT_SubMachineGun:
+			WeaponText = "SubMachineGune";
+			break;
+		case EWeaponType::EWT_RocketLauncher:
+			WeaponText = "RocketLauncher";
 			break;
 		case EWeaponType::EWT_None:
 		default:
@@ -428,7 +440,7 @@ void ABlasterPlayerController::HandleMatchHasStarted()
 {
 	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
 	if (BlasterHUD) {
-		BlasterHUD->AddCharacterOverlay();
+		if(BlasterHUD->CharacterOverlay == nullptr) BlasterHUD->AddCharacterOverlay();
 		if (BlasterHUD->Announcement) {
 			BlasterHUD->Announcement->SetVisibility(ESlateVisibility::Hidden);
 		}
