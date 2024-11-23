@@ -237,6 +237,9 @@ void ABlasterPlayerController::SetWeaponIcon(EWeaponType WeaponType)
 		case EWeaponType::EWT_RocketLauncher:
 			WeaponText = "RocketLauncher";
 			break;
+		case EWeaponType::EWT_Shotgun:
+			WeaponText = "Shotgun";
+			break;
 		case EWeaponType::EWT_None:
 		default:
 			WeaponText = "None";
