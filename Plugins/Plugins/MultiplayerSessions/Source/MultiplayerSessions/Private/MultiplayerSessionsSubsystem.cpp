@@ -62,6 +62,7 @@ void UMultiplayerSessionsSubsystem::CreateSession(int32 NumPublicConnections, FS
 
 	const ULocalPlayer* LocalPlayer = GetWorld()->GetFirstLocalPlayerFromController();
 	
+	// This is how we create a Session using the Session Interface, it's actually ran on else. This is how the Delegate CreateSessionCompleteDelegate is triggered!
 	// This essentially checks if we failed to create a session.
 	if (!SessionInterface->CreateSession(*LocalPlayer->GetPreferredUniqueNetId(), NAME_GameSession, *LastSessionSettings)) { // We're checking to see if Create Session returns true.
 		// If this returns false, remove this Create Session Complete Delegate from the Online Interface Delegate List using our Delegate Handle. 

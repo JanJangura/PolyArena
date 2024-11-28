@@ -220,24 +220,18 @@ void ABlasterCharacter::OnRep_ReplicatedMovement()
 }
 
 // This is the Server that we'll call from the GameMode, then on the server we'll call MulticastElim() because that's including Clients and Server, but we only want the Server which is here.
-void ABlasterCharacter::Elim()
+void ABlasterCharacter::Elim(bool bPlayerLeftGame)
 {
 	DropOrDestroyWeapons();
 
-	MulticastElim();
-
-	// Here is our Timer that we would like to wait, clarified by ElimDelay, and then we call the function within it "ElimTimerFinished" so in there we can Respawn. 
-	GetWorldTimerManager().SetTimer(
-		ElimTimer,
-		this,
-		&ABlasterCharacter::ElimTimerFinished,
-		ElimDelay
-	);
+	MulticastElim(bPlayerLeftGame);
 }
 
 // Remember, this is an Multicast RPC
-void ABlasterCharacter::MulticastElim_Implementation()
+void ABlasterCharacter::MulticastElim_Implementation(bool bPlayerLeftGame)
 {
+	bLeftGame = bPlayerLeftGame;
+
 	if (BlasterPlayerController) {
 		BlasterPlayerController->SetHUDWeaponAmmo(0);
 	}
@@ -254,14 +248,26 @@ void ABlasterCharacter::MulticastElim_Implementation()
 	// Disable Collision
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);	// Disables the Capsule Component
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);	// Disables the Mesh Component
+
+	// Here is our Timer that we would like to wait, clarified by ElimDelay, and then we call the function within it "ElimTimerFinished" so in there we can Respawn. 
+	GetWorldTimerManager().SetTimer(
+		ElimTimer,
+		this,
+		&ABlasterCharacter::ElimTimerFinished,
+		ElimDelay
+	);
 }
 
 void ABlasterCharacter::ElimTimerFinished()
 {
 	// Get the GameMode so we can Request for a Respawn.
 	ABlasterGameMode* BlasterGameMode = GetWorld()->GetAuthGameMode<ABlasterGameMode>();
-	if (BlasterGameMode) {
+
+	if (BlasterGameMode && !bLeftGame) {
 		BlasterGameMode->RequestRespawn(this, Controller);
+	}
+	if (bLeftGame && IsLocallyControlled()) { // We should only Broadcast the Delegate only if we're locally controlled. So not everyone sees it.
+		OnLeftGame.Broadcast(); // This essentialls calls the Callback associated with this Delegate. We set this up in ReturnToMainMenu file.
 	}
 }
 
@@ -628,6 +634,18 @@ void ABlasterCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const 
 	}
 	else {
 		GetWorld()->GetTimerManager().SetTimer(HealthRegenTimerHandle, this, &ABlasterCharacter::RegenerateHealth, HealthRegenInterval, true);
+	}
+}
+
+// This is to inform the BlasterGameMode that a player is leaving the session, so the GameMode needs to know which player to remove.
+void ABlasterCharacter::ServerLeaveGame_Implementation()
+{
+	// Get the GameMode so we can Request for a Respawn.
+	ABlasterGameMode* BlasterGameMode = GetWorld()->GetAuthGameMode<ABlasterGameMode>();
+	BlasterPlayerState = BlasterPlayerState == nullptr ? GetPlayerState<ABlasterPlayerState>() : BlasterPlayerState;
+
+	if (BlasterGameMode) {
+		BlasterGameMode->PlayerLeftGame(BlasterPlayerState);
 	}
 }
 

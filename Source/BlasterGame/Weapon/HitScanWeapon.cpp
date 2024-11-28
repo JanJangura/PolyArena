@@ -22,45 +22,33 @@ void AHitScanWeapon::Fire(const FVector& HitTarget)
 
 	if (MuzzleFlashSocket && InstigatorController) {
 		FTransform SocketTransform = MuzzleFlashSocket->GetSocketTransform(GetWeaponMesh());
+
 		FVector Start = SocketTransform.GetLocation();
-		FVector End = Start + (HitTarget - Start) * 1.25; // This just pasts our hit Target that we're looking at. That 25% will guarantee a hit, to avoid barely hitting.  
-
 		FHitResult FireHit;
-		UWorld* World = GetWorld();
+		WeaponTraceHit(Start, HitTarget, FireHit);
 
-		if (World) {
-			// Performing this Line Trace on the Server.
-			World->LineTraceSingleByChannel( 
-				FireHit,
-				Start,
-				End,
-				ECollisionChannel::ECC_Visibility
+		ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(FireHit.GetActor());
+
+		if (BlasterCharacter && HasAuthority() && InstigatorController) { // We only want to apply Damage on the server, but we can have everything else on clients. 
+			UGameplayStatics::ApplyDamage(
+				BlasterCharacter,
+				Damage,
+				InstigatorController,
+				this,
+				UDamageType::StaticClass()
 			);
-			if (FireHit.bBlockingHit) {
-				ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(FireHit.GetActor());
-
-				if (BlasterCharacter) {
-					if (HasAuthority()) { // We only want to apply Damage on the server, but we can have everything else on clients. 
-						UGameplayStatics::ApplyDamage(
-							BlasterCharacter,
-							Damage,
-							InstigatorController,
-							this,
-							UDamageType::StaticClass()
-						);
-					}
-				}
-
-				if (ImpactParticles) {
-					UGameplayStatics::SpawnEmitterAtLocation(
-						World,
-						ImpactParticles,
-						End,
-						FireHit.ImpactNormal.Rotation() // ImpactNormal is a Vector that we can actually turn into a Rotation.
-					);
-				}
-			}
 		}
+
+		if (ImpactParticles) {
+			UGameplayStatics::SpawnEmitterAtLocation(
+				GetWorld(),
+				ImpactParticles,
+				FireHit.ImpactPoint,
+				FireHit.ImpactNormal.Rotation() // ImpactNormal is a Vector that we can actually turn into a Rotation.
+			);
+		}
+
+		//FVector End = Start + (HitTarget - Start) * 1.25; // This just pasts our hit Target that we're looking at. That 25% will guarantee a hit, to avoid barely hitting.  
 	}
 }
 
@@ -101,4 +89,27 @@ FVector AHitScanWeapon::TraceEndWithScatter(const FVector& TraceStart, const FVe
 	*/
 
 	return FVector(TraceStart + ToEndLoc * TRACE_LENGTH / ToEndLoc.Size()); // Returning an end location.
+}
+
+void AHitScanWeapon::WeaponTraceHit(const FVector& TraceStart, const FVector& HitTarget, FHitResult& OutHit)
+{
+	UWorld* World = GetWorld();
+
+	if (World) {
+
+		FVector End = bUseScatter ? TraceEndWithScatter(TraceStart, HitTarget) : TraceStart + (HitTarget - TraceStart) * 1.25f;
+
+		World->LineTraceSingleByChannel(
+			OutHit,
+			TraceStart,
+			End,
+			ECollisionChannel::ECC_Visibility
+		);
+
+		FVector BeamEnd = End;
+
+		if (OutHit.bBlockingHit) {
+			BeamEnd = OutHit.ImpactPoint;
+		}
+	}
 }

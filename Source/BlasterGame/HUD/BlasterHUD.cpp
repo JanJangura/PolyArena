@@ -9,6 +9,7 @@
 #include "LaunchGameButton.h"
 #include "BlasterGame/PlayerController/BlasterPlayerController.h"
 #include "Announcement.h"
+#include "ElimAnnouncement.h"
 
 void ABlasterHUD::BeginPlay()
 {
@@ -43,6 +44,14 @@ void ABlasterHUD::AddAnouncement()
 
 		// Now we'll add this to our Viewport.
 		Announcement->AddToViewport();
+	}
+}
+
+void ABlasterHUD::AddElimAnnouncement()
+{
+	OwningPlayer = OwningPlayer == nullptr ? GetOwningPlayerController() : OwningPlayer;
+	if (OwningPlayer && ElimAnnouncementClass) {
+		UElimAnnouncement* ElimAnnouncementWidget = CreateWidget<UElimAnnouncement>(OwningPlayer, ElimAnnouncementClass);
 	}
 }
 

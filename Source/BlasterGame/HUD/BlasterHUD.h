@@ -49,11 +49,15 @@ public:
 	class UAnnouncement* Announcement;
 
 	void AddAnouncement();
+	void AddElimAnnouncement();
 
 protected:
 	virtual void BeginPlay() override;
 
 private:
+	UPROPERTY()
+	class APlayerController* OwningPlayer;
+
 	FHUDPackage HUDPackage;
 
 	// This is where we draw our crosshair
@@ -61,6 +65,9 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	float CrosshairSpreadMax = 16.f;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class UElimAnnouncement> ElimAnnouncementClass;
 
 public:
 

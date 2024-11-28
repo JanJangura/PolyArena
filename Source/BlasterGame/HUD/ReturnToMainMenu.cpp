@@ -6,6 +6,7 @@
 #include "Components/Button.h"
 #include "MultiplayerSessionsSubsystem.h"
 #include "GameFramework/GameModeBase.h"
+#include "BlasterGame/Character/BlasterCharacter.h"
 
 void UReturnToMainMenu::MenuSetup()
 {
@@ -97,6 +98,27 @@ void UReturnToMainMenu::ReturnButtonClicked()
 {
 	ReturnButton->SetIsEnabled(false); // Disable the ReturnButton
 
+	UWorld* World = GetWorld();
+	if (World) {
+		// We get the First Player Controller which is associated to the character pressing that button.
+		APlayerController* FirstPlayerController = World->GetFirstPlayerController();
+		if (FirstPlayerController) {
+			// Then we get the pawn associated with that Controller. 
+			ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(FirstPlayerController->GetPawn());
+			if (BlasterCharacter) {
+				// Then we call our ServerRPC ServerLeaveGame.
+				BlasterCharacter->ServerLeaveGame();
+				BlasterCharacter->OnLeftGame.AddDynamic(this, &UReturnToMainMenu::OnPlayerLeftGame); // Binding our Callback to the Delegate
+			}
+			else {
+				ReturnButton->SetIsEnabled(true); // Set this back to true because the player was in the middle of respawning. 
+			}
+		}
+	}
+}
+
+void UReturnToMainMenu::OnPlayerLeftGame()
+{
 	if (MultiplayerSessionsSubsystem) {
 		MultiplayerSessionsSubsystem->DestroySession();
 	}

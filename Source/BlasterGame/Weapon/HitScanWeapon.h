@@ -19,14 +19,16 @@ public:
 
 protected:
 	FVector TraceEndWithScatter(const FVector& TraceStart, const FVector& HitTarget);
-
-private:
-	UPROPERTY(EditAnywhere)
-	float Damage = 20.f;
-
+	void WeaponTraceHit(const FVector& TraceStart, const FVector& HitTarget, FHitResult& OutHit);
+	
 	UPROPERTY(EditAnywhere)
 	class UParticleSystem* ImpactParticles;
 
+	UPROPERTY(EditAnywhere)
+	float Damage = 20.f;
+
+private:
+	
 	// *** Trace End with Scatter ***
 	UPROPERTY(EditAnywhere, Category = "Weapon Scatter")
 	float DistanceToSphere = 800.f;
