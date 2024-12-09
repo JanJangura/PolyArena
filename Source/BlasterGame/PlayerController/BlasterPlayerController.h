@@ -36,6 +36,16 @@ public:
 	void CastBlasterHUD();
 	void SetWeaponIcon(EWeaponType WeaponType);
 
+	void BroadCastElim(APlayerState* Attacker, APlayerState* Victim);
+
+	UPROPERTY()
+	class UPlayerList* PlayerList;
+
+	UPROPERTY()
+	class ABlasterHUD* BlasterHUD;
+
+	void BroadCastPlayerToPlayerList(TArray<class ABlasterPlayerState*> MultiBlasterPlayerStates);
+		
 protected:
 	virtual void SetupInputComponent() override; // Allows us to create Custom Input Bindings.
 	virtual void BeginPlay() override;
@@ -71,9 +81,14 @@ protected:
 
 	void ShowReturnToMainMenu();
 
+	void ShowPlayerList();
+
+	// We only want to broadcast to the client that owns the Player Controller. No 1 person's player controller broadcasting to all other player controllers. 
+	// We want each Player Controller to broadcast to its own Client Player Controller.
+	UFUNCTION(Client, Reliable) 
+	void ClientElimAnnouncement(APlayerState* Attacker, APlayerState* Victim);
+
 private:
-	UPROPERTY()
-	class ABlasterHUD* BlasterHUD;
 
 	// ******* Return to MainMenu *******
 	UPROPERTY(EditAnywhere, Category = HUD)
@@ -83,6 +98,12 @@ private:
 	class UReturnToMainMenu* ReturnToMainMenu;
 
 	bool bReturnToMainMenuOpen = false;
+
+	// **********************************
+	// ********** PlayerList **********
+
+	bool bPlayerListTab = false;
+	//***********************************
 
 	UPROPERTY()
 	class ABlasterGameMode* BlasterGameMode;

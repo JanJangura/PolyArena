@@ -41,6 +41,9 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	float MaxKillScore = 10.f;
 
+	UFUNCTION(BlueprintCallable)
+	virtual void PostLogin(APlayerController* NewPlayer) override;
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void OnMatchStateSet() override;

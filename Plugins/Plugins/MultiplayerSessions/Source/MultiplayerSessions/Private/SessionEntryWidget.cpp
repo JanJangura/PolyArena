@@ -17,8 +17,7 @@ void USessionEntryWidget::Setup(const FOnlineSessionSearchResult& Result)
 
 void USessionEntryWidget::OnJoinSessionButtonClicked()
 {
-	if (MenuRef && MenuRef->MultiplayerSessionsSubsystem && JoinSessionButton) {
-		JoinSessionButton->SetIsEnabled(false);
+	if (MenuRef && MenuRef->MultiplayerSessionsSubsystem && JoinSessionButton) {;
 		MenuRef->MultiplayerSessionsSubsystem->JoinSession(MenuRef->CurrentSessionResults[SessionIndexRef]);
 	}
 	else {

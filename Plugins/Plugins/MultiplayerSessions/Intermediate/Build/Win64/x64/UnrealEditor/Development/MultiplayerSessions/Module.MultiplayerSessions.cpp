@@ -5,4 +5,4 @@
 #include "F:/MultiplayerCourse/BlasterGame/Plugins/Plugins/MultiplayerSessions/Intermediate/Build/Win64/UnrealEditor/Inc/MultiplayerSessions/UHT/SessionEntryWidget.gen.cpp"
 #include "F:/MultiplayerCourse/BlasterGame/Plugins/Plugins/MultiplayerSessions/Source/MultiplayerSessions/Private/Menu.cpp"
 #include "F:/MultiplayerCourse/BlasterGame/Plugins/Plugins/MultiplayerSessions/Source/MultiplayerSessions/Private/MultiplayerSessions.cpp"
-#include "F:/MultiplayerCourse/BlasterGame/Plugins/Plugins/MultiplayerSessions/Source/MultiplayerSessions/Private/SessionEntryWidget.cpp"
+#include "F:/MultiplayerCourse/BlasterGame/Plugins/Plugins/MultiplayerSessions/Source/MultiplayerSessions/Private/MultiplayerSessionsSubsystem.cpp"

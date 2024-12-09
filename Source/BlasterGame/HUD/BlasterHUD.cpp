@@ -10,12 +10,36 @@
 #include "BlasterGame/PlayerController/BlasterPlayerController.h"
 #include "Announcement.h"
 #include "ElimAnnouncement.h"
+#include "Components/HorizontalBox.h"
+#include "Blueprint/WidgetLayoutLibrary.h"
+#include "Components/CanvasPanelSlot.h"
+#include "PlayerList.h"
+#include "Components/ScrollBox.h"
+#include "Components/Widget.h"
+#include "BlasterGame/GameState/BlasterGameState.h"
+#include "BlasterGame/PlayerState/BlasterPlayerState.h"
 
 void ABlasterHUD::BeginPlay()
 {
 	Super::BeginPlay();
 
 	DeclarationOfClasses();
+
+	if(HasAuthority()) GetWorld()->GetTimerManager().SetTimer(DelayPlayerList, this, &ABlasterHUD::PopulatePlayerListWidget, 3.0f, false);
+}
+
+void ABlasterHUD::PopulatePlayerListWidget()
+{
+	if (UWorld* World = GetWorld())
+	{
+		// Attempt to get the GameState
+		BlasterGameState = BlasterGameState == nullptr ? World->GetGameState<ABlasterGameState>() : BlasterGameState;
+
+		if (BlasterGameState)
+		{
+			BlasterGameState->UpdatePlayerList();
+		}
+	}
 }
 
 // This is where we create our Widget
@@ -47,11 +71,48 @@ void ABlasterHUD::AddAnouncement()
 	}
 }
 
-void ABlasterHUD::AddElimAnnouncement()
+void ABlasterHUD::AddElimAnnouncement(FString Attacker, FString Victim)
 {
 	OwningPlayer = OwningPlayer == nullptr ? GetOwningPlayerController() : OwningPlayer;
 	if (OwningPlayer && ElimAnnouncementClass) {
+
 		UElimAnnouncement* ElimAnnouncementWidget = CreateWidget<UElimAnnouncement>(OwningPlayer, ElimAnnouncementClass);
+		if (ElimAnnouncementWidget) {
+			ElimAnnouncementWidget->SetElimAnnouncementText(Attacker, Victim);
+			ElimAnnouncementWidget->AddToViewport();
+			ElimMessages.Add(ElimAnnouncementWidget);
+
+			for (UElimAnnouncement* Msg : ElimMessages) {
+				if (Msg && Msg->AnnouncementBox) {
+					UCanvasPanelSlot* CanvasSlot = UWidgetLayoutLibrary::SlotAsCanvasSlot(Msg->AnnouncementBox);
+					FVector2D Position = CanvasSlot->GetPosition();
+					FVector2D NewPosition(CanvasSlot->GetPosition().X,
+						Position.Y - CanvasSlot->GetSize().Y
+					);
+					CanvasSlot->SetPosition(NewPosition);
+				}
+			}
+
+			// Setting a Timer passed in a Delegate. The Delegate has the callback to ElimAnnouncementTimerFinished bound to it and we're passing in the Widget itself. Then once
+			// the Timer is finished, we'll remove that Widget. This only handles Removing the Widget, it won't push the Widget up.
+			FTimerHandle ElimMsgTimer;
+			FTimerDelegate ElimMsgDelegate;
+			ElimMsgDelegate.BindUFunction(this, FName("ElimAnnouncementTimerFinished"), ElimAnnouncementWidget);
+
+			GetWorldTimerManager().SetTimer(
+				ElimMsgTimer,
+				ElimMsgDelegate,
+				ElimAnnouncementTime,
+				false
+			);
+		}
+	}
+}
+
+void ABlasterHUD::ElimAnnouncementTimerFinished(UElimAnnouncement* MsgToRemove)
+{
+	if (MsgToRemove) {
+		MsgToRemove->RemoveFromParent();
 	}
 }
 
@@ -67,6 +128,27 @@ void ABlasterHUD::DeclarationOfClasses()
 		if (ControlledPawn) {
 			class ABlasterCharacter* Character = Cast<ABlasterCharacter>(ControlledPawn);
 		}
+	}
+
+	InitiatePlayerListWidget(BlasterPlayerController);
+}
+
+void ABlasterHUD::InitiatePlayerListWidget(ABlasterPlayerController* BlasterPlayerController)
+{
+	if (PlayerListWidget && BlasterPlayerController) {
+		PlayerList = CreateWidget<UPlayerList>(GetWorld(), PlayerListWidget);
+
+		BlasterPlayerController->PlayerList = PlayerList;
+	}
+}
+
+void ABlasterHUD::UpdatePlayerList(TArray<class ABlasterPlayerState*> NewBlasterPlayerState)
+{
+	for (int32 i = 0; i < NewBlasterPlayerState.Num(); i++) {
+		FString PlayerName = NewBlasterPlayerState[i]->GetPlayerName();
+		int32 InitialKillScore = NewBlasterPlayerState[i]->GetScore();
+		int32 InitialDeathScore = 0;
+		PlayerList->AddPlayerInfoWidget(PlayerName, InitialKillScore, InitialDeathScore);
 	}
 }
 

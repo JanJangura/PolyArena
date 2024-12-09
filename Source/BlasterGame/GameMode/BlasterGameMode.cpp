@@ -8,6 +8,7 @@
 #include "GameFramework/PlayerStart.h"
 #include "BlasterGame/PlayerState/BlasterPlayerState.h"
 #include "BlasterGame/GameState/BlasterGameState.h"
+#include "BlasterGame/HUD/PlayerList.h"
 
 namespace MatchState
 {
@@ -19,6 +20,22 @@ namespace MatchState
 ABlasterGameMode::ABlasterGameMode()
 {
 	bDelayedStart = true;	// The Game Mode will stay in the waiting to Start State and it'll actually spawn a default Pawn for all players. This pawn can fly around the level.
+}
+
+void ABlasterGameMode::PostLogin(APlayerController* NewPlayer)
+{
+	Super::PostLogin(NewPlayer);
+
+	ABlasterGameState* BlasterGameState = GetGameState<ABlasterGameState>();
+
+	if (BlasterGameState && NewPlayer && NewPlayer->PlayerState) {
+
+		ABlasterPlayerState* BlasterPlayerState = Cast<ABlasterPlayerState>(NewPlayer->PlayerState);
+		if (BlasterPlayerState) {
+			BlasterGameState->AddPlayerToPlayerList(BlasterPlayerState);
+			UE_LOG(LogTemp, Warning, TEXT("GameState Added PlayerState"));
+		}
+	}
 }
 
 void ABlasterGameMode::BeginPlay()
@@ -59,16 +76,19 @@ void ABlasterGameMode::OnMatchStateSet()
 
 	// This iterator allows us to loop through all PlayerControllers that exist in the game. 
 	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It) {
-		ABlasterPlayerController* BlasterPlayer = Cast<ABlasterPlayerController>(*It);
-		if (BlasterPlayer) {
-			BlasterPlayer->OnMatchStateSet(MatchState);
-			BlasterPlayer->CastBlasterHUD();
+		ABlasterPlayerController* BlasterPlayerController = Cast<ABlasterPlayerController>(*It);
+		if (BlasterPlayerController) {
+			BlasterPlayerController->OnMatchStateSet(MatchState);
+			BlasterPlayerController->CastBlasterHUD();
 		}
 	}
 }
 
 void ABlasterGameMode::PlayerEliminated(ABlasterCharacter* ElimmedCharacter, ABlasterPlayerController* VictimController, ABlasterPlayerController* AttackerController)
 {
+	if (AttackerController == nullptr || AttackerController->PlayerState == nullptr) return;
+	if (VictimController == nullptr || VictimController->PlayerState == nullptr) return;
+
 	ABlasterPlayerState* AttackerPlayerState = AttackerController ? Cast<ABlasterPlayerState>(AttackerController->PlayerState) : nullptr;
 	ABlasterPlayerState* VictimPlayerState = VictimController ? Cast<ABlasterPlayerState>(VictimController->PlayerState) : nullptr;
 	ABlasterGameState* BlasterGameState = GetGameState<ABlasterGameState>();
@@ -88,6 +108,13 @@ void ABlasterGameMode::PlayerEliminated(ABlasterCharacter* ElimmedCharacter, ABl
 
 	if (ElimmedCharacter) {
 		ElimmedCharacter->Elim(false);
+	}
+
+	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It) {
+		ABlasterPlayerController* BlasterPlayer = Cast<ABlasterPlayerController>(*It);
+		if (BlasterPlayer && AttackerPlayerState && VictimPlayerState) {
+			BlasterPlayer->BroadCastElim(AttackerPlayerState, VictimPlayerState);
+		}
 	}
 }
 

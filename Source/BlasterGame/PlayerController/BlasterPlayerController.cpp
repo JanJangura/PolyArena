@@ -19,6 +19,10 @@
 #include "BlasterGame/GameState/BlasterGameState.h"
 #include "BlasterGame/PlayerState/BlasterPlayerState.h"
 #include "BlasterGame/HUD/ReturnToMainMenu.h"
+#include "BlasterGame/HUD/PlayerList.h"
+#include "BlasterGame/HUD/PlayerInfo.h"
+#include "Components/ScrollBox.h"
+#include "Components/Widget.h"
 
 void ABlasterPlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -35,6 +39,8 @@ void ABlasterPlayerController::SetupInputComponent()
 
 	// This is how we set up our binding Action.
 	InputComponent->BindAction("Quit", IE_Pressed, this, &ABlasterPlayerController::ShowReturnToMainMenu);
+	InputComponent->BindAction("PlayerList", IE_Pressed, this, &ABlasterPlayerController::ShowPlayerList);
+	InputComponent->BindAction("PlayerList", IE_Released, this, &ABlasterPlayerController::ShowPlayerList);
 }
 
 void ABlasterPlayerController::BeginPlay()
@@ -83,16 +89,56 @@ void ABlasterPlayerController::PollInit()
 void ABlasterPlayerController::ShowReturnToMainMenu()
 {
 	if (ReturnToMainMenuWidget == nullptr) return;
-	if (ReturnToMainMenu == nullptr) {
-		ReturnToMainMenu = CreateWidget<UReturnToMainMenu>(this, ReturnToMainMenuWidget);
-	}
-	if (ReturnToMainMenu) {
+	
+	ReturnToMainMenu = ReturnToMainMenu == nullptr ? CreateWidget<UReturnToMainMenu>(this, ReturnToMainMenuWidget) : ReturnToMainMenu;
+
+	if (ReturnToMainMenu && !bPlayerListTab) {
 		bReturnToMainMenuOpen = !bReturnToMainMenuOpen;
 		if (bReturnToMainMenuOpen) {
 			ReturnToMainMenu->MenuSetup();
 		}
 		else {
 			ReturnToMainMenu->MenuTearDown();
+		}
+	}
+}
+
+void ABlasterPlayerController::BroadCastPlayerToPlayerList(TArray<class ABlasterPlayerState*> MultiBlasterPlayerStates)
+{
+	/*
+	if (!PlayerList) {
+		InitiatePlayerListWidget();
+	}
+
+	if (!PlayerList) return; 
+
+	if (PlayerList) {
+		PlayerList->PlayerScrollBox->ClearChildren();
+
+		for (ABlasterPlayerState* BlasterPlayerState : MultiBlasterPlayerStates) {
+			if (BlasterPlayerState) {
+				FString PlayerName = BlasterPlayerState->GetPlayerName();
+				int32 InitialKillScore = 0;
+				int32 InitialDeathScore = 0;
+
+				PlayerList->AddPlayerInfoWidget(PlayerName, InitialKillScore, InitialDeathScore);
+				UE_LOG(LogTemp, Warning, TEXT("PlayerList Added PlayerInformation %s"), *PlayerName);
+			}
+			else return;
+		}
+	}
+	*/
+}
+
+void ABlasterPlayerController::ShowPlayerList()
+{
+	if (PlayerList && !bReturnToMainMenuOpen) {
+		bPlayerListTab = !bPlayerListTab;
+		if (bPlayerListTab) {
+			PlayerList->PlayerListSetup();
+		}
+		else {
+			PlayerList->PlayerListTearDown();
 		}
 	}
 }
@@ -262,6 +308,41 @@ void ABlasterPlayerController::SetWeaponIcon(EWeaponType WeaponType)
 		}
 		else {
 			UE_LOG(LogTemp, Warning, TEXT("CLIENT: BlasterHUD is %s"), BlasterHUD ? TEXT("true") : TEXT("false"));
+		}
+	}
+}
+
+void ABlasterPlayerController::BroadCastElim(APlayerState* Attacker, APlayerState* Victim)
+{
+	ClientElimAnnouncement(Attacker, Victim);
+}
+
+// Client RPC
+void ABlasterPlayerController::ClientElimAnnouncement_Implementation(APlayerState* Attacker, APlayerState* Victim)
+{
+	// Compare Attacker and Victim to Self.
+	APlayerState* Self = GetPlayerState<APlayerState>();
+	if (Attacker && Victim && Self) {
+
+		BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
+		if (BlasterHUD) {
+			if (Attacker == Self && Victim != Self) {
+				BlasterHUD->AddElimAnnouncement("You", Victim->GetPlayerName());
+				return;
+			}
+			else if (Attacker != Self && Victim == Self) {
+				BlasterHUD->AddElimAnnouncement(Attacker->GetPlayerName(), "You");
+				return;
+			}
+			else if (Attacker == Self && Victim == Self) {
+				BlasterHUD->AddElimAnnouncement("You", "Yourself");
+				return;
+			}
+			else if (Attacker == Victim && Attacker != Self) {
+				BlasterHUD->AddElimAnnouncement(Attacker->GetPlayerName(), "Themselves");
+				return;
+			}
+			BlasterHUD->AddElimAnnouncement(Attacker->GetPlayerName(), Victim->GetPlayerName());
 		}
 	}
 }

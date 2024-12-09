@@ -4,12 +4,20 @@
 #include "BlasterGameState.h"
 #include "Net/UnrealNetwork.h"
 #include "BlasterGame/PlayerState/BlasterPlayerState.h"
+#include "BlasterGame/PlayerController/BlasterPlayerController.h"
+#include "BlasterGame/HUD/BlasterHUD.h"
+
+void ABlasterGameState::BeginPlay()
+{
+	Super::BeginPlay();
+}
 
 void ABlasterGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(ABlasterGameState, TopScoringPlayers);
+	DOREPLIFETIME(ABlasterGameState, MultiBlasterPlayerStates);
 }
 
 // This handles the Top Score Players.
@@ -26,5 +34,28 @@ void ABlasterGameState::UpdateTopScore(ABlasterPlayerState* ScoringPlayer)
 		TopScoringPlayers.Empty();
 		TopScoringPlayers.AddUnique(ScoringPlayer);
 		TopScore = ScoringPlayer->GetScore();	// This is the new TopScore
+	}
+}
+
+void ABlasterGameState::AddPlayerToPlayerList(ABlasterPlayerState* BlasterPlayerState)
+{
+	if (HasAuthority()) {
+		MultiBlasterPlayerStates.AddUnique(BlasterPlayerState);
+
+		ForceNetUpdate();
+		UE_LOG(LogTemp, Warning, TEXT("BlasterPlayer Added. Current Count: %d"), MultiBlasterPlayerStates.Num());
+	}
+}
+
+void ABlasterGameState::UpdatePlayerList()
+{
+	for (int32 i = 0; i < MultiBlasterPlayerStates.Num(); i++) {
+		if (MultiBlasterPlayerStates[i]) {
+			ABlasterPlayerController* BlasterPlayerController = Cast<ABlasterPlayerController>(MultiBlasterPlayerStates[i]->GetPlayerController());
+			if (BlasterPlayerController && IsValid(BlasterPlayerController) && BlasterPlayerController->BlasterHUD) {
+
+				BlasterPlayerController->BlasterHUD->UpdatePlayerList(MultiBlasterPlayerStates);
+			}
+		}
 	}
 }
