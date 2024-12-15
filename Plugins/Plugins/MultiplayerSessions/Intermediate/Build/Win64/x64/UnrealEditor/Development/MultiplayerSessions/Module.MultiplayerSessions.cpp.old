@@ -6,4 +6,3 @@
 #include "F:/MultiplayerCourse/BlasterGame/Plugins/Plugins/MultiplayerSessions/Source/MultiplayerSessions/Private/Menu.cpp"
 #include "F:/MultiplayerCourse/BlasterGame/Plugins/Plugins/MultiplayerSessions/Source/MultiplayerSessions/Private/MultiplayerSessions.cpp"
 #include "F:/MultiplayerCourse/BlasterGame/Plugins/Plugins/MultiplayerSessions/Source/MultiplayerSessions/Private/MultiplayerSessionsSubsystem.cpp"
-#include "F:/MultiplayerCourse/BlasterGame/Plugins/Plugins/MultiplayerSessions/Source/MultiplayerSessions/Private/SessionEntryWidget.cpp"

@@ -7,6 +7,7 @@
 #include "GameFramework/GameStateBase.h"
 #include "Kismet/GameplayStatics.h"
 #include "TimerManager.h"
+#include "BlasterGame/GameInstance/BlasterGameInstance.h"
 #include "BlasterGame/HUD/BlasterHUD.h"
 #include "MultiplayerSessionsSubsystem.h"
 
@@ -15,18 +16,28 @@ void ALobbyGameMode::PostLogin(APlayerController* NewPlayer)
 	// PostLogin() is the first place where it's safe to access the player's controller that has just joined the game. 
 	Super::PostLogin(NewPlayer);
 
-	if (GameState) {
-		CurrentNumOfPlayers = GameState->PlayerArray.Num();
+	GameInstance = Cast<UBlasterGameInstance>(GetGameInstance());
 
-		GameInstance = GetGameInstance();
-		if (GameInstance) {
-			Subsystem = GameInstance->GetSubsystem<UMultiplayerSessionsSubsystem>();
-			check(Subsystem);
+	if (GameInstance && NewPlayer && NewPlayer->PlayerState) {
+		GameInstance->AddPlayerStates(NewPlayer->PlayerState);
+		UE_LOG(LogTemp, Warning, TEXT("GameInstance Added PlayerState"));
 
-			MaxPlayers = Subsystem->DesiredNumPublicConnections;
-			if (CurrentNumOfPlayers == MaxPlayers) {
-				LaunchGame();
-			}
+		//if (GEngine) {
+		//	GEngine->AddOnScreenDebugMessage(
+		//		-1,
+		//		15.f,
+		//		FColor::Yellow,
+		//		FString(TEXT("GameInstance Added PlayerState"))
+		//	);
+		//}
+
+		Subsystem = GameInstance->GetSubsystem<UMultiplayerSessionsSubsystem>();
+		check(Subsystem);
+
+		CurrentNumOfPlayers = GameInstance->PlayerStates.Num();
+		MaxPlayers = Subsystem->DesiredNumPublicConnections;
+		if (CurrentNumOfPlayers == MaxPlayers) {
+			LaunchGame();
 		}
 	}
 }

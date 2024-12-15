@@ -15,6 +15,7 @@ class BLASTERGAME_API ABlasterPlayerState : public APlayerState
 	GENERATED_BODY()
 	
 public:
+
 	// Replication Notifies
 	virtual void GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const override;
 	virtual void OnRep_Score() override;
@@ -28,6 +29,10 @@ public:
 	// This Defeats will be updated on the Server
 	void AddToDefeats(int32 DefeatsAmount);
 
+	virtual void BeginPlay() override;
+
+	UPROPERTY(ReplicatedUsing = OnRep_Defeats)
+	int32 Defeats; // This is our Deaths & Scores is our Kills.
 private:
 	// This UPROPERTY() Macro will initialize these classes to a nullptr, so that they aren't some garbage memory type that can still pass in our functions when validating if it's a
 	// nullptr or not. Another way to make sure we avoid garbage memory for these Characters is to just set them equal to nullptr.
@@ -36,6 +41,7 @@ private:
 	UPROPERTY()
 	class ABlasterPlayerController* Controller;
 
-	UPROPERTY(ReplicatedUsing = OnRep_Defeats)
-	int32 Defeats; // This is our Deaths & Scores is our Kills.
+	class ABlasterGameState* BlasterGameState;
+
+	void UpdatePlayerList();
 };

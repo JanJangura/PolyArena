@@ -6,6 +6,7 @@
 #include "BlasterGame/PlayerController/BlasterPlayerController.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/PlayerStart.h"
+#include "BlasterGame/GameInstance/BlasterGameInstance.h"
 #include "BlasterGame/PlayerState/BlasterPlayerState.h"
 #include "BlasterGame/GameState/BlasterGameState.h"
 #include "BlasterGame/HUD/PlayerList.h"
@@ -26,14 +27,17 @@ void ABlasterGameMode::PostLogin(APlayerController* NewPlayer)
 {
 	Super::PostLogin(NewPlayer);
 
-	ABlasterGameState* BlasterGameState = GetGameState<ABlasterGameState>();
+	UBlasterGameInstance* GameInstance = Cast<UBlasterGameInstance>(GetGameInstance());
+	if (GameInstance && NewPlayer && NewPlayer->PlayerState) {
+		GameInstance->AddPlayerStates(NewPlayer->PlayerState);
 
-	if (BlasterGameState && NewPlayer && NewPlayer->PlayerState) {
-
-		ABlasterPlayerState* BlasterPlayerState = Cast<ABlasterPlayerState>(NewPlayer->PlayerState);
-		if (BlasterPlayerState) {
-			BlasterGameState->AddPlayerToPlayerList(BlasterPlayerState);
-			UE_LOG(LogTemp, Warning, TEXT("GameState Added PlayerState"));
+		BlasterGameState = BlasterGameState == nullptr ? GetGameState<ABlasterGameState>() : BlasterGameState;
+		if (BlasterGameState) {
+			BlasterGameState->AddPlayerToPlayerList(NewPlayer->PlayerState);
+			UE_LOG(LogTemp, Warning, TEXT("Added player to GameState: %s"), *NewPlayer->PlayerState->GetPlayerName());
+		}
+		else {
+			UE_LOG(LogTemp, Warning, TEXT("Failed to add player to GameState in PostLogin."));
 		}
 	}
 }
@@ -41,8 +45,21 @@ void ABlasterGameMode::PostLogin(APlayerController* NewPlayer)
 void ABlasterGameMode::BeginPlay()
 {
 	Super::BeginPlay();
-
+	BlasterGameState = GetGameState<ABlasterGameState>();
 	LevelStartingTime = GetWorld()->GetTimeSeconds();
+	OnPlayerTabUpdate.Broadcast(false);
+
+	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
+	{
+		APlayerController* PC = It->Get();
+		if (PC && PC->PlayerState)
+		{
+			if (BlasterGameState)
+			{
+				BlasterGameState->AddPlayerToPlayerList(PC->PlayerState);
+			}
+		}
+	}
 }
 
 void ABlasterGameMode::Tick(float DeltaTime)
@@ -51,8 +68,9 @@ void ABlasterGameMode::Tick(float DeltaTime)
 
 	if (MatchState == MatchState::WaitingToStart) {
 		CountdownTime = WarmupTime - GetWorld()->GetTimeSeconds() + LevelStartingTime;
-		if (CountdownTime <= 0.f) {
+		if (CountdownTime <= 0.1f) {
 			StartMatch();	// This function is inherited within the GameMode Class.
+			OnPlayerTabUpdate.Broadcast(true); UE_LOG(LogTemp, Warning, TEXT("OnPlayerTabUpdate.Broadcast(true)"));
 		}
 	}
 	else if (MatchState == MatchState::InProgress) {
@@ -91,7 +109,7 @@ void ABlasterGameMode::PlayerEliminated(ABlasterCharacter* ElimmedCharacter, ABl
 
 	ABlasterPlayerState* AttackerPlayerState = AttackerController ? Cast<ABlasterPlayerState>(AttackerController->PlayerState) : nullptr;
 	ABlasterPlayerState* VictimPlayerState = VictimController ? Cast<ABlasterPlayerState>(VictimController->PlayerState) : nullptr;
-	ABlasterGameState* BlasterGameState = GetGameState<ABlasterGameState>();
+	BlasterGameState = BlasterGameState == nullptr ? GetGameState<ABlasterGameState>() : BlasterGameState;
 
 	if (AttackerPlayerState && AttackerPlayerState != VictimPlayerState && BlasterGameState) {
 		AttackerPlayerState->AddToScore(1.f);
@@ -153,7 +171,7 @@ void ABlasterGameMode::PlayerLeftGame(ABlasterPlayerState* PlayerLeaving)
 {
 	if (PlayerLeaving == nullptr) return;
 
-	ABlasterGameState* BlasterGameState = GetGameState<ABlasterGameState>();
+	BlasterGameState = BlasterGameState == nullptr ? GetGameState<ABlasterGameState>() : BlasterGameState;
 	if (BlasterGameState && BlasterGameState->TopScoringPlayers.Contains(PlayerLeaving)) {
 		BlasterGameState->TopScoringPlayers.Remove(PlayerLeaving);
 	}

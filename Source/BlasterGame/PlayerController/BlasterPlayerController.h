@@ -43,9 +43,8 @@ public:
 
 	UPROPERTY()
 	class ABlasterHUD* BlasterHUD;
-
-	void BroadCastPlayerToPlayerList(TArray<class ABlasterPlayerState*> MultiBlasterPlayerStates);
 		
+	bool bInProgressState = true;
 protected:
 	virtual void SetupInputComponent() override; // Allows us to create Custom Input Bindings.
 	virtual void BeginPlay() override;
@@ -89,7 +88,6 @@ protected:
 	void ClientElimAnnouncement(APlayerState* Attacker, APlayerState* Victim);
 
 private:
-
 	// ******* Return to MainMenu *******
 	UPROPERTY(EditAnywhere, Category = HUD)
 	TSubclassOf<class UUserWidget> ReturnToMainMenuWidget;

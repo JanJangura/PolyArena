@@ -4,7 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameMode.h"
+#include "Delegates/DelegateCombinations.h"
 #include "BlasterGameMode.generated.h"
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPlayerTabUpdate, bool, bPlayerTabIsReady);
 
 namespace MatchState
 {
@@ -20,6 +23,8 @@ class BLASTERGAME_API ABlasterGameMode : public AGameMode
 	GENERATED_BODY()
 	
 public:
+	FOnPlayerTabUpdate OnPlayerTabUpdate;
+
 	ABlasterGameMode();
 	virtual void Tick(float DeltaTime) override;
 	virtual void PlayerEliminated(class ABlasterCharacter* ElimmedCharacter, class ABlasterPlayerController* VictimController, ABlasterPlayerController* AttackerController);
@@ -50,6 +55,7 @@ protected:
 
 private:
 	float CountdownTime = 0.f;
+	class ABlasterGameState* BlasterGameState;
 
 public:
 	FORCEINLINE float GetCountdownTime() const { return CountdownTime; }

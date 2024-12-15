@@ -67,7 +67,12 @@
             "f:\\ue_5.4\\engine\\intermediate\\build\\win64\\unrealgame\\inc\\umg\\uht\\scrollbox.generated.h",
             "f:\\multiplayercourse\\blastergame\\plugins\\plugins\\multiplayersessions\\source\\multiplayersessions\\private\\multiplayersessions.cpp",
             "f:\\multiplayercourse\\blastergame\\plugins\\plugins\\multiplayersessions\\source\\multiplayersessions\\public\\multiplayersessions.h",
-            "f:\\multiplayercourse\\blastergame\\plugins\\plugins\\multiplayersessions\\source\\multiplayersessions\\private\\multiplayersessionssubsystem.cpp"
+            "f:\\multiplayercourse\\blastergame\\plugins\\plugins\\multiplayersessions\\source\\multiplayersessions\\private\\multiplayersessionssubsystem.cpp",
+            "f:\\multiplayercourse\\blastergame\\plugins\\plugins\\multiplayersessions\\source\\multiplayersessions\\private\\sessionentrywidget.cpp",
+            "f:\\ue_5.4\\engine\\source\\runtime\\umg\\public\\components\\textblock.h",
+            "f:\\ue_5.4\\engine\\source\\runtime\\umg\\public\\components\\textwidgettypes.h",
+            "f:\\ue_5.4\\engine\\intermediate\\build\\win64\\unrealgame\\inc\\umg\\uht\\textwidgettypes.generated.h",
+            "f:\\ue_5.4\\engine\\intermediate\\build\\win64\\unrealgame\\inc\\umg\\uht\\textblock.generated.h"
         ],
         "ImportedModules": [],
         "ImportedHeaderUnits": []

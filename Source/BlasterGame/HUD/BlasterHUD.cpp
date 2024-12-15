@@ -22,6 +22,11 @@
 void ABlasterHUD::BeginPlay()
 {
 	Super::BeginPlay();
+	BlasterGameState = GetWorld()->GetGameState<ABlasterGameState>();
+
+	if (BlasterGameState && IsValid(BlasterGameState)) {
+		BlasterGameState->OnPlayerListUpdate.AddDynamic(this, &ABlasterHUD::BroadCastPlayerToPlayerList);
+	}
 
 	DeclarationOfClasses();
 
@@ -40,6 +45,11 @@ void ABlasterHUD::PopulatePlayerListWidget()
 			BlasterGameState->UpdatePlayerList();
 		}
 	}
+}
+
+void ABlasterHUD::BroadCastPlayerToPlayerList(const TArray<class ABlasterPlayerState*>& MultiBlasterPlayerStates)
+{
+	UpdatePlayerList(MultiBlasterPlayerStates);
 }
 
 // This is where we create our Widget
@@ -138,18 +148,34 @@ void ABlasterHUD::InitiatePlayerListWidget(ABlasterPlayerController* BlasterPlay
 	if (PlayerListWidget && BlasterPlayerController) {
 		PlayerList = CreateWidget<UPlayerList>(GetWorld(), PlayerListWidget);
 
-		BlasterPlayerController->PlayerList = PlayerList;
+		if (PlayerList) {
+			BlasterPlayerController->PlayerList = PlayerList;
+		}
+		else {
+		}
+	}
+	else {
 	}
 }
 
-void ABlasterHUD::UpdatePlayerList(TArray<class ABlasterPlayerState*> NewBlasterPlayerState)
+void ABlasterHUD::UpdatePlayerList(const TArray<class ABlasterPlayerState*>& NewBlasterPlayerState)
 {
-	for (int32 i = 0; i < NewBlasterPlayerState.Num(); i++) {
-		FString PlayerName = NewBlasterPlayerState[i]->GetPlayerName();
-		int32 InitialKillScore = NewBlasterPlayerState[i]->GetScore();
-		int32 InitialDeathScore = 0;
-		PlayerList->AddPlayerInfoWidget(PlayerName, InitialKillScore, InitialDeathScore);
+	if (!PlayerList) return;
+
+	if (PlayerList && PlayerList->PlayerScrollBox) {
+		PlayerList->PlayerScrollBox->ClearChildren();
+
+		for (ABlasterPlayerState* BPS : NewBlasterPlayerState) {
+			if (BPS) {
+				FString PlayerName = BPS->GetPlayerName();
+				int32 InitialKillScore = BPS->GetScore();
+				int32 InitialDeathScore = BPS->Defeats;
+
+				PlayerList->AddPlayerInfoWidget(PlayerName, InitialKillScore, InitialDeathScore);
+			}
+		}
 	}
+	
 }
 
 // This is where we get out HUD and then use this information so we can pass in out Textures and Draw the actual CrossHair.

@@ -4,6 +4,7 @@
 #include "BlasterPlayerState.h"
 #include "BlasterGame/Character/BlasterCharacter.h"
 #include "BlasterGame/PlayerController/BlasterPlayerController.h"
+#include "BlasterGame/GameState/BlasterGameState.h"
 #include "Net/UnrealNetwork.h"
 
 // We need this for Replication.
@@ -29,6 +30,8 @@ void ABlasterPlayerState::AddToScore(float ScoreAmount)
 			Controller->SetHUDScore(GetScore());
 		}
 	}
+
+	UpdatePlayerList();
 }
 
 // This replicated function is called on the Clients.
@@ -46,6 +49,8 @@ void ABlasterPlayerState::OnRep_Score()
 			Controller->SetHUDScore(GetScore());
 		}
 	}
+
+	UpdatePlayerList();
 }
 
 // This function should only be called on the Server.
@@ -62,6 +67,22 @@ void ABlasterPlayerState::AddToDefeats(int32 DefeatsAmount)
 			Controller->SetHUDDefeats(Defeats);
 		}
 	}
+
+	UpdatePlayerList();
+}
+
+void ABlasterPlayerState::BeginPlay()
+{
+	Super::BeginPlay();
+}
+
+void ABlasterPlayerState::UpdatePlayerList()
+{
+	BlasterGameState = BlasterGameState == nullptr ? GetWorld()->GetGameState<ABlasterGameState>() : BlasterGameState;
+	if (BlasterGameState)
+	{
+		BlasterGameState->UpdatePlayerList();
+	}
 }
 
 // This replicated function is called on the Clients.
@@ -76,4 +97,6 @@ void ABlasterPlayerState::OnRep_Defeats()
 			Controller->SetHUDDefeats(Defeats);
 		}
 	}
+
+	UpdatePlayerList();
 }

@@ -28,10 +28,12 @@ public:
 
 	void ServerTravelToGame();
 
+	TArray<APlayerState> PlayerStates;
+
 private:
 	FTimerHandle LaunchGameTimerHandle;
 	void LaunchGame();
 
-	class UGameInstance* GameInstance;
+	class UBlasterGameInstance* GameInstance;
 	class UMultiplayerSessionsSubsystem* Subsystem;
 };

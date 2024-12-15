@@ -51,6 +51,7 @@ void ABlasterPlayerController::BeginPlay()
 	CastBlasterHUD();
 
 	ServerCheckMatchState();
+
 }
 
 void ABlasterPlayerController::Tick(float DeltaTime)
@@ -103,36 +104,9 @@ void ABlasterPlayerController::ShowReturnToMainMenu()
 	}
 }
 
-void ABlasterPlayerController::BroadCastPlayerToPlayerList(TArray<class ABlasterPlayerState*> MultiBlasterPlayerStates)
-{
-	/*
-	if (!PlayerList) {
-		InitiatePlayerListWidget();
-	}
-
-	if (!PlayerList) return; 
-
-	if (PlayerList) {
-		PlayerList->PlayerScrollBox->ClearChildren();
-
-		for (ABlasterPlayerState* BlasterPlayerState : MultiBlasterPlayerStates) {
-			if (BlasterPlayerState) {
-				FString PlayerName = BlasterPlayerState->GetPlayerName();
-				int32 InitialKillScore = 0;
-				int32 InitialDeathScore = 0;
-
-				PlayerList->AddPlayerInfoWidget(PlayerName, InitialKillScore, InitialDeathScore);
-				UE_LOG(LogTemp, Warning, TEXT("PlayerList Added PlayerInformation %s"), *PlayerName);
-			}
-			else return;
-		}
-	}
-	*/
-}
-
 void ABlasterPlayerController::ShowPlayerList()
 {
-	if (PlayerList && !bReturnToMainMenuOpen) {
+	if (PlayerList && !bReturnToMainMenuOpen && bInProgressState) {
 		bPlayerListTab = !bPlayerListTab;
 		if (bPlayerListTab) {
 			PlayerList->PlayerListSetup();

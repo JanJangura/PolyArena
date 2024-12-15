@@ -29,7 +29,4 @@ public:
 private:
 	UPROPERTY(EditAnywhere, Category = "Widgets")
 	TSubclassOf<UUserWidget> PlayerInfoWidget;
-
-	UPROPERTY()
-	class UPlayerInfo* PlayerInfo;
 };

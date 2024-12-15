@@ -92,6 +92,8 @@ private:
 	FTimerHandle DelayPlayerList;
 
 public:
+	UFUNCTION()
+	void BroadCastPlayerToPlayerList(const TArray<class ABlasterPlayerState*>& MultiBlasterPlayerStates);
 
 	bool PauseUICreated = false;
 
@@ -99,7 +101,7 @@ public:
 
 	void DeclarationOfClasses();
 
-	void UpdatePlayerList(TArray<class ABlasterPlayerState*> NewBlasterPlayerState);
+	void UpdatePlayerList(const TArray<class ABlasterPlayerState*>& NewBlasterPlayerState);
 
 	FORCEINLINE void SetHUDPackage(const FHUDPackage& Package) { HUDPackage = Package; }
 	FORCEINLINE bool RetrievePauseUICreated() { return PauseUICreated; }

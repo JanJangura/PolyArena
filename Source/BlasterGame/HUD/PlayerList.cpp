@@ -25,11 +25,12 @@ void UPlayerList::PlayerListTearDown()
 void UPlayerList::AddPlayerInfoWidget(FString PlayerName, int32 KillScore, int32 DeathScore)
 {
 	if (PlayerInfoWidget && PlayerScrollBox) {
-		PlayerInfo = CreateWidget<UPlayerInfo>(this, PlayerInfoWidget);
+		UPlayerInfo* NewPlayerInfo = CreateWidget<UPlayerInfo>(this, PlayerInfoWidget);
 
-		if (PlayerInfo) {
-			PlayerInfo->SetPlayerInformation(PlayerName, KillScore, DeathScore);
-			PlayerScrollBox->AddChild(PlayerInfo);
+		if (NewPlayerInfo) {
+			NewPlayerInfo->SetPlayerInformation(PlayerName, KillScore, DeathScore);
+			PlayerScrollBox->AddChild(NewPlayerInfo);
 		}
 	}
+
 }

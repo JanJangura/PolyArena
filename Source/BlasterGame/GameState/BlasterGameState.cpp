@@ -3,13 +3,25 @@
 
 #include "BlasterGameState.h"
 #include "Net/UnrealNetwork.h"
-#include "BlasterGame/PlayerState/BlasterPlayerState.h"
 #include "BlasterGame/PlayerController/BlasterPlayerController.h"
 #include "BlasterGame/HUD/BlasterHUD.h"
+#include "GameFramework/PlayerState.h"
+#include "BlasterGame/GameInstance/BlasterGameInstance.h"
+#include "BlasterGame/GameMode/LobbyGameMode.h"
+#include "BlasterGame/GameMode/BlasterGameMode.h"
 
 void ABlasterGameState::BeginPlay()
 {
 	Super::BeginPlay();
+
+	FTimerHandle PlayerListHandle;
+	GetWorld()->GetTimerManager().SetTimer(PlayerListHandle, this, &ABlasterGameState::GetPlayerListFromGameInstance, 1.5f, false);
+
+	BlasterGameMode = Cast<ABlasterGameMode>(GetWorld()->GetAuthGameMode());
+
+	if (BlasterGameMode) {
+		BlasterGameMode->OnPlayerTabUpdate.AddDynamic(this, &ABlasterGameState::PlayerTabIsReady);
+	}
 }
 
 void ABlasterGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -37,25 +49,64 @@ void ABlasterGameState::UpdateTopScore(ABlasterPlayerState* ScoringPlayer)
 	}
 }
 
-void ABlasterGameState::AddPlayerToPlayerList(ABlasterPlayerState* BlasterPlayerState)
+void ABlasterGameState::AddPlayerToPlayerList(APlayerState* NewPlayerState)
 {
-	if (HasAuthority()) {
+	ABlasterPlayerState* BlasterPlayerState = Cast<ABlasterPlayerState>(NewPlayerState);
+	if (BlasterPlayerState) {
 		MultiBlasterPlayerStates.AddUnique(BlasterPlayerState);
 
-		ForceNetUpdate();
-		UE_LOG(LogTemp, Warning, TEXT("BlasterPlayer Added. Current Count: %d"), MultiBlasterPlayerStates.Num());
+		OnPlayerListUpdate.Broadcast(MultiBlasterPlayerStates);
+
+		ABlasterPlayerController* PlayerController = Cast<ABlasterPlayerController>(BlasterPlayerState->GetPlayerController());
+		if (PlayerController) {
+			PlayerController->bInProgressState = true;
+		}
 	}
 }
 
 void ABlasterGameState::UpdatePlayerList()
 {
-	for (int32 i = 0; i < MultiBlasterPlayerStates.Num(); i++) {
-		if (MultiBlasterPlayerStates[i]) {
-			ABlasterPlayerController* BlasterPlayerController = Cast<ABlasterPlayerController>(MultiBlasterPlayerStates[i]->GetPlayerController());
-			if (BlasterPlayerController && IsValid(BlasterPlayerController) && BlasterPlayerController->BlasterHUD) {
-
+	for (ABlasterPlayerState* PS : MultiBlasterPlayerStates) {
+		if (PS) {
+			ABlasterPlayerController* BlasterPlayerController = Cast<ABlasterPlayerController>(PS->GetPlayerController());
+			if (BlasterPlayerController && BlasterPlayerController->BlasterHUD) {
 				BlasterPlayerController->BlasterHUD->UpdatePlayerList(MultiBlasterPlayerStates);
 			}
 		}
 	}
+}
+
+void ABlasterGameState::GetPlayerListFromGameInstance()
+{
+	BlasterGameInstance = BlasterGameInstance == nullptr ? Cast<UBlasterGameInstance>(GetGameInstance()) : BlasterGameInstance;
+	if (!BlasterGameInstance) return;
+
+	if (BlasterGameInstance && BlasterGameInstance->PlayerStates.Num() > 0) {
+		for (APlayerState* PlayerStates : BlasterGameInstance->PlayerStates) {
+			if (IsValid(PlayerStates)) {
+				ABlasterPlayerState* BlasterPlayerState = Cast<ABlasterPlayerState>(PlayerStates);
+				if (BlasterPlayerState) {
+					MultiBlasterPlayerStates.AddUnique(BlasterPlayerState);
+				}
+			}			
+		}
+	}
+}
+
+void ABlasterGameState::PlayerTabIsReady(bool bPlayerTabIsReady)
+{
+	for (ABlasterPlayerState* PS : MultiBlasterPlayerStates) {
+		if (PS) {
+			ABlasterPlayerController* PlayerController = Cast<ABlasterPlayerController>(PS->GetPlayerController());
+			if (PlayerController) {
+				PlayerController->bInProgressState = bPlayerTabIsReady;				
+			}
+
+		}
+	}
+}
+
+void ABlasterGameState::OnRep_MultiBlasterPlayerStates()
+{
+	UpdatePlayerList();
 }
