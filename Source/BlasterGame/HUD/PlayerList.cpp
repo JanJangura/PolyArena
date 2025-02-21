@@ -32,5 +32,4 @@ void UPlayerList::AddPlayerInfoWidget(FString PlayerName, int32 KillScore, int32
 			PlayerScrollBox->AddChild(NewPlayerInfo);
 		}
 	}
-
 }

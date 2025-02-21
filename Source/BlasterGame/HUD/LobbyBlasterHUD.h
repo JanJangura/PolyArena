@@ -23,6 +23,8 @@ private:
 protected:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
+	void ShowPlayerList();
+	class ALobbyBlasterGameState* LobbyBlasterGameState;
 
 public:
 
@@ -39,4 +41,12 @@ public:
 	void HideLaunchGameButton();
 	void ShowLaunchGameButton();
 	void ShowLoadingText();
+
+	// Players List
+	UPROPERTY(EditAnywhere, Category = "Widgets")
+	TSubclassOf<class UUserWidget> LobbyPlayerListClass;
+
+	class ULobbyPlayerList* LobbyPlayerList;
+
+	void UpdatePlayerList(FString PlayerName);
 };

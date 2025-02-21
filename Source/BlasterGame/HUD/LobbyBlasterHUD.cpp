@@ -4,6 +4,8 @@
 #include "LobbyBlasterHUD.h"
 #include "Loading.h"
 #include "BlasterGame/HUD/LaunchGameButton.h"
+#include "BlasterGame/GameState/LobbyBlasterGameState.h"
+#include "LobbyPlayerList.h"
 
 ALobbyBlasterHUD::ALobbyBlasterHUD() {
 	static ConstructorHelpers::FClassFinder<ULaunchGameButton> WidgetClassOne(TEXT("/Game/BP_Shooter_Character/Blueprints/HUD/WBP_LaunchGameButton"));
@@ -23,6 +25,21 @@ void ALobbyBlasterHUD::BeginPlay()
 	Super::BeginPlay();
 
 	AddPauseUI();
+	ShowPlayerList();
+
+	LobbyBlasterGameState = GetWorld()->GetGameState<ALobbyBlasterGameState>();
+
+	if (LobbyBlasterGameState)
+	{
+		// Defer broadcasting to ensure everything is set up
+		GetWorld()->GetTimerManager().SetTimerForNextTick([this]()
+		{
+			if (LobbyBlasterGameState)
+			{
+				LobbyBlasterGameState->GetPlayersFromGameInstance();
+			}
+		});
+	}
 }
 
 void ALobbyBlasterHUD::Tick(float DeltaTime)
@@ -36,6 +53,22 @@ void ALobbyBlasterHUD::Tick(float DeltaTime)
 			UE_LOG(LogTemp, Warning, TEXT("Client Loading is %s"), LoadingText != nullptr ? TEXT("Valid") : TEXT("Invalid"));
 		}
 	}*/
+}
+
+void ALobbyBlasterHUD::ShowPlayerList()
+{
+	if (PlayerController && LobbyPlayerListClass) {
+		LobbyPlayerList = CreateWidget<ULobbyPlayerList>(PlayerController, LobbyPlayerListClass);
+
+		if (LobbyPlayerList) LobbyPlayerList->AddToViewport();
+	}
+}
+
+void ALobbyBlasterHUD::UpdatePlayerList(FString PlayerName)
+{
+	if (LobbyPlayerList) {
+		LobbyPlayerList->AddPlayerInfoWidget(PlayerName);
+	}
 }
 
 void ALobbyBlasterHUD::AddPauseUI()
