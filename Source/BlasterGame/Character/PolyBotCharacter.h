@@ -16,4 +16,8 @@ class BLASTERGAME_API APolyBotCharacter : public ABlasterCharacter
 	
 public:
 	APolyBotCharacter();
+
+	virtual void Tick(float DeltaTime) override;
+
+	virtual void BeginPlay() override;
 };
