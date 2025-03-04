@@ -407,9 +407,11 @@ void ABlasterPlayerController::SetHUDMatchCountdown(float CountdownTime)
 		BlasterHUD->CharacterOverlay &&
 		BlasterHUD->CharacterOverlay->MatchCountdownText;
 
+	bool bHUDWarmupTimer = BlasterHUD && BlasterHUD->Announcement;
+
 	if (bHUDValid) {
-		if (CountdownTime < 0.f) {
-			BlasterHUD->Announcement->WarmupTime->SetText(FText());
+		if (CountdownTime <= 0.f) {
+			if(bHUDWarmupTimer) BlasterHUD->Announcement->WarmupTime->SetText(FText());
 			return;
 		}
 

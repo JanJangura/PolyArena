@@ -36,9 +36,6 @@ void ALobbyGameMode::PostLogin(APlayerController* NewPlayer)
 
 		CurrentNumOfPlayers = GameInstance->PlayerStates.Num();
 		MaxPlayers = Subsystem->DesiredNumPublicConnections;
-		if (CurrentNumOfPlayers == MaxPlayers) {
-			LaunchGame();
-		}
 	}
 }
 
@@ -77,12 +74,12 @@ void ALobbyGameMode::LaunchGame()
 	if (World) {
 		bUseSeamlessTravel = true;
 
-		FString MatchType = Subsystem->DesiredMatchType;
+		FString MapType = Subsystem->DesiredMap;
 		
-		if (MatchType == "FreeForAll") {
-			World->ServerTravel(FString("/Game/Scenes/BlasterMap?listen"));
+		if (MapType == "Reactor Rush") {
+			World->ServerTravel(FString("/Game/Scenes/ReactorRush?listen"));
 		}
-		else {
+		else if(MapType == "EMP Stadium"){
 			World->ServerTravel(FString("/Game/Scenes/BlasterMap?listen"));
 		}
 	}

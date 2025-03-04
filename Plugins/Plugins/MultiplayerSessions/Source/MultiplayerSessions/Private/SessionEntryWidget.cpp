@@ -25,7 +25,7 @@ void USessionEntryWidget::OnJoinSessionButtonClicked()
 	}
 }
 
-void USessionEntryWidget::SessionSetup(FString GetSessionID, FString GetSessionUser, FString GetMaxPlayers, int32 SessionIndex, UMenu* Menu)
+void USessionEntryWidget::SessionSetup(FString GetSessionID, FString GetSessionUser, FString GetMaxPlayers, int32 SessionIndex, FString SelectedMapType, UMenu* Menu)
 {
 	MenuRef = Menu;
 	SessionIndexRef = SessionIndex;
@@ -35,11 +35,12 @@ void USessionEntryWidget::SessionSetup(FString GetSessionID, FString GetSessionU
 	SetVisibility(ESlateVisibility::Visible);
 	this->SetIsFocusable(true);
 
-	if (SessionNameText && JoinSessionButton && SessionMatchType && SessionPlayers) {
+	if (SessionNameText && JoinSessionButton && SessionMatchType && SessionPlayers && SessionMapType) {
 		UE_LOG(LogTemp, Warning, TEXT("WORKING"));
 		SessionNameText->SetText(FText::FromString(GetSessionUser));
 		SessionMatchType->SetText(FText::FromString(GetSessionID));
 		SessionPlayers->SetText(FText::FromString(GetMaxPlayers));
+		SessionMapType->SetText(FText::FromString(SelectedMapType));
 	}
 	else {
 		UE_LOG(LogTemp, Warning, TEXT("NOT WORKING"));

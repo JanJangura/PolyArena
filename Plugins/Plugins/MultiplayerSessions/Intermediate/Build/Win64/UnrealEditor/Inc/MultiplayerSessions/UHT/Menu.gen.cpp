@@ -25,6 +25,7 @@ struct Z_Construct_UFunction_UMenu_GetHostInformation_Statics
 		int32 NumberOfPublicConnections;
 		FString CurrentMatchType;
 		FName TempSessionName;
+		FString CurrentMapType;
 	};
 #if WITH_METADATA
 	static constexpr UECodeGen_Private::FMetaDataPairParam Function_MetaDataParams[] = {
@@ -34,16 +35,19 @@ struct Z_Construct_UFunction_UMenu_GetHostInformation_Statics
 	static const UECodeGen_Private::FIntPropertyParams NewProp_NumberOfPublicConnections;
 	static const UECodeGen_Private::FStrPropertyParams NewProp_CurrentMatchType;
 	static const UECodeGen_Private::FNamePropertyParams NewProp_TempSessionName;
+	static const UECodeGen_Private::FStrPropertyParams NewProp_CurrentMapType;
 	static const UECodeGen_Private::FPropertyParamsBase* const PropPointers[];
 	static const UECodeGen_Private::FFunctionParams FuncParams;
 };
 const UECodeGen_Private::FIntPropertyParams Z_Construct_UFunction_UMenu_GetHostInformation_Statics::NewProp_NumberOfPublicConnections = { "NumberOfPublicConnections", nullptr, (EPropertyFlags)0x0010000000000080, UECodeGen_Private::EPropertyGenFlags::Int, RF_Public|RF_Transient|RF_MarkAsNative, nullptr, nullptr, 1, STRUCT_OFFSET(Menu_eventGetHostInformation_Parms, NumberOfPublicConnections), METADATA_PARAMS(0, nullptr) };
 const UECodeGen_Private::FStrPropertyParams Z_Construct_UFunction_UMenu_GetHostInformation_Statics::NewProp_CurrentMatchType = { "CurrentMatchType", nullptr, (EPropertyFlags)0x0010000000000080, UECodeGen_Private::EPropertyGenFlags::Str, RF_Public|RF_Transient|RF_MarkAsNative, nullptr, nullptr, 1, STRUCT_OFFSET(Menu_eventGetHostInformation_Parms, CurrentMatchType), METADATA_PARAMS(0, nullptr) };
 const UECodeGen_Private::FNamePropertyParams Z_Construct_UFunction_UMenu_GetHostInformation_Statics::NewProp_TempSessionName = { "TempSessionName", nullptr, (EPropertyFlags)0x0010000000000080, UECodeGen_Private::EPropertyGenFlags::Name, RF_Public|RF_Transient|RF_MarkAsNative, nullptr, nullptr, 1, STRUCT_OFFSET(Menu_eventGetHostInformation_Parms, TempSessionName), METADATA_PARAMS(0, nullptr) };
+const UECodeGen_Private::FStrPropertyParams Z_Construct_UFunction_UMenu_GetHostInformation_Statics::NewProp_CurrentMapType = { "CurrentMapType", nullptr, (EPropertyFlags)0x0010000000000080, UECodeGen_Private::EPropertyGenFlags::Str, RF_Public|RF_Transient|RF_MarkAsNative, nullptr, nullptr, 1, STRUCT_OFFSET(Menu_eventGetHostInformation_Parms, CurrentMapType), METADATA_PARAMS(0, nullptr) };
 const UECodeGen_Private::FPropertyParamsBase* const Z_Construct_UFunction_UMenu_GetHostInformation_Statics::PropPointers[] = {
 	(const UECodeGen_Private::FPropertyParamsBase*)&Z_Construct_UFunction_UMenu_GetHostInformation_Statics::NewProp_NumberOfPublicConnections,
 	(const UECodeGen_Private::FPropertyParamsBase*)&Z_Construct_UFunction_UMenu_GetHostInformation_Statics::NewProp_CurrentMatchType,
 	(const UECodeGen_Private::FPropertyParamsBase*)&Z_Construct_UFunction_UMenu_GetHostInformation_Statics::NewProp_TempSessionName,
+	(const UECodeGen_Private::FPropertyParamsBase*)&Z_Construct_UFunction_UMenu_GetHostInformation_Statics::NewProp_CurrentMapType,
 };
 static_assert(UE_ARRAY_COUNT(Z_Construct_UFunction_UMenu_GetHostInformation_Statics::PropPointers) < 2048);
 const UECodeGen_Private::FFunctionParams Z_Construct_UFunction_UMenu_GetHostInformation_Statics::FuncParams = { (UObject*(*)())Z_Construct_UClass_UMenu, nullptr, "GetHostInformation", nullptr, nullptr, Z_Construct_UFunction_UMenu_GetHostInformation_Statics::PropPointers, UE_ARRAY_COUNT(Z_Construct_UFunction_UMenu_GetHostInformation_Statics::PropPointers), sizeof(Z_Construct_UFunction_UMenu_GetHostInformation_Statics::Menu_eventGetHostInformation_Parms), RF_Public|RF_Transient|RF_MarkAsNative, (EFunctionFlags)0x04020401, 0, 0, METADATA_PARAMS(UE_ARRAY_COUNT(Z_Construct_UFunction_UMenu_GetHostInformation_Statics::Function_MetaDataParams), Z_Construct_UFunction_UMenu_GetHostInformation_Statics::Function_MetaDataParams) };
@@ -62,9 +66,10 @@ DEFINE_FUNCTION(UMenu::execGetHostInformation)
 	P_GET_PROPERTY(FIntProperty,Z_Param_NumberOfPublicConnections);
 	P_GET_PROPERTY(FStrProperty,Z_Param_CurrentMatchType);
 	P_GET_PROPERTY(FNameProperty,Z_Param_TempSessionName);
+	P_GET_PROPERTY(FStrProperty,Z_Param_CurrentMapType);
 	P_FINISH;
 	P_NATIVE_BEGIN;
-	P_THIS->GetHostInformation(Z_Param_NumberOfPublicConnections,Z_Param_CurrentMatchType,Z_Param_TempSessionName);
+	P_THIS->GetHostInformation(Z_Param_NumberOfPublicConnections,Z_Param_CurrentMatchType,Z_Param_TempSessionName,Z_Param_CurrentMapType);
 	P_NATIVE_END;
 }
 // End Class UMenu Function GetHostInformation
@@ -459,6 +464,10 @@ struct Z_Construct_UClass_UMenu_Statics
 		{ "Category", "Menu" },
 		{ "ModuleRelativePath", "Public/Menu.h" },
 	};
+	static constexpr UECodeGen_Private::FMetaDataPairParam NewProp_GetMapType_MetaData[] = {
+		{ "Category", "Menu" },
+		{ "ModuleRelativePath", "Public/Menu.h" },
+	};
 	static constexpr UECodeGen_Private::FMetaDataPairParam NewProp_bSessionsFound_MetaData[] = {
 		{ "Category", "Menu" },
 		{ "ModuleRelativePath", "Public/Menu.h" },
@@ -474,12 +483,14 @@ struct Z_Construct_UClass_UMenu_Statics
 	static const UECodeGen_Private::FArrayPropertyParams NewProp_GetSessionUser;
 	static const UECodeGen_Private::FStrPropertyParams NewProp_CurrentMaxPlayers_Inner;
 	static const UECodeGen_Private::FArrayPropertyParams NewProp_CurrentMaxPlayers;
+	static const UECodeGen_Private::FStrPropertyParams NewProp_GetMapType_Inner;
+	static const UECodeGen_Private::FArrayPropertyParams NewProp_GetMapType;
 	static void NewProp_bSessionsFound_SetBit(void* Obj);
 	static const UECodeGen_Private::FBoolPropertyParams NewProp_bSessionsFound;
 	static const UECodeGen_Private::FPropertyParamsBase* const PropPointers[];
 	static UObject* (*const DependentSingletons[])();
 	static constexpr FClassFunctionLinkInfo FuncInfo[] = {
-		{ &Z_Construct_UFunction_UMenu_GetHostInformation, "GetHostInformation" }, // 1857738323
+		{ &Z_Construct_UFunction_UMenu_GetHostInformation, "GetHostInformation" }, // 4006212955
 		{ &Z_Construct_UFunction_UMenu_HostButtonClicked, "HostButtonClicked" }, // 3776737500
 		{ &Z_Construct_UFunction_UMenu_JoinButtonClicked, "JoinButtonClicked" }, // 3398739101
 		{ &Z_Construct_UFunction_UMenu_MenuSetup, "MenuSetup" }, // 1364303894
@@ -505,6 +516,8 @@ const UECodeGen_Private::FStrPropertyParams Z_Construct_UClass_UMenu_Statics::Ne
 const UECodeGen_Private::FArrayPropertyParams Z_Construct_UClass_UMenu_Statics::NewProp_GetSessionUser = { "GetSessionUser", nullptr, (EPropertyFlags)0x0010000000000014, UECodeGen_Private::EPropertyGenFlags::Array, RF_Public|RF_Transient|RF_MarkAsNative, nullptr, nullptr, 1, STRUCT_OFFSET(UMenu, GetSessionUser), EArrayPropertyFlags::None, METADATA_PARAMS(UE_ARRAY_COUNT(NewProp_GetSessionUser_MetaData), NewProp_GetSessionUser_MetaData) };
 const UECodeGen_Private::FStrPropertyParams Z_Construct_UClass_UMenu_Statics::NewProp_CurrentMaxPlayers_Inner = { "CurrentMaxPlayers", nullptr, (EPropertyFlags)0x0000000000000000, UECodeGen_Private::EPropertyGenFlags::Str, RF_Public|RF_Transient|RF_MarkAsNative, nullptr, nullptr, 1, 0, METADATA_PARAMS(0, nullptr) };
 const UECodeGen_Private::FArrayPropertyParams Z_Construct_UClass_UMenu_Statics::NewProp_CurrentMaxPlayers = { "CurrentMaxPlayers", nullptr, (EPropertyFlags)0x0010000000000014, UECodeGen_Private::EPropertyGenFlags::Array, RF_Public|RF_Transient|RF_MarkAsNative, nullptr, nullptr, 1, STRUCT_OFFSET(UMenu, CurrentMaxPlayers), EArrayPropertyFlags::None, METADATA_PARAMS(UE_ARRAY_COUNT(NewProp_CurrentMaxPlayers_MetaData), NewProp_CurrentMaxPlayers_MetaData) };
+const UECodeGen_Private::FStrPropertyParams Z_Construct_UClass_UMenu_Statics::NewProp_GetMapType_Inner = { "GetMapType", nullptr, (EPropertyFlags)0x0000000000000000, UECodeGen_Private::EPropertyGenFlags::Str, RF_Public|RF_Transient|RF_MarkAsNative, nullptr, nullptr, 1, 0, METADATA_PARAMS(0, nullptr) };
+const UECodeGen_Private::FArrayPropertyParams Z_Construct_UClass_UMenu_Statics::NewProp_GetMapType = { "GetMapType", nullptr, (EPropertyFlags)0x0010000000000014, UECodeGen_Private::EPropertyGenFlags::Array, RF_Public|RF_Transient|RF_MarkAsNative, nullptr, nullptr, 1, STRUCT_OFFSET(UMenu, GetMapType), EArrayPropertyFlags::None, METADATA_PARAMS(UE_ARRAY_COUNT(NewProp_GetMapType_MetaData), NewProp_GetMapType_MetaData) };
 void Z_Construct_UClass_UMenu_Statics::NewProp_bSessionsFound_SetBit(void* Obj)
 {
 	((UMenu*)Obj)->bSessionsFound = 1;
@@ -521,6 +534,8 @@ const UECodeGen_Private::FPropertyParamsBase* const Z_Construct_UClass_UMenu_Sta
 	(const UECodeGen_Private::FPropertyParamsBase*)&Z_Construct_UClass_UMenu_Statics::NewProp_GetSessionUser,
 	(const UECodeGen_Private::FPropertyParamsBase*)&Z_Construct_UClass_UMenu_Statics::NewProp_CurrentMaxPlayers_Inner,
 	(const UECodeGen_Private::FPropertyParamsBase*)&Z_Construct_UClass_UMenu_Statics::NewProp_CurrentMaxPlayers,
+	(const UECodeGen_Private::FPropertyParamsBase*)&Z_Construct_UClass_UMenu_Statics::NewProp_GetMapType_Inner,
+	(const UECodeGen_Private::FPropertyParamsBase*)&Z_Construct_UClass_UMenu_Statics::NewProp_GetMapType,
 	(const UECodeGen_Private::FPropertyParamsBase*)&Z_Construct_UClass_UMenu_Statics::NewProp_bSessionsFound,
 };
 static_assert(UE_ARRAY_COUNT(Z_Construct_UClass_UMenu_Statics::PropPointers) < 2048);
@@ -565,10 +580,10 @@ UMenu::~UMenu() {}
 struct Z_CompiledInDeferFile_FID_MultiplayerCourse_BlasterGame_Plugins_Plugins_MultiplayerSessions_Source_MultiplayerSessions_Public_Menu_h_Statics
 {
 	static constexpr FClassRegisterCompiledInInfo ClassInfo[] = {
-		{ Z_Construct_UClass_UMenu, UMenu::StaticClass, TEXT("UMenu"), &Z_Registration_Info_UClass_UMenu, CONSTRUCT_RELOAD_VERSION_INFO(FClassReloadVersionInfo, sizeof(UMenu), 1282498050U) },
+		{ Z_Construct_UClass_UMenu, UMenu::StaticClass, TEXT("UMenu"), &Z_Registration_Info_UClass_UMenu, CONSTRUCT_RELOAD_VERSION_INFO(FClassReloadVersionInfo, sizeof(UMenu), 146692488U) },
 	};
 };
-static FRegisterCompiledInInfo Z_CompiledInDeferFile_FID_MultiplayerCourse_BlasterGame_Plugins_Plugins_MultiplayerSessions_Source_MultiplayerSessions_Public_Menu_h_847447199(TEXT("/Script/MultiplayerSessions"),
+static FRegisterCompiledInInfo Z_CompiledInDeferFile_FID_MultiplayerCourse_BlasterGame_Plugins_Plugins_MultiplayerSessions_Source_MultiplayerSessions_Public_Menu_h_3774647433(TEXT("/Script/MultiplayerSessions"),
 	Z_CompiledInDeferFile_FID_MultiplayerCourse_BlasterGame_Plugins_Plugins_MultiplayerSessions_Source_MultiplayerSessions_Public_Menu_h_Statics::ClassInfo, UE_ARRAY_COUNT(Z_CompiledInDeferFile_FID_MultiplayerCourse_BlasterGame_Plugins_Plugins_MultiplayerSessions_Source_MultiplayerSessions_Public_Menu_h_Statics::ClassInfo),
 	nullptr, 0,
 	nullptr, 0);

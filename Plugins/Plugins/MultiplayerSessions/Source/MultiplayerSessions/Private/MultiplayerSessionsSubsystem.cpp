@@ -24,11 +24,12 @@ UMultiplayerSessionsSubsystem::UMultiplayerSessionsSubsystem():
 /////////////////////////////////////////////////////
 ///////////////* MENU FUNCTIONALITIES */////////////
 /////////////////////////////////////////////////////
-void UMultiplayerSessionsSubsystem::CreateSession(int32 NumPublicConnections, FString MatchType, FName SessionName)
+void UMultiplayerSessionsSubsystem::CreateSession(int32 NumPublicConnections, FString MatchType, FName SessionName, FString MapType)
 {
 	DesiredNumPublicConnections = NumPublicConnections;
 	DesiredMatchType = MatchType;
 	DesiredSessionName = SessionName;
+	DesiredMap = MapType;
 
 	if (!SessionInterface.IsValid()) {
 		return;
@@ -40,6 +41,7 @@ void UMultiplayerSessionsSubsystem::CreateSession(int32 NumPublicConnections, FS
 		LastNumPublicConnections = NumPublicConnections;
 		LastMatchType = MatchType;
 		LastSessionName = SessionName;
+		LastMapType = MapType;
 
 		DestroySession();
 	}
@@ -59,6 +61,7 @@ void UMultiplayerSessionsSubsystem::CreateSession(int32 NumPublicConnections, FS
 	LastSessionSettings->Set(FName("MatchType"), MatchType, EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
 	LastSessionSettings->Set(FName("SessionName"), SessionName.ToString(), EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
 	LastSessionSettings->Set(FName("MaxPlayers"), FString::FromInt(NumPublicConnections), EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
+	LastSessionSettings->Set(FName("MapType"), MapType, EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
 
 	const ULocalPlayer* LocalPlayer = GetWorld()->GetFirstLocalPlayerFromController();
 	
@@ -193,7 +196,7 @@ void UMultiplayerSessionsSubsystem::OnDestroySessionComplete(FName SessionName, 
 	}
 	if (bWasSuccessful && bCreateSessionOnDestroy) {
 		bCreateSessionOnDestroy = false;
-		CreateSession(LastNumPublicConnections, LastMatchType, LastSessionName);
+		CreateSession(LastNumPublicConnections, LastMatchType, LastSessionName, LastMapType);
 	}
 	MultiplayerOnDestroySessionComplete.Broadcast(bWasSuccessful);
 }

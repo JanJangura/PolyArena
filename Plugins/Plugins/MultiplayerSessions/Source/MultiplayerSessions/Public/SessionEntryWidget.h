@@ -27,6 +27,9 @@ public:
 	class UTextBlock* SessionPlayers;
 
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
+	class UTextBlock* SessionMapType;
+
+	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
 	class UButton* JoinSessionButton;
 
 	// Store the session data to use when the join button is clicked
@@ -41,7 +44,7 @@ public:
 	FString GetSessionName;
 
 	UFUNCTION(BlueprintCallable)
-	void SessionSetup(FString GetSessionID, FString GetSessionUser, FString GetMaxPlayers, int32 SessionIndex, class UMenu* Menu);
+	void SessionSetup(FString GetSessionID, FString GetSessionUser, FString GetMaxPlayers, int32 SessionIndex, FString SelectedMapType, class UMenu* Menu);
 
 	UPROPERTY(BlueprintReadOnly)
 	UMenu* MenuRef;

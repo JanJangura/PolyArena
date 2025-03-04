@@ -57,6 +57,7 @@ struct Z_Construct_UFunction_USessionEntryWidget_SessionSetup_Statics
 		FString GetSessionUser;
 		FString GetMaxPlayers;
 		int32 SessionIndex;
+		FString GetMapType;
 		UMenu* Menu;
 	};
 #if WITH_METADATA
@@ -71,6 +72,7 @@ struct Z_Construct_UFunction_USessionEntryWidget_SessionSetup_Statics
 	static const UECodeGen_Private::FStrPropertyParams NewProp_GetSessionUser;
 	static const UECodeGen_Private::FStrPropertyParams NewProp_GetMaxPlayers;
 	static const UECodeGen_Private::FIntPropertyParams NewProp_SessionIndex;
+	static const UECodeGen_Private::FStrPropertyParams NewProp_GetMapType;
 	static const UECodeGen_Private::FObjectPropertyParams NewProp_Menu;
 	static const UECodeGen_Private::FPropertyParamsBase* const PropPointers[];
 	static const UECodeGen_Private::FFunctionParams FuncParams;
@@ -79,12 +81,14 @@ const UECodeGen_Private::FStrPropertyParams Z_Construct_UFunction_USessionEntryW
 const UECodeGen_Private::FStrPropertyParams Z_Construct_UFunction_USessionEntryWidget_SessionSetup_Statics::NewProp_GetSessionUser = { "GetSessionUser", nullptr, (EPropertyFlags)0x0010000000000080, UECodeGen_Private::EPropertyGenFlags::Str, RF_Public|RF_Transient|RF_MarkAsNative, nullptr, nullptr, 1, STRUCT_OFFSET(SessionEntryWidget_eventSessionSetup_Parms, GetSessionUser), METADATA_PARAMS(0, nullptr) };
 const UECodeGen_Private::FStrPropertyParams Z_Construct_UFunction_USessionEntryWidget_SessionSetup_Statics::NewProp_GetMaxPlayers = { "GetMaxPlayers", nullptr, (EPropertyFlags)0x0010000000000080, UECodeGen_Private::EPropertyGenFlags::Str, RF_Public|RF_Transient|RF_MarkAsNative, nullptr, nullptr, 1, STRUCT_OFFSET(SessionEntryWidget_eventSessionSetup_Parms, GetMaxPlayers), METADATA_PARAMS(0, nullptr) };
 const UECodeGen_Private::FIntPropertyParams Z_Construct_UFunction_USessionEntryWidget_SessionSetup_Statics::NewProp_SessionIndex = { "SessionIndex", nullptr, (EPropertyFlags)0x0010000000000080, UECodeGen_Private::EPropertyGenFlags::Int, RF_Public|RF_Transient|RF_MarkAsNative, nullptr, nullptr, 1, STRUCT_OFFSET(SessionEntryWidget_eventSessionSetup_Parms, SessionIndex), METADATA_PARAMS(0, nullptr) };
+const UECodeGen_Private::FStrPropertyParams Z_Construct_UFunction_USessionEntryWidget_SessionSetup_Statics::NewProp_GetMapType = { "GetMapType", nullptr, (EPropertyFlags)0x0010000000000080, UECodeGen_Private::EPropertyGenFlags::Str, RF_Public|RF_Transient|RF_MarkAsNative, nullptr, nullptr, 1, STRUCT_OFFSET(SessionEntryWidget_eventSessionSetup_Parms, GetMapType), METADATA_PARAMS(0, nullptr) };
 const UECodeGen_Private::FObjectPropertyParams Z_Construct_UFunction_USessionEntryWidget_SessionSetup_Statics::NewProp_Menu = { "Menu", nullptr, (EPropertyFlags)0x0010000000080080, UECodeGen_Private::EPropertyGenFlags::Object, RF_Public|RF_Transient|RF_MarkAsNative, nullptr, nullptr, 1, STRUCT_OFFSET(SessionEntryWidget_eventSessionSetup_Parms, Menu), Z_Construct_UClass_UMenu_NoRegister, METADATA_PARAMS(UE_ARRAY_COUNT(NewProp_Menu_MetaData), NewProp_Menu_MetaData) };
 const UECodeGen_Private::FPropertyParamsBase* const Z_Construct_UFunction_USessionEntryWidget_SessionSetup_Statics::PropPointers[] = {
 	(const UECodeGen_Private::FPropertyParamsBase*)&Z_Construct_UFunction_USessionEntryWidget_SessionSetup_Statics::NewProp_GetSessionID,
 	(const UECodeGen_Private::FPropertyParamsBase*)&Z_Construct_UFunction_USessionEntryWidget_SessionSetup_Statics::NewProp_GetSessionUser,
 	(const UECodeGen_Private::FPropertyParamsBase*)&Z_Construct_UFunction_USessionEntryWidget_SessionSetup_Statics::NewProp_GetMaxPlayers,
 	(const UECodeGen_Private::FPropertyParamsBase*)&Z_Construct_UFunction_USessionEntryWidget_SessionSetup_Statics::NewProp_SessionIndex,
+	(const UECodeGen_Private::FPropertyParamsBase*)&Z_Construct_UFunction_USessionEntryWidget_SessionSetup_Statics::NewProp_GetMapType,
 	(const UECodeGen_Private::FPropertyParamsBase*)&Z_Construct_UFunction_USessionEntryWidget_SessionSetup_Statics::NewProp_Menu,
 };
 static_assert(UE_ARRAY_COUNT(Z_Construct_UFunction_USessionEntryWidget_SessionSetup_Statics::PropPointers) < 2048);
@@ -105,10 +109,11 @@ DEFINE_FUNCTION(USessionEntryWidget::execSessionSetup)
 	P_GET_PROPERTY(FStrProperty,Z_Param_GetSessionUser);
 	P_GET_PROPERTY(FStrProperty,Z_Param_GetMaxPlayers);
 	P_GET_PROPERTY(FIntProperty,Z_Param_SessionIndex);
+	P_GET_PROPERTY(FStrProperty,Z_Param_GetMapType);
 	P_GET_OBJECT(UMenu,Z_Param_Menu);
 	P_FINISH;
 	P_NATIVE_BEGIN;
-	P_THIS->SessionSetup(Z_Param_GetSessionID,Z_Param_GetSessionUser,Z_Param_GetMaxPlayers,Z_Param_SessionIndex,Z_Param_Menu);
+	P_THIS->SessionSetup(Z_Param_GetSessionID,Z_Param_GetSessionUser,Z_Param_GetMaxPlayers,Z_Param_SessionIndex,Z_Param_GetMapType,Z_Param_Menu);
 	P_NATIVE_END;
 }
 // End Class USessionEntryWidget Function SessionSetup
@@ -156,6 +161,12 @@ struct Z_Construct_UClass_USessionEntryWidget_Statics
 		{ "EditInline", "true" },
 		{ "ModuleRelativePath", "Public/SessionEntryWidget.h" },
 	};
+	static constexpr UECodeGen_Private::FMetaDataPairParam NewProp_SessionMapType_MetaData[] = {
+		{ "BindWidget", "" },
+		{ "Category", "SessionEntryWidget" },
+		{ "EditInline", "true" },
+		{ "ModuleRelativePath", "Public/SessionEntryWidget.h" },
+	};
 	static constexpr UECodeGen_Private::FMetaDataPairParam NewProp_JoinSessionButton_MetaData[] = {
 		{ "BindWidget", "" },
 		{ "Category", "SessionEntryWidget" },
@@ -175,6 +186,7 @@ struct Z_Construct_UClass_USessionEntryWidget_Statics
 	static const UECodeGen_Private::FObjectPropertyParams NewProp_SessionNameText;
 	static const UECodeGen_Private::FObjectPropertyParams NewProp_SessionMatchType;
 	static const UECodeGen_Private::FObjectPropertyParams NewProp_SessionPlayers;
+	static const UECodeGen_Private::FObjectPropertyParams NewProp_SessionMapType;
 	static const UECodeGen_Private::FObjectPropertyParams NewProp_JoinSessionButton;
 	static const UECodeGen_Private::FStrPropertyParams NewProp_GetSessionName;
 	static const UECodeGen_Private::FObjectPropertyParams NewProp_MenuRef;
@@ -182,7 +194,7 @@ struct Z_Construct_UClass_USessionEntryWidget_Statics
 	static UObject* (*const DependentSingletons[])();
 	static constexpr FClassFunctionLinkInfo FuncInfo[] = {
 		{ &Z_Construct_UFunction_USessionEntryWidget_OnJoinSessionButtonClicked, "OnJoinSessionButtonClicked" }, // 2724374371
-		{ &Z_Construct_UFunction_USessionEntryWidget_SessionSetup, "SessionSetup" }, // 2840911029
+		{ &Z_Construct_UFunction_USessionEntryWidget_SessionSetup, "SessionSetup" }, // 400289229
 	};
 	static_assert(UE_ARRAY_COUNT(FuncInfo) < 2048);
 	static constexpr FCppClassTypeInfoStatic StaticCppClassTypeInfo = {
@@ -193,6 +205,7 @@ struct Z_Construct_UClass_USessionEntryWidget_Statics
 const UECodeGen_Private::FObjectPropertyParams Z_Construct_UClass_USessionEntryWidget_Statics::NewProp_SessionNameText = { "SessionNameText", nullptr, (EPropertyFlags)0x001000000008000c, UECodeGen_Private::EPropertyGenFlags::Object, RF_Public|RF_Transient|RF_MarkAsNative, nullptr, nullptr, 1, STRUCT_OFFSET(USessionEntryWidget, SessionNameText), Z_Construct_UClass_UTextBlock_NoRegister, METADATA_PARAMS(UE_ARRAY_COUNT(NewProp_SessionNameText_MetaData), NewProp_SessionNameText_MetaData) };
 const UECodeGen_Private::FObjectPropertyParams Z_Construct_UClass_USessionEntryWidget_Statics::NewProp_SessionMatchType = { "SessionMatchType", nullptr, (EPropertyFlags)0x001000000008000c, UECodeGen_Private::EPropertyGenFlags::Object, RF_Public|RF_Transient|RF_MarkAsNative, nullptr, nullptr, 1, STRUCT_OFFSET(USessionEntryWidget, SessionMatchType), Z_Construct_UClass_UTextBlock_NoRegister, METADATA_PARAMS(UE_ARRAY_COUNT(NewProp_SessionMatchType_MetaData), NewProp_SessionMatchType_MetaData) };
 const UECodeGen_Private::FObjectPropertyParams Z_Construct_UClass_USessionEntryWidget_Statics::NewProp_SessionPlayers = { "SessionPlayers", nullptr, (EPropertyFlags)0x001000000008000c, UECodeGen_Private::EPropertyGenFlags::Object, RF_Public|RF_Transient|RF_MarkAsNative, nullptr, nullptr, 1, STRUCT_OFFSET(USessionEntryWidget, SessionPlayers), Z_Construct_UClass_UTextBlock_NoRegister, METADATA_PARAMS(UE_ARRAY_COUNT(NewProp_SessionPlayers_MetaData), NewProp_SessionPlayers_MetaData) };
+const UECodeGen_Private::FObjectPropertyParams Z_Construct_UClass_USessionEntryWidget_Statics::NewProp_SessionMapType = { "SessionMapType", nullptr, (EPropertyFlags)0x001000000008000c, UECodeGen_Private::EPropertyGenFlags::Object, RF_Public|RF_Transient|RF_MarkAsNative, nullptr, nullptr, 1, STRUCT_OFFSET(USessionEntryWidget, SessionMapType), Z_Construct_UClass_UTextBlock_NoRegister, METADATA_PARAMS(UE_ARRAY_COUNT(NewProp_SessionMapType_MetaData), NewProp_SessionMapType_MetaData) };
 const UECodeGen_Private::FObjectPropertyParams Z_Construct_UClass_USessionEntryWidget_Statics::NewProp_JoinSessionButton = { "JoinSessionButton", nullptr, (EPropertyFlags)0x001000000008000c, UECodeGen_Private::EPropertyGenFlags::Object, RF_Public|RF_Transient|RF_MarkAsNative, nullptr, nullptr, 1, STRUCT_OFFSET(USessionEntryWidget, JoinSessionButton), Z_Construct_UClass_UButton_NoRegister, METADATA_PARAMS(UE_ARRAY_COUNT(NewProp_JoinSessionButton_MetaData), NewProp_JoinSessionButton_MetaData) };
 const UECodeGen_Private::FStrPropertyParams Z_Construct_UClass_USessionEntryWidget_Statics::NewProp_GetSessionName = { "GetSessionName", nullptr, (EPropertyFlags)0x0010000000000014, UECodeGen_Private::EPropertyGenFlags::Str, RF_Public|RF_Transient|RF_MarkAsNative, nullptr, nullptr, 1, STRUCT_OFFSET(USessionEntryWidget, GetSessionName), METADATA_PARAMS(UE_ARRAY_COUNT(NewProp_GetSessionName_MetaData), NewProp_GetSessionName_MetaData) };
 const UECodeGen_Private::FObjectPropertyParams Z_Construct_UClass_USessionEntryWidget_Statics::NewProp_MenuRef = { "MenuRef", nullptr, (EPropertyFlags)0x001000000008001c, UECodeGen_Private::EPropertyGenFlags::Object, RF_Public|RF_Transient|RF_MarkAsNative, nullptr, nullptr, 1, STRUCT_OFFSET(USessionEntryWidget, MenuRef), Z_Construct_UClass_UMenu_NoRegister, METADATA_PARAMS(UE_ARRAY_COUNT(NewProp_MenuRef_MetaData), NewProp_MenuRef_MetaData) };
@@ -200,6 +213,7 @@ const UECodeGen_Private::FPropertyParamsBase* const Z_Construct_UClass_USessionE
 	(const UECodeGen_Private::FPropertyParamsBase*)&Z_Construct_UClass_USessionEntryWidget_Statics::NewProp_SessionNameText,
 	(const UECodeGen_Private::FPropertyParamsBase*)&Z_Construct_UClass_USessionEntryWidget_Statics::NewProp_SessionMatchType,
 	(const UECodeGen_Private::FPropertyParamsBase*)&Z_Construct_UClass_USessionEntryWidget_Statics::NewProp_SessionPlayers,
+	(const UECodeGen_Private::FPropertyParamsBase*)&Z_Construct_UClass_USessionEntryWidget_Statics::NewProp_SessionMapType,
 	(const UECodeGen_Private::FPropertyParamsBase*)&Z_Construct_UClass_USessionEntryWidget_Statics::NewProp_JoinSessionButton,
 	(const UECodeGen_Private::FPropertyParamsBase*)&Z_Construct_UClass_USessionEntryWidget_Statics::NewProp_GetSessionName,
 	(const UECodeGen_Private::FPropertyParamsBase*)&Z_Construct_UClass_USessionEntryWidget_Statics::NewProp_MenuRef,
@@ -246,10 +260,10 @@ USessionEntryWidget::~USessionEntryWidget() {}
 struct Z_CompiledInDeferFile_FID_MultiplayerCourse_BlasterGame_Plugins_Plugins_MultiplayerSessions_Source_MultiplayerSessions_Public_SessionEntryWidget_h_Statics
 {
 	static constexpr FClassRegisterCompiledInInfo ClassInfo[] = {
-		{ Z_Construct_UClass_USessionEntryWidget, USessionEntryWidget::StaticClass, TEXT("USessionEntryWidget"), &Z_Registration_Info_UClass_USessionEntryWidget, CONSTRUCT_RELOAD_VERSION_INFO(FClassReloadVersionInfo, sizeof(USessionEntryWidget), 3713812251U) },
+		{ Z_Construct_UClass_USessionEntryWidget, USessionEntryWidget::StaticClass, TEXT("USessionEntryWidget"), &Z_Registration_Info_UClass_USessionEntryWidget, CONSTRUCT_RELOAD_VERSION_INFO(FClassReloadVersionInfo, sizeof(USessionEntryWidget), 1663534026U) },
 	};
 };
-static FRegisterCompiledInInfo Z_CompiledInDeferFile_FID_MultiplayerCourse_BlasterGame_Plugins_Plugins_MultiplayerSessions_Source_MultiplayerSessions_Public_SessionEntryWidget_h_2378152089(TEXT("/Script/MultiplayerSessions"),
+static FRegisterCompiledInInfo Z_CompiledInDeferFile_FID_MultiplayerCourse_BlasterGame_Plugins_Plugins_MultiplayerSessions_Source_MultiplayerSessions_Public_SessionEntryWidget_h_4286438176(TEXT("/Script/MultiplayerSessions"),
 	Z_CompiledInDeferFile_FID_MultiplayerCourse_BlasterGame_Plugins_Plugins_MultiplayerSessions_Source_MultiplayerSessions_Public_SessionEntryWidget_h_Statics::ClassInfo, UE_ARRAY_COUNT(Z_CompiledInDeferFile_FID_MultiplayerCourse_BlasterGame_Plugins_Plugins_MultiplayerSessions_Source_MultiplayerSessions_Public_SessionEntryWidget_h_Statics::ClassInfo),
 	nullptr, 0,
 	nullptr, 0);

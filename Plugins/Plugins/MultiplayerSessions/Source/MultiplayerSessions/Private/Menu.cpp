@@ -131,11 +131,13 @@ void UMenu::OnFindSessions(const TArray<FOnlineSessionSearchResult>& SessionResu
 		GetSessionUser.SetNum(CurrentSessionLength);
 		CurrentMaxPlayers.SetNum(CurrentSessionLength);
 		CurrentSessionResults.SetNum(CurrentSessionLength);
+		GetMapType.SetNum(CurrentSessionLength);
 
 		for (int32 i = 0; i < CurrentSessionLength; i++) {
 			SessionResults[i].Session.SessionSettings.Get(FName("MatchType"), GetSessionID[i]);
 			SessionResults[i].Session.SessionSettings.Get(FName("SessionName"), GetSessionUser[i]);
 			SessionResults[i].Session.SessionSettings.Get(FName("MaxPlayers"), CurrentMaxPlayers[i]);
+			SessionResults[i].Session.SessionSettings.Get(FName("MapType"), GetMapType[i]);
 			CurrentSessionResults[i] = SessionResults[i];
 		}
 	}
@@ -219,7 +221,7 @@ void UMenu::HostButtonClicked()
 {
 	Host_Button->SetIsEnabled(false);
 	if (MultiplayerSessionsSubsystem) { // This checks if the Multiplayer Subsession is there.	
-		MultiplayerSessionsSubsystem->CreateSession(NumPublicConnections, MatchType, SessionName);
+		MultiplayerSessionsSubsystem->CreateSession(NumPublicConnections, MatchType, SessionName, MapType);
 	}
 }
 
@@ -228,11 +230,12 @@ void UMenu::JoinButtonClicked()
 	
 }
 
-void UMenu::GetHostInformation(int32 NumberOfPublicConnections, FString CurrentMatchType, FName TempSessionName)
+void UMenu::GetHostInformation(int32 NumberOfPublicConnections, FString CurrentMatchType, FName TempSessionName, FString CurrentMapType)
 {
 	NumPublicConnections = NumberOfPublicConnections;
 	MatchType = CurrentMatchType;
 	SessionName = TempSessionName;
+	MapType = CurrentMapType;
 }
 
 void UMenu::MenuTearDown() 

@@ -83,7 +83,7 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaTime)
 
 	// Interp this so there's no Jerking in our lean. Interp our current value of our lean variable to our target and we need to pass in DeltaTime and also a speed. 
 	const float Interp = FMath::FInterpTo(Lean, Target, DeltaTime, 6.f);	
-	Lean = FMath::Clamp(Interp, -90.f, 90.f);	// Setting our Lean Value, we'll clamp this in between 90 and -90 degrees.
+	Lean = FMath::Clamp(Interp, -70.f, 70.f);	// Setting our Lean Value, we'll clamp this in between 70 and -70 degrees.
 
 	// We didn't need to Replicate this because the function "GetBaseAimRotation()" is set on our clients and on the server, and we're using values that are already replicated.
 
