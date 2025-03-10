@@ -236,8 +236,25 @@ void ABlasterCharacter::MulticastElim_Implementation(bool bPlayerLeftGame)
 		BlasterPlayerController->SetHUDWeaponAmmo(0);
 	}
 
+	if (GetMesh() && GetCapsuleComponent()) {
+		GetMesh()->SetSimulatePhysics(true);
+		GetMesh()->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
+		if (DeathSound) {
+			UGameplayStatics::PlaySoundAtLocation(this, DeathSound, GetActorLocation());
+		}
+
+		// Add Impulse
+		FVector Impulse = FVector(FMath::RandRange(-400.0f, 400.0f),
+			FMath::RandRange(-400.0f, 400.0f),
+			FMath::RandRange(- 400.0f, 400.0f));
+
+		GetMesh()->AddImpulse(Impulse, NAME_None, true);
+
+		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);	// Disables the Capsule Component
+	}
+
 	bElimmed = true;
-	PlayElimMontage();
+	//PlayElimMontage();
 
 	// Disable Character Movement
 	GetCharacterMovement()->DisableMovement();	// Disables Movement
@@ -246,8 +263,8 @@ void ABlasterCharacter::MulticastElim_Implementation(bool bPlayerLeftGame)
 		bDisableGameplay = true;	// Disable Input stops the character from Shooting the Gun.
 	}
 	// Disable Collision
-	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);	// Disables the Capsule Component
-	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);	// Disables the Mesh Component
+	//GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);	// Disables the Capsule Component
+	//GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);	// Disables the Mesh Component
 
 	// Here is our Timer that we would like to wait, clarified by ElimDelay, and then we call the function within it "ElimTimerFinished" so in there we can Respawn. 
 	GetWorldTimerManager().SetTimer(
@@ -380,7 +397,14 @@ void ABlasterCharacter::Jump()
 	if (bDisableGameplay) return;
 
 	Super::Jump();
+	if (JumpSoundEffects.Num() > 0 && GetCharacterMovement()->IsMovingOnGround()) {
+		int32 RandomSoundEffect = FMath::RandRange(0, JumpSoundEffects.Num() - 1);
+		USoundBase* SelectedJumpSound = JumpSoundEffects[RandomSoundEffect];
 
+		if (SelectedJumpSound) {
+			UGameplayStatics::PlaySoundAtLocation(this, SelectedJumpSound, GetActorLocation());
+		}
+	}
 }
 
 // When the E key is pressed, EquipButtonPressed() function will only call the EquipWeapon() function if we have authority. 
@@ -605,7 +629,10 @@ void ABlasterCharacter::PlayHitReactMontage()
 
 	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
 
-	if (AnimInstance && HitReactMontage) {
+	if (AnimInstance && HitReactMontage && HitReactSound && HitReactSoundTwo) {
+		USoundBase* SelectSound = FMath::RandBool() ? HitReactSound : HitReactSoundTwo;
+		if(SelectSound) UGameplayStatics::PlaySoundAtLocation(this, SelectSound, GetActorLocation()); // Play Selected Sound
+
 		AnimInstance->Montage_Play(HitReactMontage);	// Play this Montage
 		FName SectionName("FromFront");
 		AnimInstance->Montage_JumpToSection(SectionName);	// Jump to the Anim Montage depending on the bool above and play that animation.

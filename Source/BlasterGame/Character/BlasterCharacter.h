@@ -237,6 +237,18 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Animation")
 	class UAnimMontage* ElimMontage;
 
+	UPROPERTY(EditAnywhere, Category = "Animation")
+	class USoundBase* DeathSound;
+
+	UPROPERTY(EditAnywhere, Category = "Animation")
+	class USoundBase* HitReactSound;
+
+	UPROPERTY(EditAnywhere, Category = "Animation")
+	class USoundBase* HitReactSoundTwo;
+
+	UPROPERTY(EditAnywhere, Category = "Animation")
+	TArray<USoundBase*> JumpSoundEffects;
+
 	FORCEINLINE UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 
 	FVector GetHitTarget() const;

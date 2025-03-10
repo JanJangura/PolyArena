@@ -80,7 +80,7 @@ void ALobbyGameMode::LaunchGame()
 			World->ServerTravel(FString("/Game/Scenes/ReactorRush?listen"));
 		}
 		else if(MapType == "EMP Stadium"){
-			World->ServerTravel(FString("/Game/Scenes/BlasterMap?listen"));
+			World->ServerTravel(FString("/Game/Scenes/EMPStadium?listen"));
 		}
 	}
 }
