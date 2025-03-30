@@ -521,7 +521,7 @@ void ABlasterPlayerController::HandleCooldown()
 
 			BlasterHUD->Announcement->SetVisibility(ESlateVisibility::Visible);
 
-			FString AnnouncementText("New Match Starts In: ");
+			FString AnnouncementText("Leaving to Main Menu in: ");
 			BlasterHUD->Announcement->AnnouncementText->SetText(FText::FromString(AnnouncementText));
 
 			// This will always return us the current Game State as long as we pass in a World Context Object, so it knows which world to search in. 
