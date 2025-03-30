@@ -10,6 +10,7 @@
 #include "BlasterGame/PlayerState/BlasterPlayerState.h"
 #include "BlasterGame/GameState/BlasterGameState.h"
 #include "BlasterGame/HUD/PlayerList.h"
+#include "MultiplayerSessionsSubsystem.h"
 
 namespace MatchState
 {
@@ -83,7 +84,7 @@ void ABlasterGameMode::Tick(float DeltaTime)
 		CountdownTime = CooldownTime + WarmupTime + MatchTime - GetWorld()->GetTimeSeconds() + LevelStartingTime;
 		
 		if (CountdownTime <= 0.f) {
-			RestartGame();	// This function is inherited within the GameMode Class.
+			EndGame();	// This function is inherited within the GameMode Class.
 		}
 	}
 }
@@ -99,6 +100,37 @@ void ABlasterGameMode::OnMatchStateSet()
 			BlasterPlayerController->OnMatchStateSet(MatchState);
 			BlasterPlayerController->CastBlasterHUD();
 		}
+	}
+}
+
+void ABlasterGameMode::EndGame()
+{
+	UGameInstance* GameInstance = GetGameInstance();
+	if (GameInstance) {
+
+		MultiplayerSessionsSubsystem = GameInstance->GetSubsystem<UMultiplayerSessionsSubsystem>();
+
+		if (MultiplayerSessionsSubsystem)
+		{
+			MultiplayerSessionsSubsystem->MultiplayerOnDestroySessionComplete.AddDynamic(this, &ABlasterGameMode::OnDestroyedSession);
+
+			MultiplayerSessionsSubsystem->DestroySession();
+		}
+	}
+}
+
+void ABlasterGameMode::OnDestroyedSession(bool bWasSuccessful)
+{
+	if (bWasSuccessful) {
+		for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It) {
+			APlayerController* PC = It->Get();
+			if (PC) {
+				PC->ClientTravel("Game/Scenes/GameStartMenu", ETravelType::TRAVEL_Absolute);
+			}
+		}
+	}
+	else {
+		UE_LOG(LogTemp, Error, TEXT("Session destruction failed"));
 	}
 }
 

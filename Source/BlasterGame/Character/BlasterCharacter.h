@@ -193,6 +193,8 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Weapon")
 	TSubclassOf<AWeapon> DefaultWeaponClass;
 
+	float LastHealth;
+
 public:	
 	void UpdateWeaponIcon();
 	/* Replication STEP 4. FORCEINLINE is a simple getter.

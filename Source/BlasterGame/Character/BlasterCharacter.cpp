@@ -460,7 +460,12 @@ float ABlasterCharacter::CalculateSpeed() {
 void ABlasterCharacter::OnRep_Health()
 {
 	UpdateHUDHealth();
-	PlayHitReactMontage();
+
+	if (Health <= LastHealth) {
+		PlayHitReactMontage();
+	}
+	
+	LastHealth = Health;
 }
 
 void ABlasterCharacter::UpdateHUDHealth()
@@ -631,7 +636,9 @@ void ABlasterCharacter::PlayHitReactMontage()
 
 	if (AnimInstance && HitReactMontage && HitReactSound && HitReactSoundTwo) {
 		USoundBase* SelectSound = FMath::RandBool() ? HitReactSound : HitReactSoundTwo;
-		if(SelectSound) UGameplayStatics::PlaySoundAtLocation(this, SelectSound, GetActorLocation()); // Play Selected Sound
+		if (SelectSound) {
+			UGameplayStatics::PlaySoundAtLocation(this, SelectSound, GetActorLocation()); // Play Selected Sound
+		}
 
 		AnimInstance->Montage_Play(HitReactMontage);	// Play this Montage
 		FName SectionName("FromFront");
@@ -644,6 +651,7 @@ void ABlasterCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const 
 	Health = FMath::Clamp(Health - Damage, 0.f, MaxHealth);
 	UpdateHUDHealth();
 	PlayHitReactMontage();
+	UE_LOG(LogTemp, Warning, TEXT("Repping Health!"));
 
 	if (Health <= 0.f) {
 		GetWorld()->GetTimerManager().ClearTimer(HealthRegenTimerHandle);

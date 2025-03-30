@@ -35,7 +35,7 @@ public:
 	void HandleCooldown();
 	void CastBlasterHUD();
 	void SetWeaponIcon(EWeaponType WeaponType);
-
+	
 	void BroadCastElim(APlayerState* Attacker, APlayerState* Victim);
 
 	UPROPERTY()
@@ -43,7 +43,7 @@ public:
 
 	UPROPERTY()
 	class ABlasterHUD* BlasterHUD;
-		
+
 	bool bInProgressState = true;
 protected:
 	virtual void SetupInputComponent() override; // Allows us to create Custom Input Bindings.

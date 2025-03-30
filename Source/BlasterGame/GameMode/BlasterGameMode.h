@@ -49,6 +49,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual void PostLogin(APlayerController* NewPlayer) override;
 
+	UFUNCTION()
+	void OnDestroyedSession(bool bWasSuccessful);
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void OnMatchStateSet() override;
@@ -56,6 +59,11 @@ protected:
 private:
 	float CountdownTime = 0.f;
 	class ABlasterGameState* BlasterGameState;
+
+	UPROPERTY()
+	class UMultiplayerSessionsSubsystem* MultiplayerSessionsSubsystem;
+
+	void EndGame();
 
 public:
 	FORCEINLINE float GetCountdownTime() const { return CountdownTime; }
