@@ -78,6 +78,7 @@ void ABlasterGameState::UpdatePlayerList()
 
 void ABlasterGameState::GetPlayerListFromGameInstance()
 {
+	/*
 	BlasterGameInstance = BlasterGameInstance == nullptr ? Cast<UBlasterGameInstance>(GetGameInstance()) : BlasterGameInstance;
 	if (!BlasterGameInstance) return;
 
@@ -91,6 +92,7 @@ void ABlasterGameState::GetPlayerListFromGameInstance()
 			}			
 		}
 	}
+	*/
 }
 
 void ABlasterGameState::PlayerTabIsReady(bool bPlayerTabIsReady)
