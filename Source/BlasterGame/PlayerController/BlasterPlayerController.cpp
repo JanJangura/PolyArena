@@ -328,6 +328,7 @@ void ABlasterPlayerController::SetHUDScore(float Score)
 		BlasterHUD->CharacterOverlay &&
 		BlasterHUD->CharacterOverlay->ScoreAmount;
 
+	/*
 	if (bHUDValid) {
 		FString ScoreText = FString::Printf(TEXT("%d"), FMath::FloorToInt(Score));
 		BlasterHUD->CharacterOverlay->ScoreAmount->SetText(FText::FromStringView(ScoreText));
@@ -335,7 +336,8 @@ void ABlasterPlayerController::SetHUDScore(float Score)
 	else {
 		bInitializeCharacterOverlay = true;
 		HUDScore = Score;
-	}
+	} 
+	*/
 }
 
 void ABlasterPlayerController::SetHUDDefeats(int32 Defeats)
@@ -344,7 +346,7 @@ void ABlasterPlayerController::SetHUDDefeats(int32 Defeats)
 	bool bHUDValid = BlasterHUD &&
 		BlasterHUD->CharacterOverlay &&
 		BlasterHUD->CharacterOverlay->DefeatsAmount;
-
+	/*
 	if (bHUDValid) {
 		FString DefeatsText = FString::Printf(TEXT("%d"), Defeats);
 		BlasterHUD->CharacterOverlay->DefeatsAmount->SetText(FText::FromStringView(DefeatsText));
@@ -353,6 +355,7 @@ void ABlasterPlayerController::SetHUDDefeats(int32 Defeats)
 		bInitializeCharacterOverlay = true;
 		HUDDefeats = Defeats;
 	}
+	*/
 }
 
 // This is called at the beginning of the game. 

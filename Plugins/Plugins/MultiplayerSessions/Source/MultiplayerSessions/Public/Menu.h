@@ -20,7 +20,7 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void MenuSetup(int32 NumberOfPublicConnections = 4, FString TypeOfMatch = FString(TEXT("FreeForAll")), 
-		FString LobbyPath = FString(TEXT("/Game/ThirdPerson/Maps/Lobby?listen"))); // We've set default values to these passed in parameters. 
+		FString LobbyPath = FString(TEXT("/Game/Scenes/PolyArenaLobbyMap"))); // We've set default values to these passed in parameters. 
 
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))	// This means that the button Widget on our blueprint will be linked to our button variable in C++.
 	class UButton* Host_Button;

@@ -31,5 +31,8 @@ private:
 	UFUNCTION()
 	void OnRep_MultiPlayerStates();
 
+	void UpdateClientPlayerList();
+
+	UPROPERTY()
 	TArray<FString> PlayerNames;
 };

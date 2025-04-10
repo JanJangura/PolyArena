@@ -57,11 +57,15 @@ void ALobbyBlasterHUD::Tick(float DeltaTime)
 
 void ALobbyBlasterHUD::ShowPlayerList()
 {
-	if (PlayerController && LobbyPlayerListClass) {
-		LobbyPlayerList = CreateWidget<ULobbyPlayerList>(PlayerController, LobbyPlayerListClass);
-
-		if (LobbyPlayerList) LobbyPlayerList->AddToViewport();
+	/*
+	APlayerController* PC = GetOwningPlayerController();
+	if (PC && LobbyPlayerListClass) {
+		LobbyPlayerList = CreateWidget<ULobbyPlayerList>(PC, LobbyPlayerListClass);
+		if (LobbyPlayerList) {
+			LobbyPlayerList->AddToViewport();
+		}
 	}
+	*/
 }
 
 void ALobbyBlasterHUD::UpdatePlayerList(FString PlayerName)

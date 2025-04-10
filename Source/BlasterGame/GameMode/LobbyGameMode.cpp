@@ -10,6 +10,7 @@
 #include "BlasterGame/GameInstance/BlasterGameInstance.h"
 #include "BlasterGame/HUD/BlasterHUD.h"
 #include "MultiplayerSessionsSubsystem.h"
+#include "BlasterGame/GameState/LobbyBlasterGameState.h"
 
 void ALobbyGameMode::PostLogin(APlayerController* NewPlayer)
 {
@@ -36,6 +37,12 @@ void ALobbyGameMode::PostLogin(APlayerController* NewPlayer)
 
 		CurrentNumOfPlayers = GameInstance->PlayerStates.Num();
 		MaxPlayers = Subsystem->DesiredNumPublicConnections;
+	}
+
+	ALobbyBlasterGameState* GS = GetGameState<ALobbyBlasterGameState>();
+	if (GS)
+	{
+		GS->GetPlayersFromGameInstance(); // This updates MultiPlayerStates and triggers OnRep_MultiPlayerStates
 	}
 }
 

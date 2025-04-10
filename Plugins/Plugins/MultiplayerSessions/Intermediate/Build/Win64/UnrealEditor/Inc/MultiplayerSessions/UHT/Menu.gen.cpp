@@ -143,7 +143,7 @@ struct Z_Construct_UFunction_UMenu_MenuSetup_Statics
 	};
 #if WITH_METADATA
 	static constexpr UECodeGen_Private::FMetaDataPairParam Function_MetaDataParams[] = {
-		{ "CPP_Default_LobbyPath", "/Game/ThirdPerson/Maps/Lobby?listen" },
+		{ "CPP_Default_LobbyPath", "/Game/Scenes/PolyArenaLobbyMap" },
 		{ "CPP_Default_NumberOfPublicConnections", "4" },
 		{ "CPP_Default_TypeOfMatch", "FreeForAll" },
 		{ "ModuleRelativePath", "Public/Menu.h" },
@@ -493,7 +493,7 @@ struct Z_Construct_UClass_UMenu_Statics
 		{ &Z_Construct_UFunction_UMenu_GetHostInformation, "GetHostInformation" }, // 4006212955
 		{ &Z_Construct_UFunction_UMenu_HostButtonClicked, "HostButtonClicked" }, // 3776737500
 		{ &Z_Construct_UFunction_UMenu_JoinButtonClicked, "JoinButtonClicked" }, // 3398739101
-		{ &Z_Construct_UFunction_UMenu_MenuSetup, "MenuSetup" }, // 1364303894
+		{ &Z_Construct_UFunction_UMenu_MenuSetup, "MenuSetup" }, // 1009425111
 		{ &Z_Construct_UFunction_UMenu_OnCreateSession, "OnCreateSession" }, // 3813687764
 		{ &Z_Construct_UFunction_UMenu_OnCreateSessionEntryWidget, "OnCreateSessionEntryWidget" }, // 3338383630
 		{ &Z_Construct_UFunction_UMenu_OnDestroySession, "OnDestroySession" }, // 122917252
@@ -580,10 +580,10 @@ UMenu::~UMenu() {}
 struct Z_CompiledInDeferFile_FID_MultiplayerCourse_BlasterGame_Plugins_Plugins_MultiplayerSessions_Source_MultiplayerSessions_Public_Menu_h_Statics
 {
 	static constexpr FClassRegisterCompiledInInfo ClassInfo[] = {
-		{ Z_Construct_UClass_UMenu, UMenu::StaticClass, TEXT("UMenu"), &Z_Registration_Info_UClass_UMenu, CONSTRUCT_RELOAD_VERSION_INFO(FClassReloadVersionInfo, sizeof(UMenu), 146692488U) },
+		{ Z_Construct_UClass_UMenu, UMenu::StaticClass, TEXT("UMenu"), &Z_Registration_Info_UClass_UMenu, CONSTRUCT_RELOAD_VERSION_INFO(FClassReloadVersionInfo, sizeof(UMenu), 1083689319U) },
 	};
 };
-static FRegisterCompiledInInfo Z_CompiledInDeferFile_FID_MultiplayerCourse_BlasterGame_Plugins_Plugins_MultiplayerSessions_Source_MultiplayerSessions_Public_Menu_h_3774647433(TEXT("/Script/MultiplayerSessions"),
+static FRegisterCompiledInInfo Z_CompiledInDeferFile_FID_MultiplayerCourse_BlasterGame_Plugins_Plugins_MultiplayerSessions_Source_MultiplayerSessions_Public_Menu_h_3472532317(TEXT("/Script/MultiplayerSessions"),
 	Z_CompiledInDeferFile_FID_MultiplayerCourse_BlasterGame_Plugins_Plugins_MultiplayerSessions_Source_MultiplayerSessions_Public_Menu_h_Statics::ClassInfo, UE_ARRAY_COUNT(Z_CompiledInDeferFile_FID_MultiplayerCourse_BlasterGame_Plugins_Plugins_MultiplayerSessions_Source_MultiplayerSessions_Public_Menu_h_Statics::ClassInfo),
 	nullptr, 0,
 	nullptr, 0);

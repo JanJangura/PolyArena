@@ -125,7 +125,7 @@ void ABlasterGameMode::OnDestroyedSession(bool bWasSuccessful)
 		for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It) {
 			APlayerController* PC = It->Get();
 			if (PC) {
-				PC->ClientTravel("Game/Scenes/GameStartMenu", ETravelType::TRAVEL_Absolute);
+				PC->ClientTravel("Game/Scenes/PolyArenaMainMenu", ETravelType::TRAVEL_Absolute);
 			}
 		}
 	}

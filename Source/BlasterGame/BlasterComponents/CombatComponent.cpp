@@ -310,7 +310,7 @@ void UCombatComponent::PickupAmmo(EWeaponType WeaponType, int32 AmmoAmount)
 		if (EquippedWeapon) {
 			EquippedWeapon->AddAmmo(AmmoAmount);
 		}
-	}
+	}		
 }
 
 // RepNotifier for our Equipped Weapon Animation.
