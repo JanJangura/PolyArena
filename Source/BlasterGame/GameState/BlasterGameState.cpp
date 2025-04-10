@@ -83,7 +83,7 @@ void ABlasterGameState::GetPlayerListFromGameInstance()
 
 	if (BlasterGameInstance && BlasterGameInstance->PlayerStates.Num() > 0) {
 		for (APlayerState* PlayerStates : BlasterGameInstance->PlayerStates) {
-			if (IsValid(PlayerStates)) {
+			if (PlayerStates) {
 				ABlasterPlayerState* BlasterPlayerState = Cast<ABlasterPlayerState>(PlayerStates);
 				if (BlasterPlayerState) {
 					MultiBlasterPlayerStates.AddUnique(BlasterPlayerState);

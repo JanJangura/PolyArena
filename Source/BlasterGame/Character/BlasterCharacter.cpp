@@ -405,6 +405,8 @@ void ABlasterCharacter::Jump()
 			UGameplayStatics::PlaySoundAtLocation(this, SelectedJumpSound, GetActorLocation());
 		}
 	}
+
+	UE_LOG(LogTemp, Warning, TEXT("Hello!"));
 }
 
 // When the E key is pressed, EquipButtonPressed() function will only call the EquipWeapon() function if we have authority. 
