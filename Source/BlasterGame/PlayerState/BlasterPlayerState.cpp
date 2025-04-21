@@ -28,7 +28,6 @@ void ABlasterPlayerState::AddToScore(float ScoreAmount)
 		if (Controller) {
 			// We'll update the HUD here.
 			Controller->SetHUDScore(GetScore());
-			Controller->UpdatePlayerList();
 		}
 	}
 
@@ -48,6 +47,7 @@ void ABlasterPlayerState::OnRep_Score()
 		if (Controller) {
 			// We'll update the HUD here.
 			Controller->SetHUDScore(GetScore());
+			Controller->UpdatePlayerList();
 		}
 	}
 }
@@ -94,6 +94,7 @@ void ABlasterPlayerState::OnRep_Defeats()
 		if (Controller) {
 			// We'll update the HUD here.
 			Controller->SetHUDDefeats(Defeats);
+			Controller->UpdatePlayerList();
 		}
 	}
 }
