@@ -6,6 +6,11 @@
 #include "BlasterGame/HUD/LaunchGameButton.h"
 #include "BlasterGame/GameState/LobbyBlasterGameState.h"
 #include "LobbyPlayerList.h"
+#include "Engine/World.h"
+#include "Kismet/GameplayStatics.h"
+#include "BlasterGame/GameMode/LobbyGameMode.h"
+#include "Components/TextBlock.h"
+#include "BlasterGame/GameMode/LobbyGameMode.h"
 
 ALobbyBlasterHUD::ALobbyBlasterHUD() {
 	static ConstructorHelpers::FClassFinder<ULaunchGameButton> WidgetClassOne(TEXT("/Game/BP_Shooter_Character/Blueprints/HUD/WBP_LaunchGameButton"));
@@ -77,19 +82,38 @@ void ALobbyBlasterHUD::UpdatePlayerList(FString PlayerName)
 
 void ALobbyBlasterHUD::AddPauseUI()
 {
-	if (PlayerController) {
+	if (PlayerController && LoadingClass) {
 
+		/*
 		if (LaunchGameButtonClass) {
 			LaunchGameButton = CreateWidget<ULaunchGameButton>(PlayerController, LaunchGameButtonClass);
 			LaunchGameButton->AddToViewport();
 			LaunchGameButton->SetVisibility(ESlateVisibility::Hidden);
 		}
+
 		if (LoadingClass) {
 			LoadingText = CreateWidget<ULoading>(PlayerController, LoadingClass);
 			LoadingText->AddToViewport();
-			LoadingText->SetVisibility(ESlateVisibility::Hidden);
+
+			FString AnnouncementText("Press P to Launch Game");
+			LoadingText->Loading->SetText(FText::FromString(AnnouncementText));
+			LoadingText->SetVisibility(ESlateVisibility::Visible);
 		}
-		PauseUICreated = true;
+		PauseUICreated = true; */
+
+		LoadingText = CreateWidget<ULoading>(PlayerController, LoadingClass);
+		LoadingText->AddToViewport();
+
+		FString AnnouncementText;
+		if (PlayerController->HasAuthority()) {
+			AnnouncementText = "Press P to Launch Game";
+		}
+		else {
+			AnnouncementText = "Waiting for Host to Start";
+		}
+
+		LoadingText->Loading->SetText(FText::FromString(AnnouncementText));
+		LoadingText->SetVisibility(ESlateVisibility::Visible);		
 	}
 }
 
@@ -123,8 +147,23 @@ void ALobbyBlasterHUD::ShowLoadingText()
 {
 	if (LoadingText) {
 		UE_LOG(LogTemp, Warning, TEXT("LOADING CALLED!"));
-		LoadingText->SetVisibility(ESlateVisibility::Visible);
-		HideLaunchGameButton();
+		FString AnnouncementText("Loading...");
+		LoadingText->Loading->SetText(FText::FromString(AnnouncementText));
+		//HideLaunchGameButton();
+	}
+}
+
+void ALobbyBlasterHUD::LaunchGame()
+{
+	AGameModeBase* GameModeBase = UGameplayStatics::GetGameMode(this);
+
+	if (GameModeBase) {
+		ALobbyGameMode* LobbyGameMode = Cast<ALobbyGameMode>(GameModeBase);
+
+		if (LobbyGameMode) {
+			ShowLoadingText();
+			LobbyGameMode->ServerTravelToGame();
+		}
 	}
 }
 

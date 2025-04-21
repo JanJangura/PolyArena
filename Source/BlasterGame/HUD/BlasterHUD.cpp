@@ -25,7 +25,7 @@ void ABlasterHUD::BeginPlay()
 	BlasterGameState = GetWorld()->GetGameState<ABlasterGameState>();
 
 	if (BlasterGameState && IsValid(BlasterGameState)) {
-		BlasterGameState->OnPlayerListUpdate.AddDynamic(this, &ABlasterHUD::BroadCastPlayerToPlayerList);
+		//BlasterGameState->OnPlayerListUpdate.AddDynamic(this, &ABlasterHUD::BroadCastPlayerToPlayerList);
 	}
 
 	DeclarationOfClasses();
@@ -42,14 +42,9 @@ void ABlasterHUD::PopulatePlayerListWidget()
 
 		if (BlasterGameState)
 		{
-			BlasterGameState->UpdatePlayerList();
+			//BlasterGameState->UpdatePlayerList();
 		}
 	}
-}
-
-void ABlasterHUD::BroadCastPlayerToPlayerList(const TArray<class ABlasterPlayerState*>& MultiBlasterPlayerStates)
-{
-	UpdatePlayerList(MultiBlasterPlayerStates);
 }
 
 // This is where we create our Widget
@@ -151,21 +146,20 @@ void ABlasterHUD::InitiatePlayerListWidget(ABlasterPlayerController* BlasterPlay
 		if (PlayerList) {
 			BlasterPlayerController->PlayerList = PlayerList;
 		}
-		else {
-		}
-	}
-	else {
 	}
 }
 
-void ABlasterHUD::UpdatePlayerList(const TArray<class ABlasterPlayerState*>& NewBlasterPlayerState)
+void ABlasterHUD::UpdatePlayerList(const TArray<APlayerState*>& PlayerArray)
 {
 	if (!PlayerList) return;
+
+	UE_LOG(LogTemp, Warning, TEXT("PlayerList is valid!"));
 
 	if (PlayerList && PlayerList->PlayerScrollBox) {
 		PlayerList->PlayerScrollBox->ClearChildren();
 
-		for (ABlasterPlayerState* BPS : NewBlasterPlayerState) {
+		for (APlayerState* PS : PlayerArray) {
+			ABlasterPlayerState* BPS = Cast<ABlasterPlayerState>(PS);
 			if (BPS) {
 				FString PlayerName = BPS->GetPlayerName();
 				int32 InitialKillScore = BPS->GetScore();
@@ -175,7 +169,6 @@ void ABlasterHUD::UpdatePlayerList(const TArray<class ABlasterPlayerState*>& New
 			}
 		}
 	}
-	
 }
 
 // This is where we get out HUD and then use this information so we can pass in out Textures and Draw the actual CrossHair.

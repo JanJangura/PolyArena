@@ -14,8 +14,14 @@ void AAmmoPickup::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AAct
 
 		UCombatComponent* Combat = BlasterCharacter->GetCombat();
 		if (Combat && BlasterCharacter->GetEquippedWeapon()) {
-			Combat->PickupAmmo(WeaponType, AmmoAmount);
-			Destroy();
+			Combat->PickupAmmo(this, WeaponType, AmmoAmount);
+			//Destroy();
 		}
 	}
+}
+
+void AAmmoPickup::BeginPlay()
+{
+	Super::BeginPlay();
+	ThisActorLocation = GetActorLocation();
 }

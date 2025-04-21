@@ -28,6 +28,12 @@ void ABlasterGameMode::PostLogin(APlayerController* NewPlayer)
 {
 	Super::PostLogin(NewPlayer);
 
+	BlasterGameState = BlasterGameState == nullptr ? GetGameState<ABlasterGameState>() : BlasterGameState;
+	if (BlasterGameState) {
+		BlasterGameState->AddPlayerToPlayerList(NewPlayer);
+	}
+
+	/*
 	UBlasterGameInstance* GameInstance = Cast<UBlasterGameInstance>(GetGameInstance());
 	if (GameInstance && NewPlayer && NewPlayer->PlayerState) {
 		GameInstance->AddPlayerStates(NewPlayer->PlayerState);
@@ -41,6 +47,7 @@ void ABlasterGameMode::PostLogin(APlayerController* NewPlayer)
 			UE_LOG(LogTemp, Warning, TEXT("Failed to add player to GameState in PostLogin."));
 		}
 	}
+	*/
 }
 
 void ABlasterGameMode::BeginPlay()
@@ -50,6 +57,7 @@ void ABlasterGameMode::BeginPlay()
 	LevelStartingTime = GetWorld()->GetTimeSeconds();
 	OnPlayerTabUpdate.Broadcast(false);
 
+	/*
 	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
 	{
 		APlayerController* PC = It->Get();
@@ -61,6 +69,7 @@ void ABlasterGameMode::BeginPlay()
 			}
 		}
 	}
+	*/
 }
 
 void ABlasterGameMode::Tick(float DeltaTime)

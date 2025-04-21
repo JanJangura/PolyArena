@@ -28,7 +28,7 @@ public:
 
 	void UpdateTopScore(class ABlasterPlayerState* ScoringPlayer); // This is how we'll enter the top scoring players into the Array. 
 
-	void AddPlayerToPlayerList(APlayerState* NewPlayerState);
+	void AddPlayerToPlayerList(APlayerController* NewPlayerController);
 
 	UPROPERTY(Replicated)
 	TArray<ABlasterPlayerState*> TopScoringPlayers;
@@ -36,7 +36,8 @@ public:
 	UPROPERTY(ReplicatedUsing = OnRep_MultiBlasterPlayerStates)
 	TArray<ABlasterPlayerState*> MultiBlasterPlayerStates;
 
-	void UpdatePlayerList();
+	UFUNCTION(NetMulticast, Reliable)
+	void Multicast_UpdatePlayerList();
 
 	void GetPlayerListFromGameInstance();
 

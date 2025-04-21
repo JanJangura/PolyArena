@@ -42,6 +42,10 @@ public:
 	void ShowLaunchGameButton();
 	void ShowLoadingText();
 
+
+	// Launch The Game
+	void LaunchGame();
+
 	// Players List
 	UPROPERTY(EditAnywhere, Category = "Widgets")
 	TSubclassOf<class UUserWidget> LobbyPlayerListClass;

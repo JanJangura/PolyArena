@@ -185,6 +185,9 @@ void AWeapon::SetWeaponState(EWeaponState State)
 		WeaponMesh->SetSimulatePhysics(true);	// This is how we allow our Gun to fall to the ground.
 		WeaponMesh->SetEnableGravity(true);
 		WeaponMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+		WeaponMesh->SetLinearDamping(1.0f);    // Slows down sliding
+		WeaponMesh->SetAngularDamping(5.0f);   // Slows down rolling
+
 
 		// If someone walks up and tries to equip the gun when Physics is enabled, it won't work because Physics is enabled. So before we equip
 		// the weapon, we need to disable the gun's physics.
@@ -208,6 +211,9 @@ void AWeapon::OnRep_WeaponState()
 		WeaponMesh->SetSimulatePhysics(true);	// This is how we allow our Gun to fall to the ground.
 		WeaponMesh->SetEnableGravity(true);
 		WeaponMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+		WeaponMesh->SetLinearDamping(1.0f);    // Slows down sliding
+		WeaponMesh->SetAngularDamping(5.0f);   // Slows down rolling
+
 	}
 }
 

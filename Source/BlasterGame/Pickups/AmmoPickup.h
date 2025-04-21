@@ -25,12 +25,16 @@ protected:
 		const FHitResult& SweepResult
 	);
 
+	virtual void BeginPlay() override;
+
 private:
 	UPROPERTY(EditAnywhere)
 	int32 AmmoAmount = 30;
 
 	UPROPERTY(EditAnywhere)
 	EWeaponType WeaponType;
+
+	FVector ThisActorLocation;
 
 public:
 

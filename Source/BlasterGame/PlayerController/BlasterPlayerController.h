@@ -44,6 +44,8 @@ public:
 	UPROPERTY()
 	class ABlasterHUD* BlasterHUD;
 
+	void UpdatePlayerList();
+
 	bool bInProgressState = true;
 protected:
 	virtual void SetupInputComponent() override; // Allows us to create Custom Input Bindings.
@@ -86,6 +88,11 @@ protected:
 	// We want each Player Controller to broadcast to its own Client Player Controller.
 	UFUNCTION(Client, Reliable) 
 	void ClientElimAnnouncement(APlayerState* Attacker, APlayerState* Victim);
+
+	class ABlasterGameState* BlasterGameState;
+	class ABlasterPlayerState* BlasterPlayerState;
+
+	TArray<class ABlasterPlayerStates*> PlayerStatesArray;
 
 private:
 	// ******* Return to MainMenu *******

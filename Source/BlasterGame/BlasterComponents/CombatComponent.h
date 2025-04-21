@@ -32,7 +32,7 @@ public:
 
 	void SwapWeapons();
 
-	void PickupAmmo(EWeaponType WeaponType, int32 AmmoAmount);
+	void PickupAmmo(AActor* AmmoClass, EWeaponType WeaponType, int32 AmmoAmount);
 
 	void FireButtonPressed(bool bPressed);
 

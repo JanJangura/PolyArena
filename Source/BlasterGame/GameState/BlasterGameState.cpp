@@ -9,6 +9,7 @@
 #include "BlasterGame/GameInstance/BlasterGameInstance.h"
 #include "BlasterGame/GameMode/LobbyGameMode.h"
 #include "BlasterGame/GameMode/BlasterGameMode.h"
+#include "BlasterGame/HUD/PlayerList.h"
 
 void ABlasterGameState::BeginPlay()
 {
@@ -49,9 +50,18 @@ void ABlasterGameState::UpdateTopScore(ABlasterPlayerState* ScoringPlayer)
 	}
 }
 
-void ABlasterGameState::AddPlayerToPlayerList(APlayerState* NewPlayerState)
+void ABlasterGameState::AddPlayerToPlayerList(APlayerController* NewPlayerController)
 {
-	ABlasterPlayerState* BlasterPlayerState = Cast<ABlasterPlayerState>(NewPlayerState);
+	ABlasterPlayerController* PlayerController = Cast<ABlasterPlayerController>(NewPlayerController);
+	if (PlayerController) {
+		ABlasterPlayerState* BlasterPlayerState = Cast<ABlasterPlayerState>(PlayerController->PlayerState);
+		if (BlasterPlayerState) {
+			MultiBlasterPlayerStates.AddUnique(BlasterPlayerState);			
+		}
+	}
+
+	/*
+	ABlasterPlayerState* BlasterPlayerState = Cast<ABlasterPlayerState>(NewPlayerController);
 	if (BlasterPlayerState) {
 		MultiBlasterPlayerStates.AddUnique(BlasterPlayerState);
 
@@ -62,16 +72,28 @@ void ABlasterGameState::AddPlayerToPlayerList(APlayerState* NewPlayerState)
 			PlayerController->bInProgressState = true;
 		}
 	}
+	*/
 }
 
-void ABlasterGameState::UpdatePlayerList()
+void ABlasterGameState::Multicast_UpdatePlayerList_Implementation()
 {
+	/*
 	for (ABlasterPlayerState* PS : MultiBlasterPlayerStates) {
 		if (PS) {
 			ABlasterPlayerController* BlasterPlayerController = Cast<ABlasterPlayerController>(PS->GetPlayerController());
 			if (BlasterPlayerController && BlasterPlayerController->BlasterHUD) {
 				BlasterPlayerController->BlasterHUD->UpdatePlayerList(MultiBlasterPlayerStates);
 			}
+		}
+	}
+	*/
+
+	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
+	{
+		ABlasterPlayerController* PC = Cast<ABlasterPlayerController>(*It);
+		if (PC)
+		{
+			PC->UpdatePlayerList(); // Called locally on each client now
 		}
 	}
 }
@@ -110,5 +132,4 @@ void ABlasterGameState::PlayerTabIsReady(bool bPlayerTabIsReady)
 
 void ABlasterGameState::OnRep_MultiBlasterPlayerStates()
 {
-	UpdatePlayerList();
 }

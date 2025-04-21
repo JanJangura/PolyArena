@@ -6,10 +6,10 @@
 			"MultiplayerSessions.init.gen.cpp.obj",
 			"MultiplayerSessionsSubsystem.gen.cpp.obj",
 			"SessionEntryWidget.gen.cpp.obj",
+			"Menu.cpp.obj",
 			"MultiplayerSessions.cpp.obj",
-			"MultiplayerSessionsSubsystem.cpp.obj",
 			"SessionEntryWidget.cpp.obj",
-			"Menu.cpp.obj"
+			"MultiplayerSessionsSubsystem.cpp.obj"
 		]
 	}
 }

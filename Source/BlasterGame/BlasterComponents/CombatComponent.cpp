@@ -90,7 +90,9 @@ void UCombatComponent::FireButtonPressed(bool bPressed)
 									// The NetMulticast RPC called from the server runs on server and clients. Where as the Server RPC only runs on the server, even when called on 
 									// the Client. When calling NetMulticast RPC from Client, it only runs on the Client (kinda worthless on client, more used on Server).
 	if (bFireButtonPressed && EquippedWeapon) {
-		Fire();
+		if (EquippedWeapon->GetAmmo() > 0) {
+			Fire();
+		}
 	}
 }
 
@@ -144,7 +146,7 @@ void UCombatComponent::PauseButtonToggle()
 	LobbyBlasterHUD = LobbyBlasterHUD == nullptr ? Cast<ALobbyBlasterHUD>(Controller->GetHUD()) : LobbyBlasterHUD;
 
 	if (LobbyBlasterHUD) {
-		LobbyBlasterHUD->ToggleLaunchGameButton();
+		LobbyBlasterHUD->LaunchGame();
 	}
 }
 
@@ -301,16 +303,25 @@ void UCombatComponent::ServerAddAmmo_Implementation(EWeaponType WeaponType, int3
 	}
 }
 
-void UCombatComponent::PickupAmmo(EWeaponType WeaponType, int32 AmmoAmount)
+void UCombatComponent::PickupAmmo(AActor* AmmoClass, EWeaponType WeaponType, int32 AmmoAmount)
 {
 	//ServerAddAmmo(WeaponType, AmmoAmount);
 	if (Character == nullptr || EquippedWeapon == nullptr) { return; }
 
+	/*
 	if (CarriedAmmoMap.Contains(WeaponType)) {
 		if (EquippedWeapon) {
 			EquippedWeapon->AddAmmo(AmmoAmount);
 		}
-	}		
+	}
+	*/
+
+	if (EquippedWeapon) {
+		if (EquippedWeapon->GetWeaponType() == WeaponType) {
+			EquippedWeapon->AddAmmo(AmmoAmount);
+			AmmoClass->Destroy();
+		}
+	}
 }
 
 // RepNotifier for our Equipped Weapon Animation.

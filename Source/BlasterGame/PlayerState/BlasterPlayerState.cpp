@@ -28,6 +28,7 @@ void ABlasterPlayerState::AddToScore(float ScoreAmount)
 		if (Controller) {
 			// We'll update the HUD here.
 			Controller->SetHUDScore(GetScore());
+			Controller->UpdatePlayerList();
 		}
 	}
 
@@ -49,8 +50,6 @@ void ABlasterPlayerState::OnRep_Score()
 			Controller->SetHUDScore(GetScore());
 		}
 	}
-
-	UpdatePlayerList();
 }
 
 // This function should only be called on the Server.
@@ -81,7 +80,7 @@ void ABlasterPlayerState::UpdatePlayerList()
 	BlasterGameState = BlasterGameState == nullptr ? GetWorld()->GetGameState<ABlasterGameState>() : BlasterGameState;
 	if (BlasterGameState)
 	{
-		BlasterGameState->UpdatePlayerList();
+		BlasterGameState->Multicast_UpdatePlayerList();
 	}
 }
 
@@ -97,6 +96,4 @@ void ABlasterPlayerState::OnRep_Defeats()
 			Controller->SetHUDDefeats(Defeats);
 		}
 	}
-
-	UpdatePlayerList();
 }

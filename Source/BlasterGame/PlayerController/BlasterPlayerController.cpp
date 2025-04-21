@@ -51,7 +51,6 @@ void ABlasterPlayerController::BeginPlay()
 	CastBlasterHUD();
 
 	ServerCheckMatchState();
-
 }
 
 void ABlasterPlayerController::Tick(float DeltaTime)
@@ -67,6 +66,8 @@ void ABlasterPlayerController::Tick(float DeltaTime)
 void ABlasterPlayerController::CastBlasterHUD()
 {
 	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
+	BlasterGameState = Cast<ABlasterGameState>(UGameplayStatics::GetGameState(this));
+	BlasterPlayerState = GetPlayerState <ABlasterPlayerState>();
 }
 
 void ABlasterPlayerController::PollInit()
@@ -83,6 +84,7 @@ void ABlasterPlayerController::PollInit()
 			//if (bInitializeCarriedAmmo) SetHUDCarriedAmmo(HUDCarriedAmmo);
 			if (bInitializeWeaponAmmo) SetHUDWeaponAmmo(HUDWeaponAmmo);
 			if (bInitializeWeaponIcon) SetWeaponIcon(PrimaryWeaponType);
+			UpdatePlayerList();
 		}
 	}
 }
@@ -114,6 +116,16 @@ void ABlasterPlayerController::ShowPlayerList()
 		else {
 			PlayerList->PlayerListTearDown();
 		}
+	}
+}
+
+void ABlasterPlayerController::UpdatePlayerList()
+{
+	BlasterGameState = BlasterGameState == nullptr ? Cast<ABlasterGameState>(UGameplayStatics::GetGameState(this)) : BlasterGameState;
+	BlasterHUD = BlasterHUD == nullptr ? Cast<ABlasterHUD>(GetHUD()) : BlasterHUD;
+
+	if (BlasterGameState && BlasterHUD) {
+		BlasterHUD->UpdatePlayerList(BlasterGameState->PlayerArray);
 	}
 }
 
@@ -528,8 +540,8 @@ void ABlasterPlayerController::HandleCooldown()
 			BlasterHUD->Announcement->AnnouncementText->SetText(FText::FromString(AnnouncementText));
 
 			// This will always return us the current Game State as long as we pass in a World Context Object, so it knows which world to search in. 
-			ABlasterGameState* BlasterGameState = Cast<ABlasterGameState>(UGameplayStatics::GetGameState(this));
-			ABlasterPlayerState* BlasterPlayerState = GetPlayerState <ABlasterPlayerState>();
+			BlasterGameState = BlasterGameState == nullptr ? Cast<ABlasterGameState>(UGameplayStatics::GetGameState(this)) : BlasterGameState;
+			BlasterPlayerState = BlasterPlayerState == nullptr ? GetPlayerState <ABlasterPlayerState>() : BlasterPlayerState;
 
 			if (BlasterGameState && BlasterPlayerState) {
 
