@@ -9,6 +9,8 @@
 #include "Animation/AnimationAsset.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "BlasterGame/PlayerController/BlasterPlayerController.h"
+#include "Kismet/GameplayStatics.h"
+#include "Engine/SkeletalMeshSocket.h"
 
 // Sets default values
 AWeapon::AWeapon()
@@ -242,6 +244,14 @@ void AWeapon::Fire(const FVector& HitTarget)
 {
 	if (FireAnimation) {
 		WeaponMesh->PlayAnimation(FireAnimation, false);	// Play the animation, and then true or false if we want to loop the animation.
+	}
+
+	if (FireSound) {
+		UGameplayStatics::PlaySoundAtLocation(
+			this,              // World context object
+			FireSound,         // Your sound (the one you set in the UPROPERTY)
+			GetActorLocation() // The location you want to play it at (could be anything, like the gun's muzzle location)
+		);
 	}
 
 	SpendRound();

@@ -112,6 +112,9 @@ protected:
 		int32 OtherBodyIndex
 	);
 
+	UPROPERTY(EditAnywhere, Category = "Sound")
+	class USoundBase* FireSound;
+
 private:
 	// This is how we setup our Skeletal Mesh Component.
 	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
