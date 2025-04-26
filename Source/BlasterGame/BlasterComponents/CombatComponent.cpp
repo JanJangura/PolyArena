@@ -321,6 +321,10 @@ void UCombatComponent::PickupAmmo(AActor* AmmoClass, EWeaponType WeaponType, int
 			EquippedWeapon->AddAmmo(AmmoAmount);
 			AmmoClass->Destroy();
 		}
+		else if (SecondaryWeapon && SecondaryWeapon->GetWeaponType() == WeaponType) {
+			SecondaryWeapon->AddAmmo(AmmoAmount);
+			AmmoClass->Destroy();
+		}
 	}
 }
 

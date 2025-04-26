@@ -178,4 +178,6 @@ private:
 
 public:	
 	bool ShouldSwapWeapons();
+
+	FORCEINLINE AWeapon* GetSecondaryWeapon() const { return SecondaryWeapon; }
 };

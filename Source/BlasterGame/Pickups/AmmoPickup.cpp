@@ -4,6 +4,7 @@
 #include "AmmoPickup.h"
 #include "BlasterGame/Character/BlasterCharacter.h"
 #include "BlasterGame/BlasterComponents/CombatComponent.h"
+#include "BlasterGame/Weapon/Weapon.h"
 
 void AAmmoPickup::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
@@ -14,8 +15,13 @@ void AAmmoPickup::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AAct
 
 		UCombatComponent* Combat = BlasterCharacter->GetCombat();
 		if (Combat && BlasterCharacter->GetEquippedWeapon()) {
+			UE_LOG(LogTemp, Warning, TEXT("Equipped Weapon is VALID!!"));
 			Combat->PickupAmmo(this, WeaponType, AmmoAmount);
 			//Destroy();
+		}
+		if (Combat && Combat->GetSecondaryWeapon()) {
+			UE_LOG(LogTemp, Warning, TEXT("Secondary Weapon is VALID!!"));
+			Combat->PickupAmmo(this, WeaponType, AmmoAmount);
 		}
 	}
 }

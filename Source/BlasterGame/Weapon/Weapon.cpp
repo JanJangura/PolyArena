@@ -128,11 +128,15 @@ void AWeapon::AddAmmo(int32 AmmoToAdd)
 void AWeapon::SetHUDAmmo()
 {
 	BlasterOwnerCharacter = BlasterOwnerCharacter == nullptr ? Cast<ABlasterCharacter>(GetOwner()) : BlasterOwnerCharacter;
-	if (BlasterOwnerCharacter) {
-		BlasterOwnerController = BlasterOwnerController == nullptr ? Cast<ABlasterPlayerController>(BlasterOwnerCharacter->Controller) : BlasterOwnerController;
-		if (BlasterOwnerController) {
-			BlasterOwnerController->SetHUDWeaponAmmo(Ammo);
-		}
+	if (BlasterOwnerCharacter && BlasterOwnerCharacter->GetEquippedWeapon()) {
+		AWeapon* EquippedWeapon = BlasterOwnerCharacter->GetEquippedWeapon();
+
+		if (EquippedWeapon->GetWeaponType() == WeaponType) {
+			BlasterOwnerController = BlasterOwnerController == nullptr ? Cast<ABlasterPlayerController>(BlasterOwnerCharacter->Controller) : BlasterOwnerController;
+			if (BlasterOwnerController) {
+				BlasterOwnerController->SetHUDWeaponAmmo(Ammo);
+			}
+		}	
 	}
 }
 
