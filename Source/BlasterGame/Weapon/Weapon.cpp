@@ -123,6 +123,7 @@ void AWeapon::OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActo
 
 void AWeapon::AddAmmo(int32 AmmoToAdd)
 {
+	UE_LOG(LogTemp, Warning, TEXT("Ammo Added: %d"), AmmoToAdd);
 	Ammo += AmmoToAdd;
 	SetHUDAmmo();
 }

@@ -32,7 +32,7 @@ public:
 
 	void SwapWeapons();
 
-	void PickupAmmo(AActor* AmmoClass, EWeaponType WeaponType, int32 AmmoAmount);
+	void PickupAmmo(class AAmmoPickup* AmmoClass, EWeaponType WeaponType, int32 AmmoAmount, FTransform AmmoTransform);
 
 	void FireButtonPressed(bool bPressed);
 
@@ -71,7 +71,10 @@ protected:
 
 	// This is TEMPORARY
 	UFUNCTION(Server, Reliable)
-	void ServerAddAmmo(EWeaponType WeaponType, int32 AmmoAmount);
+	void ServerAddAmmo(class AAmmoPickup* AmmoClass, EWeaponType WeaponType, int32 AmmoAmount, FTransform AmmoTransform);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastAddAmmo(class AAmmoPickup* AmmoClass);
 
 	void EquipPrimaryWeapon(AWeapon* WeaponToEquip);
 	AWeapon* PrimaryWeapon;
@@ -175,6 +178,8 @@ private:
 	int32 StartingShotgunAmmo = 0;
 
 	void InitializeCarriedAmmo();
+
+	class ABlasterGameMode* GameMode;
 
 public:	
 	bool ShouldSwapWeapons();

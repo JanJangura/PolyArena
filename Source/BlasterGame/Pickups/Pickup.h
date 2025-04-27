@@ -35,13 +35,11 @@ private:
 	class USphereComponent* OverlapSphere;
 
 	UPROPERTY(EditAnywhere)
-	class USoundCue* PickupSound;
-
-	UPROPERTY(EditAnywhere)
 	UStaticMeshComponent* PickupMesh;
 
 public:	
-
+	UPROPERTY(EditAnywhere)
+	class USoundBase* PickupSound;
 	
 
 };

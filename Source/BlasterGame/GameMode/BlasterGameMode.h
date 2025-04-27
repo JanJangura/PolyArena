@@ -46,11 +46,17 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	float MaxKillScore = 10.f;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	float AmmoRespawnCooldownTime = 7.f;
+
 	UFUNCTION(BlueprintCallable)
 	virtual void PostLogin(APlayerController* NewPlayer) override;
 
 	UFUNCTION()
 	void OnDestroyedSession(bool bWasSuccessful);
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void SpawnSpecificAmmo(FTransform AmmoLocation, class AActor* Ammo);
 
 protected:
 	virtual void BeginPlay() override;

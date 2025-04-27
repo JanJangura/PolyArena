@@ -28,14 +28,30 @@ protected:
 	virtual void BeginPlay() override;
 
 private:
-	UPROPERTY(EditAnywhere)
-	int32 AmmoAmount = 30;
 
 	UPROPERTY(EditAnywhere)
 	EWeaponType WeaponType;
 
 	FVector ThisActorLocation;
 
-public:
+	FTimerHandle RespawnTimerHandle;
 
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category ="Ammo Properties")
+	int32 AmmoIndex;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ammo Properties")
+	FTransform AmmoLocation;
+
+	UFUNCTION()
+	void StartRespawnTimer();
+
+	UFUNCTION()
+	void FinishRespawn();
+
+	UPROPERTY(EditAnywhere, Category = "Ammo Properties")
+	float AmmoRespawnCooldown = 7.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int32 AmmoAmount = 10;
 };

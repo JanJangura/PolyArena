@@ -15,6 +15,11 @@
 #include "Camera/CameraComponent.h"
 #include "TimerManager.h"
 #include "BlasterGame/HUD/LobbyBlasterHUD.h"
+#include "Kismet/GameplayStatics.h"
+#include "BlasterGame/Pickups/AmmoPickup.h"
+#include "BlasterGame/GameMode/BlasterGameMode.h"
+#include "Sound/SoundCue.h"
+
 
 UCombatComponent::UCombatComponent()
 {
@@ -292,40 +297,48 @@ void UCombatComponent::AttachActorToBackpack(AActor* ActortoAttach)
 	}
 }
 
-void UCombatComponent::ServerAddAmmo_Implementation(EWeaponType WeaponType, int32 AmmoAmount)
+void UCombatComponent::ServerAddAmmo_Implementation(class AAmmoPickup* AmmoClass, EWeaponType WeaponType, int32 AmmoAmount, FTransform AmmoTransform)
 {
-	if (Character == nullptr || EquippedWeapon == nullptr) { return; }
-	if (CarriedAmmoMap.Contains(WeaponType)) {
-		if (EquippedWeapon) {
-			CarriedAmmoMap[EquippedWeapon->GetWeaponType()] = EquippedWeapon->GetAmmo() + AmmoAmount;
-			EquippedWeapon->AddAmmo(CarriedAmmoMap[EquippedWeapon->GetWeaponType()]);
+	bool bAmmoPickedUp = false;
+
+	TArray<AWeapon*> Weapons;
+
+	if (PrimaryWeapon) Weapons.Add(PrimaryWeapon);
+	if (SecondaryWeapon) Weapons.Add(SecondaryWeapon);
+
+	for (AWeapon* CurrentWeapons : Weapons) {
+		if (CurrentWeapons && CurrentWeapons->GetWeaponType() == WeaponType) {
+			CurrentWeapons->AddAmmo(AmmoAmount);
+			bAmmoPickedUp = true;
+			break;
 		}
+	}
+
+	if (bAmmoPickedUp) {
+		AmmoClass->StartRespawnTimer();
+		MulticastAddAmmo(AmmoClass);
 	}
 }
 
-void UCombatComponent::PickupAmmo(AActor* AmmoClass, EWeaponType WeaponType, int32 AmmoAmount)
+void UCombatComponent::MulticastAddAmmo_Implementation(AAmmoPickup* AmmoClass)
 {
-	//ServerAddAmmo(WeaponType, AmmoAmount);
-	if (Character == nullptr || EquippedWeapon == nullptr) { return; }
+	if (AmmoClass->PickupSound)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Sound Played Locally"));
+		UGameplayStatics::PlaySoundAtLocation(
+			this,
+			AmmoClass->PickupSound,
+			AmmoClass->GetActorLocation()
+		);
 
-	/*
-	if (CarriedAmmoMap.Contains(WeaponType)) {
-		if (EquippedWeapon) {
-			EquippedWeapon->AddAmmo(AmmoAmount);
-		}
+		AmmoClass->SetActorHiddenInGame(true);
+		AmmoClass->SetActorEnableCollision(false);
 	}
-	*/
+}
 
-	if (EquippedWeapon) {
-		if (EquippedWeapon->GetWeaponType() == WeaponType) {
-			EquippedWeapon->AddAmmo(AmmoAmount);
-			AmmoClass->Destroy();
-		}
-		else if (SecondaryWeapon && SecondaryWeapon->GetWeaponType() == WeaponType) {
-			SecondaryWeapon->AddAmmo(AmmoAmount);
-			AmmoClass->Destroy();
-		}
-	}
+void UCombatComponent::PickupAmmo(class AAmmoPickup* AmmoClass, EWeaponType WeaponType, int32 AmmoAmount, FTransform AmmoTransform)
+{
+	ServerAddAmmo(AmmoClass, WeaponType, AmmoAmount, AmmoTransform);
 }
 
 // RepNotifier for our Equipped Weapon Animation.
